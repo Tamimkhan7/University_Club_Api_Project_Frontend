@@ -1,23 +1,19 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function PostCard({ post }) {
-  const nav = useNavigate();
-
   return (
-    <div className="bg-white p-4 shadow rounded">
+    <div className="bg-white rounded-xl shadow p-5">
       <h3 className="font-bold">{post.userName}</h3>
-      <p className="my-2">{post.content}</p>
 
-      <div className="text-sm text-gray-500">
+      <p className="my-3">{post.content}</p>
+
+      <div className="text-gray-500 text-sm">
         ❤️ {post.reactionCount} | 💬 {post.commentCount}
       </div>
 
-      <button
-        onClick={() => nav(`/post/${post.id}`)}
-        className="mt-2 text-blue-500"
-      >
-        View
-      </button>
+      <Link to={`/post/${post.id}`} className="text-blue-500 mt-3 inline-block">
+        View Details
+      </Link>
     </div>
   );
 }

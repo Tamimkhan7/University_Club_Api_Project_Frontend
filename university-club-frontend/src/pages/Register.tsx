@@ -14,8 +14,8 @@ export default function Register() {
 
 
     return (
-        <div className="bg-white p-6 shadow rounded">
-            <h2 className="text-xl mb-4">Register</h2>
+        <div className="bg-white p-8 shadow rounded-xl">
+            <h2 className="text-xl mb-5 font-bold">Register</h2>
             
             <input className="border p-2 w-full mb-2" placeholder="Name" onChange={(e) => setForm({...form, name: e.target.value})}/>
             <input className="border p-2 w-full mb-2" placeholder="Email" onChange={(e) => setForm({...form, email: e.target.value})} />

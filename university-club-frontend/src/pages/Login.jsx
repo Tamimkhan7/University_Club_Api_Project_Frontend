@@ -1,27 +1,37 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const nav = useNavigate();
 
-  const login = async () => {
+  const nav = useNavigate();
+  const { setToken } = useContext(AuthContext);
+
+  const submit = async () => {
     const res = await api.post("/auth/login", { email, password });
 
     localStorage.setItem("token", res.data);
+    setToken(res.data);
+
     nav("/");
   };
 
   return (
-    <div className="bg-white p-6 shadow rounded">
-      <h2 className="text-xl mb-4">Login</h2>
+    <div className="bg-white p-8 rounded-xl shadow">
+      <h2 className="text-2xl font-bold mb-5">Login</h2>
 
-      <input className="border p-2 w-full mb-2" placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
-      <input className="border p-2 w-full mb-2" type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
+      <input placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
+      <input
+        type="password"
+        placeholder="Password"
+        className="mt-3"
+        onChange={(e) => setPassword(e.target.value)}
+      />
 
-      <button onClick={login} className="bg-blue-500 text-white px-4 py-2">
+      <button onClick={submit} className="bg-blue-500 text-white w-full mt-5">
         Login
       </button>
     </div>
