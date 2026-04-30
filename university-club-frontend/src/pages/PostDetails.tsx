@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Loader from "../components/Loader";
+import toast from "react-hot-toast";
 import { 
   Heart, MessageCircle, Send, Trash2, ArrowLeft, 
   Reply, MoreVertical, Edit2, Check, X, Save,
-  User, Calendar, Users 
+  Calendar, Image as ImageIcon, Loader2
 } from "lucide-react";
 
 export default function PostDetails() {
@@ -35,9 +36,7 @@ export default function PostDetails() {
   const loadData = async () => {
     setLoading(true);
     try {
-      // API: GET /api/post/{id}
       const postRes = await api.get(`/post/${id}`);
-      // API: GET /api/comment/post/{postId}
       const commentRes = await api.get(`/comment/post/${id}`);
       
       setPost(postRes.data);
@@ -52,12 +51,13 @@ export default function PostDetails() {
     } catch (error) {
       console.error("Error loading data:", error);
       if (error.response?.status === 404) {
-        alert("Post not found");
+        toast.error("Post not found");
         navigate("/");
       } else if (error.response?.status === 401) {
+        toast.error("Session expired. Please login again.");
         navigate("/login");
       } else {
-        alert("Failed to load post");
+        toast.error("Failed to load post");
         navigate("/");
       }
     } finally {
@@ -71,10 +71,9 @@ export default function PostDetails() {
     }
   }, [id]);
 
-  // API: PUT /api/post/update/{id}
   const updatePost = async () => {
     if (!editPostContent.trim() && !editPostImage.trim()) {
-      alert("Please add some content or image");
+      toast.error("Please add some content or image");
       return;
     }
 
@@ -86,19 +85,18 @@ export default function PostDetails() {
       });
       setIsEditingPost(false);
       await loadData();
-      alert("Post updated successfully!");
+      toast.success("Post updated successfully!");
     } catch (error) {
       console.error("Error updating post:", error);
-      alert(error.response?.data?.message || "Failed to update post");
+      toast.error(error.response?.data?.message || "Failed to update post");
     } finally {
       setUpdatingPost(false);
     }
   };
 
-  // API: PUT /api/comment/update/{id}
   const updateComment = async (commentId) => {
     if (!editCommentText.trim()) {
-      alert("Please write something");
+      toast.error("Please write something");
       return;
     }
 
@@ -110,19 +108,18 @@ export default function PostDetails() {
       setEditingComment(null);
       setEditCommentText("");
       await loadData();
-      alert("Comment updated successfully!");
+      toast.success("Comment updated successfully!");
     } catch (error) {
       console.error("Error updating comment:", error);
-      alert(error.response?.data?.message || "Failed to update comment");
+      toast.error(error.response?.data?.message || "Failed to update comment");
     } finally {
       setUpdating(false);
     }
   };
 
-  // API: POST /api/comment/create
   const sendComment = async () => {
     if (!text.trim()) {
-      alert("Please write a comment");
+      toast.error("Please write a comment");
       return;
     }
 
@@ -138,15 +135,15 @@ export default function PostDetails() {
       setReplyTo(null);
       setReplyToName("");
       await loadData();
+      toast.success("Comment posted!");
     } catch (error) {
       console.error("Error posting comment:", error);
-      alert(error.response?.data?.message || "Failed to post comment");
+      toast.error(error.response?.data?.message || "Failed to post comment");
     } finally {
       setSending(false);
     }
   };
 
-  // API: DELETE /api/comment/delete/{id}
   const deleteComment = async (commentId) => {
     if (!confirm("Delete this comment?")) return;
     
@@ -154,26 +151,25 @@ export default function PostDetails() {
     try {
       await api.delete(`/comment/delete/${commentId}`);
       await loadData();
-      alert("Comment deleted successfully");
+      toast.success("Comment deleted successfully");
     } catch (error) {
       console.error("Error deleting comment:", error);
-      alert(error.response?.data?.message || "Failed to delete comment");
+      toast.error(error.response?.data?.message || "Failed to delete comment");
     } finally {
       setDeleting(false);
     }
   };
 
-  // API: DELETE /api/post/delete/{id}
   const deletePost = async () => {
     if (!confirm("Are you sure you want to delete this post? This action cannot be undone!")) return;
     
     try {
       await api.delete(`/post/delete/${id}`);
-      alert("Post deleted successfully");
+      toast.success("Post deleted successfully");
       navigate("/");
     } catch (error) {
       console.error("Error deleting post:", error);
-      alert(error.response?.data?.message || "Failed to delete post");
+      toast.error(error.response?.data?.message || "Failed to delete post");
     }
   };
 
@@ -305,34 +301,45 @@ export default function PostDetails() {
                 placeholder="Write your post content..."
                 autoFocus
               />
-              <input
-                value={editPostImage}
-                onChange={(e) => setEditPostImage(e.target.value)}
-                placeholder="Image URL (optional)"
-                className="w-full"
-              />
-              {editPostImage && (
-                <img 
-                  src={editPostImage} 
-                  alt="Preview" 
-                  className="rounded-xl max-h-48 object-contain"
-                  onError={(e) => {
-                    e.target.src = "https://via.placeholder.com/400x200?text=Invalid+URL";
-                  }}
+              <div className="relative">
+                <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input
+                  value={editPostImage}
+                  onChange={(e) => setEditPostImage(e.target.value)}
+                  placeholder="Image URL (optional)"
+                  className="w-full pl-11"
                 />
+              </div>
+              {editPostImage && (
+                <div className="relative group">
+                  <img 
+                    src={editPostImage} 
+                    alt="Preview" 
+                    className="rounded-xl max-h-48 object-contain bg-slate-100 p-2"
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/400x200?text=Invalid+URL";
+                    }}
+                  />
+                  <button
+                    onClick={() => setEditPostImage("")}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               )}
               <div className="flex gap-2">
                 <button
                   onClick={updatePost}
                   disabled={updatingPost}
-                  className="flex items-center gap-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
+                  className="flex items-center gap-2 bg-green-500 text-white px-5 py-2.5 rounded-xl hover:bg-green-600 transition disabled:opacity-50"
                 >
-                  {updatingPost ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Save className="w-4 h-4" />}
+                  {updatingPost ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save Changes
                 </button>
                 <button
                   onClick={cancelEditingPost}
-                  className="flex items-center gap-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition"
+                  className="flex items-center gap-2 bg-gray-500 text-white px-5 py-2.5 rounded-xl hover:bg-gray-600 transition"
                 >
                   <X className="w-4 h-4" />
                   Cancel
@@ -407,7 +414,7 @@ export default function PostDetails() {
               placeholder={replyTo ? `Reply to @${replyToName}...` : "Write a comment..."}
               rows="2"
               className="flex-1 resize-none"
-              onKeyPress={(e) => {
+              onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   sendComment();
@@ -417,13 +424,9 @@ export default function PostDetails() {
             <button
               onClick={sendComment}
               disabled={sending || !text.trim()}
-              className="gradient-bg text-white px-6 rounded-xl hover:shadow-lg transition disabled:opacity-50 flex items-center gap-2"
+              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 rounded-xl hover:shadow-lg transition disabled:opacity-50 flex items-center gap-2"
             >
-              {sending ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
+              {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               Send
             </button>
           </div>
@@ -450,14 +453,14 @@ export default function PostDetails() {
                         <button
                           onClick={() => updateComment(comment.id)}
                           disabled={updating}
-                          className="flex items-center gap-1 bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600 transition text-sm"
+                          className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition text-sm"
                         >
                           <Check className="w-3 h-3" />
                           Save
                         </button>
                         <button
                           onClick={cancelEditingComment}
-                          className="flex items-center gap-1 bg-gray-500 text-white px-3 py-1 rounded-lg hover:bg-gray-600 transition text-sm"
+                          className="flex items-center gap-1 bg-gray-500 text-white px-3 py-1.5 rounded-lg hover:bg-gray-600 transition text-sm"
                         >
                           <X className="w-3 h-3" />
                           Cancel

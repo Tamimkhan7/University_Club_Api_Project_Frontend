@@ -7,6 +7,8 @@ import Feed from "./pages/Feed";
 import Clubs from "./pages/Clubs";
 import Profile from "./pages/Profile";
 import PostDetails from "./pages/PostDetails";
+import Dashboard from "./pages/Dashboard";
+import Users from "./pages/Users";
 import { Toaster } from "react-hot-toast";
 
 export default function App() {
@@ -18,38 +20,13 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Feed />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/clubs"
-            element={
-              <ProtectedRoute>
-                <Clubs />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/post/:id"
-            element={
-              <ProtectedRoute>
-                <PostDetails />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/clubs" element={<ProtectedRoute><Clubs /></ProtectedRoute>} />
+          <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/profile/:id" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/post/:id" element={<ProtectedRoute><PostDetails /></ProtectedRoute>} />
         </Routes>
       </div>
     </>
