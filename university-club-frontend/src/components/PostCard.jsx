@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import api from "../api/axios";
 import { 
   Heart, MessageCircle, ThumbsUp, Smile, Frown, Angry, Eye, X, 
-  Share2, Bookmark, MoreHorizontal, Clock
+  Share2, Bookmark, MoreHorizontal, Clock, Sparkles
 } from "lucide-react";
 
 export default function PostCard({ post, onReact }) {
@@ -17,12 +17,12 @@ export default function PostCard({ post, onReact }) {
   const [isSaved, setIsSaved] = useState(false);
 
   const reactions = [
-    { type: "Like", icon: ThumbsUp, color: "text-blue-500", emoji: "👍" },
-    { type: "Love", icon: Heart, color: "text-red-500", emoji: "❤️" },
-    { type: "Haha", icon: Smile, color: "text-yellow-500", emoji: "😂" },
-    { type: "Wow", icon: Eye, color: "text-purple-500", emoji: "😮" },
-    { type: "Sad", icon: Frown, color: "text-indigo-500", emoji: "😢" },
-    { type: "Angry", icon: Angry, color: "text-orange-500", emoji: "😡" },
+    { type: "Like", icon: ThumbsUp, color: "text-blue-500", bgColor: "bg-blue-50", emoji: "👍" },
+    { type: "Love", icon: Heart, color: "text-red-500", bgColor: "bg-red-50", emoji: "❤️" },
+    { type: "Haha", icon: Smile, color: "text-yellow-500", bgColor: "bg-yellow-50", emoji: "😂" },
+    { type: "Wow", icon: Eye, color: "text-purple-500", bgColor: "bg-purple-50", emoji: "😮" },
+    { type: "Sad", icon: Frown, color: "text-indigo-500", bgColor: "bg-indigo-50", emoji: "😢" },
+    { type: "Angry", icon: Angry, color: "text-orange-500", bgColor: "bg-orange-50", emoji: "😡" },
   ];
 
   useEffect(() => {
@@ -54,6 +54,11 @@ export default function PostCard({ post, onReact }) {
   const getReactionEmoji = (type) => {
     const found = reactions.find(r => r.type === type);
     return found?.emoji || "👍";
+  };
+
+  const getReactionColor = (type) => {
+    const found = reactions.find(r => r.type === type);
+    return found?.color || "text-gray-500";
   };
 
   const react = async (type) => {
@@ -149,25 +154,28 @@ export default function PostCard({ post, onReact }) {
   const getUserInitials = (name) => name?.charAt(0)?.toUpperCase() || "U";
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700">
-      {/* Header */}
-      <div className="p-4 pb-3">
-        <div className="flex items-start justify-between">
+    <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 overflow-hidden border border-gray-100 dark:border-gray-700 hover:border-red-200/50">
+      {/* Header with Subtle Gradient */}
+      <div className="p-4 pb-3 relative">
+        {/* Animated gradient border on hover */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl bg-gradient-to-r from-red-500/5 via-rose-500/5 to-red-500/5 pointer-events-none" />
+        
+        <div className="flex items-start justify-between relative">
           <Link to={`/profile/${post.userId}`} className="flex items-center gap-3 flex-1">
             {post.userImage && !imageError ? (
               <img
                 src={post.userImage}
                 alt={post.userName}
-                className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/20"
+                className="w-11 h-11 rounded-full object-cover ring-2 ring-red-500/30 group-hover:ring-red-500/50 transition-all duration-300"
                 onError={() => setImageError(true)}
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
+              <div className="w-11 h-11 rounded-full bg-gradient-to-r from-red-500 to-rose-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
                 {getUserInitials(post.userName)}
               </div>
             )}
             <div className="flex-1">
-              <h3 className="font-bold text-gray-800 dark:text-white hover:text-blue-600 transition">
+              <h3 className="font-bold text-gray-800 dark:text-white hover:text-red-600 transition-colors duration-200">
                 {post.userName || "Unknown User"}
               </h3>
               <div className="flex items-center gap-1.5 text-xs text-gray-400">
@@ -175,8 +183,8 @@ export default function PostCard({ post, onReact }) {
                 <span>{formatDate(post.createdAt)}</span>
                 {post.clubName && (
                   <>
-                    <span>•</span>
-                    <span className="text-blue-500">{post.clubName}</span>
+                    <span className="text-gray-300">•</span>
+                    <span className="text-red-500 font-medium">{post.clubName}</span>
                   </>
                 )}
               </div>
@@ -186,18 +194,18 @@ export default function PostCard({ post, onReact }) {
           <div className="relative">
             <button
               onClick={() => setShowOptions(!showOptions)}
-              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition"
+              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all duration-200"
             >
               <MoreHorizontal className="w-4 h-4 text-gray-400" />
             </button>
             {showOptions && (
-              <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-xl shadow-xl border z-10">
-                <button onClick={handleShare} className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">
+              <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-20 animate-fadeInDown overflow-hidden">
+                <button onClick={handleShare} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200">
                   <Share2 className="w-4 h-4" />
                   Share
                 </button>
-                <button onClick={() => setIsSaved(!isSaved)} className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">
-                  <Bookmark className={`w-4 h-4 ${isSaved ? "fill-blue-500 text-blue-500" : ""}`} />
+                <button onClick={() => setIsSaved(!isSaved)} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200">
+                  <Bookmark className={`w-4 h-4 transition-all duration-200 ${isSaved ? "fill-red-500 text-red-500" : ""}`} />
                   {isSaved ? "Saved" : "Save"}
                 </button>
               </div>
@@ -211,7 +219,7 @@ export default function PostCard({ post, onReact }) {
             {truncateText(post.content)}
           </p>
           {shouldTruncate && (
-            <button onClick={() => setIsExpanded(!isExpanded)} className="text-blue-500 text-sm font-medium mt-1 hover:underline">
+            <button onClick={() => setIsExpanded(!isExpanded)} className="text-red-500 text-sm font-medium mt-1 hover:text-red-600 transition-colors duration-200">
               {isExpanded ? "Show less" : "Read more"}
             </button>
           )}
@@ -219,11 +227,11 @@ export default function PostCard({ post, onReact }) {
         
         {/* Image */}
         {post.imageUrl && (
-          <div className="mt-3 rounded-xl overflow-hidden bg-gray-100">
+          <div className="mt-3 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 group/image">
             <img 
               src={post.imageUrl} 
               alt="Post content" 
-              className="rounded-xl max-h-96 w-full object-contain"
+              className="rounded-xl max-h-96 w-full object-contain transition-transform duration-500 group-hover/image:scale-105"
               onError={(e) => {
                 e.target.src = "https://placehold.co/600x400?text=📷+Image+not+found";
               }}
@@ -233,16 +241,20 @@ export default function PostCard({ post, onReact }) {
       </div>
 
       {/* Stats */}
-      <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700 flex justify-between text-sm">
-        <div className="flex items-center gap-1">
+      <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700 flex justify-between text-sm bg-gray-50/50 dark:bg-gray-800/50">
+        <div className="flex items-center gap-1.5">
           <div className="flex -space-x-1">
-            {userReaction && <span>{getReactionEmoji(userReaction)}</span>}
+            {userReaction && (
+              <span className="text-lg transform transition-transform duration-200 hover:scale-110 cursor-default">
+                {getReactionEmoji(userReaction)}
+              </span>
+            )}
           </div>
-          <span className="text-gray-600 dark:text-gray-400">{reactionCount} reactions</span>
+          <span className="text-gray-600 dark:text-gray-400 font-medium">{reactionCount} {reactionCount === 1 ? 'reaction' : 'reactions'}</span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <MessageCircle className="w-4 h-4 text-gray-400" />
-          <span className="text-gray-600 dark:text-gray-400">{post.commentCount || 0} comments</span>
+          <span className="text-gray-600 dark:text-gray-400 font-medium">{post.commentCount || 0} comments</span>
         </div>
       </div>
 
@@ -252,16 +264,16 @@ export default function PostCard({ post, onReact }) {
           <button
             onMouseEnter={() => setShowReactions(true)}
             onMouseLeave={() => setShowReactions(false)}
-            className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl transition ${
+            className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
               userReaction 
-                ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white" 
-                : "bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100"
+                ? `bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-md shadow-red-500/25` 
+                : "bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:scale-105"
             }`}
           >
-            <span>{userReaction ? getReactionEmoji(userReaction) : "👍"}</span>
-            <span className="text-sm">{userReaction || "React"}</span>
+            <span className="text-base">{userReaction ? getReactionEmoji(userReaction) : "👍"}</span>
+            <span className="text-sm font-medium">{userReaction ? getReactionEmoji(userReaction) + " • Clicked" : "React"}</span>
             {userReaction && (
-              <button onClick={(e) => { e.stopPropagation(); removeReaction(); }} className="ml-1 text-white/80">
+              <button onClick={(e) => { e.stopPropagation(); removeReaction(); }} className="ml-1 text-white/80 hover:text-white transition-colors">
                 <X className="w-3 h-3" />
               </button>
             )}
@@ -271,7 +283,7 @@ export default function PostCard({ post, onReact }) {
             <div 
               onMouseEnter={() => setShowReactions(true)}
               onMouseLeave={() => setShowReactions(false)}
-              className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border p-2 flex gap-1 z-10"
+              className="absolute bottom-full left-0 mb-3 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 p-2 flex gap-1 z-20 animate-slideUp"
             >
               {reactions.map((reaction) => {
                 const Icon = reaction.icon;
@@ -279,7 +291,7 @@ export default function PostCard({ post, onReact }) {
                   <button
                     key={reaction.type}
                     onClick={() => react(reaction.type)}
-                    className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition ${reaction.color}`}
+                    className={`p-2.5 rounded-xl hover:${reaction.bgColor} transition-all duration-200 hover:scale-125 ${reaction.color}`}
                     title={reaction.type}
                   >
                     <Icon className="w-5 h-5" />
@@ -290,16 +302,52 @@ export default function PostCard({ post, onReact }) {
           )}
         </div>
 
-        <Link to={`/post/${post.id}`} className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 transition">
-          <MessageCircle className="w-4 h-4" />
-          <span className="text-sm">Comment</span>
+        <Link 
+          to={`/post/${post.id}`} 
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-all duration-300 group/comment"
+        >
+          <MessageCircle className="w-4 h-4 transition-transform duration-200 group-hover/comment:scale-110" />
+          <span className="text-sm font-medium">Comment</span>
         </Link>
 
-        <button onClick={handleShare} className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 transition">
-          <Share2 className="w-4 h-4" />
-          <span className="text-sm hidden xs:inline">Share</span>
+        <button 
+          onClick={handleShare} 
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-all duration-300 group/share"
+        >
+          <Share2 className="w-4 h-4 transition-transform duration-200 group-hover/share:scale-110" />
+          <span className="text-sm font-medium hidden xs:inline">Share</span>
         </button>
       </div>
+
+      {/* Add animation styles */}
+      <style jsx>{`
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeInDown {
+          animation: fadeInDown 0.2s ease-out;
+        }
+        .animate-slideUp {
+          animation: slideUp 0.2s ease-out;
+        }
+      `}</style>
     </div>
   );
 }

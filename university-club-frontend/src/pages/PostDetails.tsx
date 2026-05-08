@@ -256,7 +256,7 @@ export default function PostDetails() {
           <p className="text-gray-500 dark:text-gray-400 mb-4">The post you're looking for doesn't exist or has been deleted.</p>
           <button
             onClick={() => navigate("/")}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-xl hover:shadow-lg transition"
+            className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-2 rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300"
           >
             Go back to feed
           </button>
@@ -266,29 +266,29 @@ export default function PostDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pb-12">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pb-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5 sm:space-y-6 animate-fadeIn">
         
-        {/* Back Button */}
+        {/* Back Button - Red Theme */}
         <button
           onClick={() => navigate(-1)}
-          className="group flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 mb-2 px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="group flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all duration-300 mb-2 px-3 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20"
         >
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition" />
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
           <span className="font-medium">Back</span>
         </button>
 
-        {/* Post Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:shadow-2xl">
+        {/* Post Card - Red Theme */}
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl shadow-red-500/10 overflow-hidden border border-white/30 dark:border-gray-700/50 transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/15">
           <div className="p-5 sm:p-6 pb-4">
             {/* Post Header */}
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="relative">
                   <img
-                    src={post.user?.profileImage || `https://ui-avatars.com/api/?name=${post.user?.name}&background=3b82f6&color=fff&bold=true&length=2&size=64`}
+                    src={post.user?.profileImage || `https://ui-avatars.com/api/?name=${post.user?.name}&background=dc2626&color=fff&bold=true&length=2&size=64`}
                     alt={post.user?.name}
-                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover ring-2 ring-blue-500/20 hover:ring-blue-500/40 transition-all duration-300"
+                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover ring-2 ring-red-500/30 hover:ring-red-500/50 transition-all duration-300"
                   />
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
                 </div>
@@ -298,7 +298,7 @@ export default function PostDetails() {
                       {post.user?.name || "Unknown User"}
                     </h2>
                     {post.user?.role === "Admin" && (
-                      <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[10px] px-2 py-0.5 rounded-full">
+                      <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] px-2 py-0.5 rounded-full">
                         Admin
                       </span>
                     )}
@@ -309,7 +309,7 @@ export default function PostDetails() {
                     {post.clubName && (
                       <>
                         <span>•</span>
-                        <span className="text-blue-500">in {post.clubName}</span>
+                        <span className="text-red-500 font-medium">in {post.clubName}</span>
                       </>
                     )}
                   </div>
@@ -321,18 +321,18 @@ export default function PostDetails() {
                 <div className="relative">
                   <button
                     onClick={() => setShowDeleteMenu(!showDeleteMenu)}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200"
+                    className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-200"
                   >
                     <MoreVertical className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   </button>
                   {showDeleteMenu && (
-                    <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-10 overflow-hidden animate-slideDown">
+                    <div className="absolute right-0 mt-2 w-44 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-10 overflow-hidden animate-slideDown">
                       <button
                         onClick={() => {
                           setShowDeleteMenu(false);
                           startEditingPost();
                         }}
-                        className="flex items-center gap-3 w-full px-4 py-2.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition text-sm"
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition text-sm"
                       >
                         <Edit2 className="w-4 h-4" />
                         Edit Post
@@ -349,7 +349,7 @@ export default function PostDetails() {
                           setShowDeleteMenu(false);
                           deletePost();
                         }}
-                        className="flex items-center gap-3 w-full px-4 py-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition text-sm border-t border-gray-100 dark:border-gray-700"
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition text-sm border-t border-gray-100 dark:border-gray-700"
                       >
                         <Trash2 className="w-4 h-4" />
                         Delete Post
@@ -367,7 +367,7 @@ export default function PostDetails() {
                   value={editPostContent}
                   onChange={(e) => setEditPostContent(e.target.value)}
                   rows="6"
-                  className="w-full resize-none p-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-gray-50 dark:bg-gray-900 transition"
+                  className="w-full resize-none p-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 bg-gray-50 dark:bg-gray-900 transition"
                   placeholder="Write your post content..."
                   autoFocus
                 />
@@ -377,7 +377,7 @@ export default function PostDetails() {
                     value={editPostImage}
                     onChange={(e) => setEditPostImage(e.target.value)}
                     placeholder="Image URL (optional)"
-                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-gray-50 dark:bg-gray-900 transition"
+                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 bg-gray-50 dark:bg-gray-900 transition"
                   />
                 </div>
                 {editPostImage && (
@@ -428,12 +428,12 @@ export default function PostDetails() {
                     <img 
                       src={post.imageUrl} 
                       alt="Post content" 
-                      className="w-full h-auto max-h-96 object-contain transition-transform duration-300 group-hover:scale-105"
+                      className="w-full h-auto max-h-96 object-contain transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => {
                         e.target.src = "https://placehold.co/600x400?text=Image+not+found";
                       }}
                     />
-                    <button className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition">
+                    <button className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300">
                       View Full
                     </button>
                   </div>
@@ -453,9 +453,9 @@ export default function PostDetails() {
               </div>
               <button
                 onClick={() => setIsSaved(!isSaved)}
-                className="flex items-center gap-1.5 hover:text-blue-500 transition ml-auto"
+                className="flex items-center gap-1.5 hover:text-red-500 transition ml-auto"
               >
-                <Bookmark className={`w-4 h-4 ${isSaved ? "fill-blue-500 text-blue-500" : ""}`} />
+                <Bookmark className={`w-4 h-4 ${isSaved ? "fill-red-500 text-red-500" : ""}`} />
                 <span className="text-xs">{isSaved ? "Saved" : "Save"}</span>
               </button>
             </div>
@@ -463,10 +463,10 @@ export default function PostDetails() {
         </div>
 
         {/* Comments Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl shadow-red-500/10 overflow-hidden border border-white/30 dark:border-gray-700/50">
           <div className="p-5 sm:p-6">
             <h3 className="font-bold text-xl text-gray-800 dark:text-white mb-5 flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-rose-600 rounded-xl flex items-center justify-center">
                 <MessageCircle className="w-4 h-4 text-white" />
               </div>
               Comments ({comments.length})
@@ -474,10 +474,10 @@ export default function PostDetails() {
 
             {/* Reply Indicator */}
             {replyTo && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 mb-4 flex justify-between items-center animate-slideDown border border-blue-200 dark:border-blue-800">
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 mb-4 flex justify-between items-center animate-slideDown border border-red-200 dark:border-red-800">
                 <div className="flex items-center gap-2">
-                  <Quote className="w-4 h-4 text-blue-500" />
-                  <span className="text-sm text-blue-700 dark:text-blue-400">
+                  <Quote className="w-4 h-4 text-red-500" />
+                  <span className="text-sm text-red-700 dark:text-red-400">
                     Replying to <span className="font-semibold">@{replyToName}</span>
                   </span>
                 </div>
@@ -497,7 +497,7 @@ export default function PostDetails() {
             {/* Comment Input */}
             <div className="flex gap-3 mb-6">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-rose-600 rounded-full flex items-center justify-center">
                   <User className="w-5 h-5 text-white" />
                 </div>
               </div>
@@ -508,7 +508,7 @@ export default function PostDetails() {
                   onChange={(e) => setText(e.target.value)}
                   placeholder={replyTo ? `Reply to @${replyToName}...` : "Write a comment..."}
                   rows="3"
-                  className="w-full resize-none p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-gray-50 dark:bg-gray-900 transition"
+                  className="w-full resize-none p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 bg-gray-50 dark:bg-gray-900 transition"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -520,7 +520,7 @@ export default function PostDetails() {
                   <button
                     onClick={sendComment}
                     disabled={sending || !text.trim()}
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-5 py-2 rounded-xl hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
+                    className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-5 py-2 rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
                   >
                     {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     Post Comment
@@ -541,14 +541,14 @@ export default function PostDetails() {
             ) : (
               <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                 {comments.map((comment) => (
-                  <div key={comment.id} className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 transition-all duration-200 hover:shadow-md">
+                  <div key={comment.id} className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 transition-all duration-200 hover:shadow-md hover:shadow-red-500/5">
                     {editingComment === comment.id ? (
                       <div className="space-y-3">
                         <textarea
                           value={editCommentText}
                           onChange={(e) => setEditCommentText(e.target.value)}
                           rows="3"
-                          className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-white dark:bg-gray-800 resize-none"
+                          className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 bg-white dark:bg-gray-800 resize-none"
                           autoFocus
                         />
                         <div className="flex gap-2">
@@ -575,15 +575,15 @@ export default function PostDetails() {
                         <div className="flex justify-between items-start">
                           <div className="flex items-center gap-3">
                             <img
-                              src={comment.userImage || `https://ui-avatars.com/api/?name=${comment.userName}&background=10b981&color=fff&bold=true&length=2`}
+                              src={comment.userImage || `https://ui-avatars.com/api/?name=${comment.userName}&background=dc2626&color=fff&bold=true&length=2`}
                               alt={comment.userName}
-                              className="w-9 h-9 rounded-full object-cover ring-2 ring-green-500/20"
+                              className="w-9 h-9 rounded-full object-cover ring-2 ring-red-500/20"
                             />
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">
                                 <b className="text-sm text-gray-800 dark:text-white">{comment.userName}</b>
                                 {comment.isAuthor && (
-                                  <span className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded-full">
+                                  <span className="text-[10px] bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded-full">
                                     Author
                                   </span>
                                 )}
@@ -597,7 +597,7 @@ export default function PostDetails() {
                           <div className="flex gap-1">
                             <button
                               onClick={() => startEditingComment(comment)}
-                              className="text-blue-400 hover:text-blue-600 transition p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                              className="text-red-400 hover:text-red-600 transition p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
@@ -620,7 +620,7 @@ export default function PostDetails() {
                         <div className="ml-12 mt-2 flex items-center gap-3">
                           <button
                             onClick={() => handleReply(comment.id, comment.userName)}
-                            className="flex items-center gap-1 text-blue-500 text-xs hover:text-blue-600 transition px-2 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                            className="flex items-center gap-1 text-red-500 text-xs hover:text-red-600 transition px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
                           >
                             <Reply className="w-3 h-3" />
                             Reply
@@ -638,7 +638,7 @@ export default function PostDetails() {
 
                         {/* Replies Section */}
                         {comment.replies && comment.replies.length > 0 && showReplies[comment.id] && (
-                          <div className="ml-11 mt-3 space-y-2 border-l-2 border-blue-200 dark:border-blue-800 pl-3 animate-slideDown">
+                          <div className="ml-11 mt-3 space-y-2 border-l-2 border-red-200 dark:border-red-800 pl-3 animate-slideDown">
                             {comment.replies.map((reply) => (
                               <div key={reply.id} className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm hover:shadow-md transition">
                                 <div className="flex justify-between items-start">
@@ -717,17 +717,17 @@ export default function PostDetails() {
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
+          background: #e53e3e;
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
+          background: #c53030;
         }
         .dark .custom-scrollbar::-webkit-scrollbar-track {
           background: #1f2937;
         }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #4b5563;
+          background: #e53e3e;
         }
       `}</style>
     </div>
