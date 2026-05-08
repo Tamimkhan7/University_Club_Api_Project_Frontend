@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// Use the correct backend URL
+// Use port 5000 (matches your backend's http profile)
 const API_BASE_URL = "http://localhost:5000/api";
 
 const api = axios.create({
@@ -16,11 +16,10 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
-    console.log(`📤 ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+    console.log(`📤 ${config.method?.toUpperCase()} ${config.url}`);
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log("✅ Token added");
     }
     return config;
   },
@@ -41,7 +40,11 @@ api.interceptors.response.use(
     
     if (error.code === "ERR_NETWORK") {
       console.error("❌ Cannot connect to backend!");
-      alert("Cannot connect to backend. Please make sure backend is running on http://localhost:5000");
+      if (!window._networkAlertShown) {
+        window._networkAlertShown = true;
+        alert("Cannot connect to backend. Please make sure backend is running on http://localhost:5000");
+        setTimeout(() => { window._networkAlertShown = false; }, 5000);
+      }
     }
     
     if (error.response?.status === 401) {

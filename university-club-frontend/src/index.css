@@ -6,28 +6,38 @@
   body {
     @apply bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 min-h-screen font-sans;
   }
-  input, textarea, select {
+
+  input,
+  textarea,
+  select {
     @apply border border-slate-200 rounded-xl px-4 py-3 w-full outline-none transition-all duration-200;
     @apply focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white;
   }
+
   button {
     @apply px-5 py-2.5 rounded-xl font-medium transition-all duration-200;
-    @apply hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-50;
+    @apply hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-50 disabled:hover:scale-100;
   }
 }
 
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
+/* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-fadeIn { animation: fadeIn 0.4s ease-out; }
+.animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slideDown { animation: slideDown 0.2s ease-out; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slideUp { animation: slideUp 0.2s ease-out; }
 
 @keyframes spin {
   from { transform: rotate(0deg); }
@@ -35,60 +45,30 @@
 }
 .animate-spin { animation: spin 1s linear infinite; }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-.animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradientShift 3s ease infinite;
+/* Dark mode */
+.dark {
+  color-scheme: dark;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
-
-.animate-slideIn {
-  animation: slideIn 0.3s ease-out;
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
 }
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
 }
-
-.animate-scaleIn {
-  animation: scaleIn 0.2s ease-out;
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
+.dark ::-webkit-scrollbar-track {
+  background: #1f2937;
 }
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.hover\:shadow-3xl:hover {
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
 }
