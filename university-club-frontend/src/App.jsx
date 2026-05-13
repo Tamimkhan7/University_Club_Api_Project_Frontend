@@ -10,6 +10,7 @@ import PostDetails from "./pages/PostDetails";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import { Toaster } from "react-hot-toast";
+import Footer from "./components/Footer";
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/profile/:id" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/post/:id" element={<ProtectedRoute><PostDetails /></ProtectedRoute>} />
       </Routes>
+      <Footer />
     </>
   );
 }

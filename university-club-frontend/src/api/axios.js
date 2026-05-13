@@ -46,6 +46,7 @@ api.interceptors.response.use(
         setTimeout(() => { window._networkAlertShown = false; }, 5000);
       }
     }
+    //setTimeOut(()=> {window._networkAlertShown = false;}, 5000);
     
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
