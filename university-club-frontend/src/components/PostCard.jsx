@@ -1,92 +1,74 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
-import { 
-  Heart, MessageCircle, ThumbsUp, Smile, Frown, Angry, Eye, X, 
-  Share2, Bookmark, MoreHorizontal, Clock, Sparkles
+import {
+  Heart, MessageCircle, ThumbsUp, Smile, Frown, Angry, Eye, X,
+  Share2, Bookmark, MoreHorizontal, Clock
 } from "lucide-react";
 
+// Must match Enums/ReactionType.cs exactly: Like=0, Love=1, Haha=2, Wow=3, Sad=4, Angry=5
+const REACTIONS = [
+  { type: "Like", value: 0, icon: ThumbsUp, color: "text-blue-500", bgColor: "bg-blue-50", emoji: "👍" },
+  { type: "Love", value: 1, icon: Heart, color: "text-red-500", bgColor: "bg-red-50", emoji: "❤️" },
+  { type: "Haha", value: 2, icon: Smile, color: "text-yellow-500", bgColor: "bg-yellow-50", emoji: "😂" },
+  { type: "Wow", value: 3, icon: Eye, color: "text-purple-500", bgColor: "bg-purple-50", emoji: "😮" },
+  { type: "Sad", value: 4, icon: Frown, color: "text-indigo-500", bgColor: "bg-indigo-50", emoji: "😢" },
+  { type: "Angry", value: 5, icon: Angry, color: "text-orange-500", bgColor: "bg-orange-50", emoji: "😡" },
+];
+
 export default function PostCard({ post, onReact }) {
-  const [userReaction, setUserReaction] = useState(null);
+  const [userReaction, setUserReaction] = useState(null); // "Like" | "Love" | ... | null
   const [showReactions, setShowReactions] = useState(false);
-  const [reactionCount, setReactionCount] = useState(0);
+  const [reactionCount, setReactionCount] = useState(post.reactionCount || 0);
   const [isReacting, setIsReacting] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const [isSaved, setIsSaved] = useState(!!post.isSaved);
 
-  const reactions = [
-    { type: "Like", icon: ThumbsUp, color: "text-blue-500", bgColor: "bg-blue-50", emoji: "👍" },
-    { type: "Love", icon: Heart, color: "text-red-500", bgColor: "bg-red-50", emoji: "❤️" },
-    { type: "Haha", icon: Smile, color: "text-yellow-500", bgColor: "bg-yellow-50", emoji: "😂" },
-    { type: "Wow", icon: Eye, color: "text-purple-500", bgColor: "bg-purple-50", emoji: "😮" },
-    { type: "Sad", icon: Frown, color: "text-indigo-500", bgColor: "bg-indigo-50", emoji: "😢" },
-    { type: "Angry", icon: Angry, color: "text-orange-500", bgColor: "bg-orange-50", emoji: "😡" },
-  ];
-
-  useEffect(() => {
-    const loadReactionCount = async () => {
-      try {
-        const res = await api.get(`/reaction/count/${post.id}`);
-        setReactionCount(res.data);
-      } catch (error) {
-        setReactionCount(post.reactionCount || 0);
-      }
-    };
-    loadReactionCount();
-  }, [post.id, post.reactionCount]);
+  const loadSummary = async () => {
+    try {
+      const res = await api.get(`/reaction/summary/${post.id}`);
+      const s = res.data;
+      setReactionCount(s.total ?? 0);
+      setUserReaction(
+        s.myReaction !== null && s.myReaction !== undefined
+          ? REACTIONS[s.myReaction]?.type ?? null
+          : null
+      );
+    } catch (error) {
+      console.error("Error loading reaction summary:", error);
+    }
+  };
 
   useEffect(() => {
-    const loadUserReaction = async () => {
-      try {
-        const res = await api.get(`/reaction/my/${post.id}`);
-        if (res.data) {
-          setUserReaction(res.data);
-        }
-      } catch (error) {
-        console.error("Error loading user reaction:", error);
-      }
-    };
-    loadUserReaction();
+    loadSummary();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post.id]);
 
-  const getReactionEmoji = (type) => {
-    const found = reactions.find(r => r.type === type);
-    return found?.emoji || "👍";
-  };
+  const getReactionEmoji = (type) => REACTIONS.find((r) => r.type === type)?.emoji || "👍";
 
-  const getReactionColor = (type) => {
-    const found = reactions.find(r => r.type === type);
-    return found?.color || "text-gray-500";
-  };
-
-  const react = async (type) => {
+  const react = async (typeLabel) => {
     if (isReacting) return;
-    
+    const reactionMeta = REACTIONS.find((r) => r.type === typeLabel);
+    if (!reactionMeta) return;
+
     setIsReacting(true);
-    const previousReaction = userReaction;
-    const previousCount = reactionCount;
-    
-    if (userReaction === type) {
-      setUserReaction(null);
-      setReactionCount(prev => Math.max(0, prev - 1));
-    } else {
-      if (!userReaction) {
-        setReactionCount(prev => prev + 1);
-      }
-      setUserReaction(type);
-    }
-    
     try {
-      await api.post("/reaction/react", {
+      const res = await api.post("/reaction/react", {
         postId: post.id,
-        type: type,
+        type: reactionMeta.value,
       });
+      const s = res.data;
+      setReactionCount(s.total ?? 0);
+      setUserReaction(
+        s.myReaction !== null && s.myReaction !== undefined
+          ? REACTIONS[s.myReaction]?.type ?? null
+          : null
+      );
       if (onReact) onReact();
     } catch (error) {
-      setUserReaction(previousReaction);
-      setReactionCount(previousCount);
+      console.error(error);
       alert("Failed to add reaction. Please try again.");
     } finally {
       setIsReacting(false);
@@ -95,24 +77,33 @@ export default function PostCard({ post, onReact }) {
   };
 
   const removeReaction = async () => {
-    if (!userReaction) return;
-    
+    if (!userReaction || isReacting) return;
     setIsReacting(true);
-    const previousReaction = userReaction;
-    const previousCount = reactionCount;
-    
-    setUserReaction(null);
-    setReactionCount(prev => Math.max(0, prev - 1));
-    
     try {
-      await api.delete(`/reaction/remove/${post.id}`);
+      const res = await api.delete(`/reaction/remove/${post.id}`);
+      const s = res.data;
+      setReactionCount(s.total ?? 0);
+      setUserReaction(null);
       if (onReact) onReact();
     } catch (error) {
-      setUserReaction(previousReaction);
-      setReactionCount(previousCount);
+      console.error(error);
       alert("Failed to remove reaction");
     } finally {
       setIsReacting(false);
+    }
+  };
+
+  const toggleSave = async () => {
+    try {
+      if (isSaved) {
+        await api.delete(`/post/unsave/${post.id}`);
+        setIsSaved(false);
+      } else {
+        await api.post(`/post/save/${post.id}`);
+        setIsSaved(true);
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -124,7 +115,7 @@ export default function PostCard({ post, onReact }) {
     const diffMins = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
@@ -144,9 +135,7 @@ export default function PostCard({ post, onReact }) {
 
   const truncateText = (text, maxLength = 300) => {
     if (!text) return "";
-    if (!isExpanded && text.length > maxLength) {
-      return text.substring(0, maxLength) + "...";
-    }
+    if (!isExpanded && text.length > maxLength) return text.substring(0, maxLength) + "...";
     return text;
   };
 
@@ -155,11 +144,9 @@ export default function PostCard({ post, onReact }) {
 
   return (
     <div className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 overflow-hidden border border-gray-100 dark:border-gray-700 hover:border-red-200/50">
-      {/* Header with Subtle Gradient */}
       <div className="p-4 pb-3 relative">
-        {/* Animated gradient border on hover */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl bg-gradient-to-r from-red-500/5 via-rose-500/5 to-red-500/5 pointer-events-none" />
-        
+
         <div className="flex items-start justify-between relative">
           <Link to={`/profile/${post.userId}`} className="flex items-center gap-3 flex-1">
             {post.userImage && !imageError ? (
@@ -199,12 +186,12 @@ export default function PostCard({ post, onReact }) {
               <MoreHorizontal className="w-4 h-4 text-gray-400" />
             </button>
             {showOptions && (
-              <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-20 animate-fadeInDown overflow-hidden">
+              <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-20 overflow-hidden">
                 <button onClick={handleShare} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200">
                   <Share2 className="w-4 h-4" />
                   Share
                 </button>
-                <button onClick={() => setIsSaved(!isSaved)} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200">
+                <button onClick={() => { toggleSave(); setShowOptions(false); }} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200">
                   <Bookmark className={`w-4 h-4 transition-all duration-200 ${isSaved ? "fill-red-500 text-red-500" : ""}`} />
                   {isSaved ? "Saved" : "Save"}
                 </button>
@@ -213,7 +200,6 @@ export default function PostCard({ post, onReact }) {
           </div>
         </div>
 
-        {/* Content */}
         <div className="mt-3">
           <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
             {truncateText(post.content)}
@@ -224,33 +210,29 @@ export default function PostCard({ post, onReact }) {
             </button>
           )}
         </div>
-        
-        {/* Image */}
+
         {post.imageUrl && (
           <div className="mt-3 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 group/image">
-            <img 
-              src={post.imageUrl} 
-              alt="Post content" 
+            <img
+              src={post.imageUrl}
+              alt="Post content"
               className="rounded-xl max-h-96 w-full object-contain transition-transform duration-500 group-hover/image:scale-105"
-              onError={(e) => {
-                e.target.src = "https://placehold.co/600x400?text=📷+Image+not+found";
-              }}
+              onError={(e) => { e.target.src = "https://placehold.co/600x400?text=Image+not+found"; }}
             />
           </div>
         )}
       </div>
 
-      {/* Stats */}
       <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700 flex justify-between text-sm bg-gray-50/50 dark:bg-gray-800/50">
         <div className="flex items-center gap-1.5">
-          <div className="flex -space-x-1">
-            {userReaction && (
-              <span className="text-lg transform transition-transform duration-200 hover:scale-110 cursor-default">
-                {getReactionEmoji(userReaction)}
-              </span>
-            )}
-          </div>
-          <span className="text-gray-600 dark:text-gray-400 font-medium">{reactionCount} {reactionCount === 1 ? 'reaction' : 'reactions'}</span>
+          {userReaction && (
+            <span className="text-lg transform transition-transform duration-200 hover:scale-110 cursor-default">
+              {getReactionEmoji(userReaction)}
+            </span>
+          )}
+          <span className="text-gray-600 dark:text-gray-400 font-medium">
+            {reactionCount} {reactionCount === 1 ? "reaction" : "reactions"}
+          </span>
         </div>
         <div className="flex items-center gap-1.5">
           <MessageCircle className="w-4 h-4 text-gray-400" />
@@ -258,20 +240,19 @@ export default function PostCard({ post, onReact }) {
         </div>
       </div>
 
-      {/* Actions */}
       <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700 flex gap-2">
         <div className="relative flex-1">
           <button
             onMouseEnter={() => setShowReactions(true)}
             onMouseLeave={() => setShowReactions(false)}
             className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 ${
-              userReaction 
-                ? `bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-md shadow-red-500/25` 
+              userReaction
+                ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-md shadow-red-500/25"
                 : "bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:scale-105"
             }`}
           >
             <span className="text-base">{userReaction ? getReactionEmoji(userReaction) : "👍"}</span>
-            <span className="text-sm font-medium">{userReaction ? getReactionEmoji(userReaction) + " • Clicked" : "React"}</span>
+            <span className="text-sm font-medium">{userReaction ? `${getReactionEmoji(userReaction)} • ${userReaction}` : "React"}</span>
             {userReaction && (
               <button onClick={(e) => { e.stopPropagation(); removeReaction(); }} className="ml-1 text-white/80 hover:text-white transition-colors">
                 <X className="w-3 h-3" />
@@ -280,12 +261,12 @@ export default function PostCard({ post, onReact }) {
           </button>
 
           {showReactions && (
-            <div 
+            <div
               onMouseEnter={() => setShowReactions(true)}
               onMouseLeave={() => setShowReactions(false)}
-              className="absolute bottom-full left-0 mb-3 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 p-2 flex gap-1 z-20 animate-slideUp"
+              className="absolute bottom-full left-0 mb-3 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 p-2 flex gap-1 z-20"
             >
-              {reactions.map((reaction) => {
+              {REACTIONS.map((reaction) => {
                 const Icon = reaction.icon;
                 return (
                   <button
@@ -302,52 +283,22 @@ export default function PostCard({ post, onReact }) {
           )}
         </div>
 
-        <Link 
-          to={`/post/${post.id}`} 
+        <Link
+          to={`/post/${post.id}`}
           className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-all duration-300 group/comment"
         >
           <MessageCircle className="w-4 h-4 transition-transform duration-200 group-hover/comment:scale-110" />
           <span className="text-sm font-medium">Comment</span>
         </Link>
 
-        <button 
-          onClick={handleShare} 
+        <button
+          onClick={handleShare}
           className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-all duration-300 group/share"
         >
           <Share2 className="w-4 h-4 transition-transform duration-200 group-hover/share:scale-110" />
           <span className="text-sm font-medium hidden xs:inline">Share</span>
         </button>
       </div>
-
-      {/* Add animation styles */}
-      <style jsx>{`
-        @keyframes fadeInDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeInDown {
-          animation: fadeInDown 0.2s ease-out;
-        }
-        .animate-slideUp {
-          animation: slideUp 0.2s ease-out;
-        }
-      `}</style>
     </div>
   );
 }

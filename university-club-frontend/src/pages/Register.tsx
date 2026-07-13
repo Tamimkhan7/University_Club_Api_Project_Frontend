@@ -1,16 +1,15 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import api from "../api/axios";
-import { User, Mail, Lock, UserPlus, Sparkles, Eye, EyeOff, AlertCircle, CheckCircle, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import api, { getErrorMessage } from "../api/axios";
+import { User, Mail, Lock, UserPlus, Sparkles, Eye, EyeOff, AlertCircle, CheckCircle, MailCheck } from "lucide-react";
 
 export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const navigate = useNavigate();
 
   const validatePassword = (pwd) => {
     if (pwd.length < 6) return "Password must be at least 6 characters";
@@ -20,67 +19,63 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
 
-    if (!form.name.trim()) {
-      setError("Name is required");
-      return;
-    }
-    if (!form.email.trim()) {
-      setError("Email is required");
-      return;
-    }
-    if (!form.password) {
-      setError("Password is required");
-      return;
-    }
+    if (!form.name.trim()) return setError("Name is required");
+    if (!form.email.trim()) return setError("Email is required");
+    if (!form.password) return setError("Password is required");
     const pwdError = validatePassword(form.password);
-    if (pwdError) {
-      setError(pwdError);
-      return;
-    }
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
+    if (pwdError) return setError(pwdError);
+    if (form.password !== form.confirmPassword) return setError("Passwords do not match");
 
     setLoading(true);
-
     try {
-      const response = await api.post("/auth/register", {
+      // POST /auth/register returns a plain success string, not a token.
+      // The account must verify its email before it can log in.
+      await api.post("/auth/register", {
         name: form.name.trim(),
         email: form.email.trim().toLowerCase(),
         password: form.password,
       });
-
-      setSuccess(response.data.message || "Registration successful! Redirecting to login...");
-      setTimeout(() => navigate("/login"), 2000);
+      setSuccess(true);
     } catch (err) {
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else if (err.response?.data) {
-        setError(typeof err.response.data === 'string' ? err.response.data : "Registration failed");
-      } else {
-        setError("Network error. Please check your connection.");
-      }
+      setError(getErrorMessage(err, "Registration failed"));
     } finally {
       setLoading(false);
     }
   };
 
+  if (success) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-gradient-to-br from-red-50 via-rose-50 to-gray-50">
+        <div className="w-full max-w-md">
+          <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/30 text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xl shadow-green-500/20">
+              <MailCheck className="w-9 h-9 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Check your email</h1>
+            <p className="text-gray-500 text-sm mb-6">
+              We've sent a verification link to <b>{form.email}</b>. Please verify your email
+              before signing in.
+            </p>
+            <Link
+              to="/login"
+              className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg shadow-red-500/25 hover:shadow-xl transition-all"
+            >
+              Go to Sign In
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-gradient-to-br from-red-50 via-rose-50 to-gray-50">
       <div className="w-full max-w-md">
-        {/* Advanced Card with Glassmorphism and Red Accents */}
         <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/30 overflow-hidden">
-          {/* Animated Background Gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 via-rose-500/5 to-gray-500/5 pointer-events-none" />
-          
-          {/* Decorative Red Accent Lines */}
           <div className="absolute top-0 left-0 w-32 h-1 bg-gradient-to-r from-red-500 to-rose-500 rounded-full" />
           <div className="absolute bottom-0 right-0 w-48 h-1 bg-gradient-to-l from-red-500 to-rose-500 rounded-full" />
-          
-          {/* Decorative Circles */}
           <div className="absolute -top-20 -right-20 w-64 h-64 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -93,15 +88,6 @@ export default function Register() {
             </h1>
             <p className="text-gray-500 mt-2 text-sm">Join the university community</p>
           </div>
-
-          {success && (
-            <div className="mb-5 p-4 bg-green-50/80 backdrop-blur-sm border border-green-200 rounded-2xl text-green-600 text-sm flex items-center gap-3 animate-fadeIn">
-              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-              </div>
-              <span className="font-medium">{success}</span>
-            </div>
-          )}
 
           {error && (
             <div className="mb-5 p-4 bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-2xl text-red-600 text-sm flex items-center gap-3 animate-shake">
@@ -180,10 +166,7 @@ export default function Register() {
               disabled={loading}
               className="relative w-full bg-gradient-to-r from-red-500 via-red-600 to-rose-600 text-white py-3.5 rounded-2xl font-semibold shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden group"
             >
-              {/* Button Hover Effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-rose-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-              
               {loading ? (
                 <div className="flex items-center justify-center gap-2 relative z-10">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -193,7 +176,6 @@ export default function Register() {
                 <div className="flex items-center justify-center gap-2 relative z-10">
                   <UserPlus className="w-5 h-5" />
                   <span>Create Account</span>
-                  <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200" />
                 </div>
               )}
             </button>

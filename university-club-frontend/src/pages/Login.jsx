@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import api from "../api/axios";
+import api, { getErrorMessage } from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import { Mail, Lock, LogIn, Sparkles, Eye, EyeOff, AlertCircle, ArrowRight } from "lucide-react";
 
@@ -24,20 +24,17 @@ export default function Login() {
         password: password,
       });
 
-      if (response.data && response.data.token) {
-        login(response.data.token, response.data);
+      // Real backend shape: { accessToken, refreshToken, user: { id, name, email, role } }
+      const { accessToken, refreshToken, user } = response.data || {};
+
+      if (accessToken) {
+        login(accessToken, refreshToken, user);
         navigate("/");
       } else {
         setError("Invalid server response");
       }
     } catch (err) {
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else if (err.code === "ERR_NETWORK") {
-        setError("Cannot connect to backend. Please check your connection.");
-      } else {
-        setError("Login failed. Please try again.");
-      }
+      setError(getErrorMessage(err, "Login failed. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -46,16 +43,10 @@ export default function Login() {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-gradient-to-br from-red-50 via-rose-50 to-gray-50">
       <div className="w-full max-w-md">
-        {/* Advanced Card with Glassmorphism and Red Accents */}
         <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/30 overflow-hidden">
-          {/* Animated Background Gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 via-rose-500/5 to-gray-500/5 pointer-events-none" />
-          
-          {/* Decorative Red Accent Lines */}
           <div className="absolute top-0 left-0 w-32 h-1 bg-gradient-to-r from-red-500 to-rose-500 rounded-full" />
           <div className="absolute bottom-0 right-0 w-48 h-1 bg-gradient-to-l from-red-500 to-rose-500 rounded-full" />
-          
-          {/* Decorative Circles */}
           <div className="absolute -top-20 -right-20 w-64 h-64 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -66,7 +57,7 @@ export default function Login() {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent">
               Welcome Back
             </h1>
-            <p className="text-gray-500 mt-2 text-sm">Sign in to continue to UniClub</p>
+            <p className="text-gray-500 mt-2 text-sm">Sign in to continue to PUCPC</p>
           </div>
 
           {error && (
@@ -79,18 +70,16 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5 relative">
-            <div>
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-red-500 transition-colors duration-200" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email address"
-                  className="w-full pl-12 pr-4 py-3.5 bg-white/50 border-2 border-gray-200 rounded-2xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all duration-200"
-                  required
-                />
-              </div>
+            <div className="relative group">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-red-500 transition-colors duration-200" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email address"
+                className="w-full pl-12 pr-4 py-3.5 bg-white/50 border-2 border-gray-200 rounded-2xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all duration-200"
+                required
+              />
             </div>
 
             <div>
@@ -112,6 +101,11 @@ export default function Login() {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+              <div className="text-right mt-2">
+                <Link to="/forgot-password" className="text-xs text-red-600 hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
             </div>
 
             <button
@@ -119,10 +113,8 @@ export default function Login() {
               disabled={loading}
               className="relative w-full bg-gradient-to-r from-red-500 via-red-600 to-rose-600 text-white py-3.5 rounded-2xl font-semibold shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden group"
             >
-              {/* Button Hover Effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-rose-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-              
               {loading ? (
                 <div className="flex items-center justify-center gap-2 relative z-10">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
