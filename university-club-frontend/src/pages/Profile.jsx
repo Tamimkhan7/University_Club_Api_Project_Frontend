@@ -5,10 +5,56 @@ import Loader from "../components/Loader";
 import toast from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
 import {
-  Mail, Save, Edit3, Sparkles, MapPin,
-  Heart, Users as UsersIcon, Trash2, X, Loader2, Camera,
-  UserPlus, UserMinus, Lock, EyeOff, Eye, LogOut,
+  Mail,
+  Save,
+  Edit3,
+  Sparkles,
+  MapPin,
+  Heart,
+  Users as UsersIcon,
+  Trash2,
+  X,
+  Loader2,
+  Camera,
+  UserPlus,
+  UserMinus,
+  Lock,
+  EyeOff,
+  Eye,
+  LogOut,
+  Shield,
+  Award,
+  Crown,
+  Star,
+  Zap,
+  Rocket,
+  Calendar,
+  Clock,
+  Compass,
+  Gift,
+  Gem,
+  BadgeCheck,
+  ChevronRight,
+  Settings,
+  Bell,
+  Share2,
+  Link2, 
+  User
 } from "lucide-react";
+
+/**
+ * ============================================================
+ *  👤 Profile — Premium User Profile Experience
+ *  Designed with Glassmorphism + Animated Visuals
+ *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
+ * ============================================================
+ * 
+ *  ┌─────────────────────────────────────────────────────────────┐
+ *  │  🎯 Purpose: Display and manage user profile            │
+ *  │  🔥 Features: Edit, Follow, Stats, Privacy            │
+ *  │  📱 Responsive: Optimized for all screen sizes          │
+ *  └─────────────────────────────────────────────────────────────┘
+ */
 
 export default function Profile() {
   const { id } = useParams();
@@ -26,16 +72,14 @@ export default function Profile() {
   const [isOwnProfile, setIsOwnProfile] = useState(true);
   const [followBusy, setFollowBusy] = useState(false);
 
-  // password change
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
 
-  // privacy / mutual / followers-following modal
   const [isPrivate, setIsPrivateState] = useState(false);
   const [mutualList, setMutualList] = useState([]);
-  const [listModal, setListModal] = useState(null); // "followers" | "following" | null
+  const [listModal, setListModal] = useState(null);
   const [listItems, setListItems] = useState([]);
 
   const loadProfile = async () => {
@@ -49,7 +93,6 @@ export default function Profile() {
       } else {
         profileRes = await api.get(`/user/profile/${id}`);
         setIsOwnProfile(false);
-        // record a profile view (best-effort)
         api.post(`/user/profile-views/${id}`).catch(() => {});
       }
       setProfile(profileRes.data);
@@ -97,7 +140,6 @@ export default function Profile() {
 
   useEffect(() => {
     loadProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const updateProfile = async () => {
@@ -226,71 +268,111 @@ export default function Profile() {
   const displayCover = coverPhotoFile ? URL.createObjectURL(coverPhotoFile) : profile.coverPhoto;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pb-12">
-      <div className="max-w-5xl mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 pb-12 overflow-hidden">
+      
+      {/* Premium Background Decorations */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
+      </div>
+
+      <div className="relative max-w-5xl mx-auto px-4 py-6">
+        
+        {/* Cover Photo */}
         <div className="relative">
-          <div className="relative h-48 rounded-2xl overflow-hidden shadow-xl">
+          <div className="relative h-56 sm:h-64 md:h-72 rounded-3xl overflow-hidden shadow-2xl shadow-red-500/10">
             {displayCover ? (
               <img src={displayCover} alt="Cover" className="w-full h-full object-cover" />
             ) : (
-              <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-rose-600 to-red-700"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-rose-600 to-red-700">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-20" />
+              </div>
             )}
-            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+            
             {isEditing && (
-              <label className="absolute bottom-3 right-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-2 rounded-xl cursor-pointer shadow-lg flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                <Camera className="w-4 h-4" /> Change Cover
+              <label className="absolute bottom-4 right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-2.5 rounded-xl cursor-pointer shadow-xl flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 border border-white/20">
+                <Camera className="w-4 h-4" />
+                <span className="hidden sm:inline">Change Cover</span>
                 <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && setCoverPhotoFile(e.target.files[0])} />
               </label>
             )}
           </div>
 
-          <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2">
+          {/* Avatar */}
+          <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 sm:left-8 sm:translate-x-0">
             <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-600 rounded-full blur-md opacity-30 group-hover:opacity-50 transition-opacity duration-300" />
               <img
                 src={displayImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(edit.name)}&background=dc2626&color=fff&size=120&bold=true&length=2`}
                 alt={edit.name}
-                className="w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 shadow-2xl object-cover transition-transform duration-300 group-hover:scale-105"
+                className="relative w-28 h-28 rounded-full border-4 border-white dark:border-gray-800 shadow-2xl object-cover transition-transform duration-300 group-hover:scale-105"
               />
               {isEditing && (
-                <label className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
-                  <Camera className="w-6 h-6 text-white" />
+                <label className="absolute inset-0 rounded-full bg-black/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
+                  <Camera className="w-8 h-8 text-white" />
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && setProfileImageFile(e.target.files[0])} />
                 </label>
               )}
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800 shadow-lg shadow-green-500/30" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl shadow-red-500/10 mt-16 overflow-hidden border border-white/30 dark:border-gray-700/50">
-          <div className="pt-16 pb-4 px-6 text-center border-b border-gray-100 dark:border-gray-700">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent">
-              {profile.name}
-            </h1>
-            {profile.userName && <p className="text-gray-500 text-sm mt-1">@{profile.userName}</p>}
+        {/* Profile Card */}
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/10 mt-20 sm:mt-16 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
+          
+          {/* Header */}
+          <div className="pt-20 sm:pt-16 pb-4 px-6 text-center border-b border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-rose-600 dark:from-red-400 dark:to-rose-400 bg-clip-text text-transparent flex items-center justify-center sm:justify-start gap-2">
+                  {profile.name}
+                  <BadgeCheck className="w-5 h-5 text-blue-500" />
+                </h1>
+                {profile.userName && (
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 flex items-center justify-center sm:justify-start gap-1.5">
+                    <span className="text-gray-400">@</span>{profile.userName}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2 justify-center">
+                {isOwnProfile && !isEditing && (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-5 py-2.5 rounded-xl font-medium hover:shadow-xl hover:shadow-red-500/25 transition-all duration-300 hover:scale-105"
+                  >
+                    <Edit3 className="w-4 h-4" /> Edit Profile
+                  </button>
+                )}
+                {!isOwnProfile && (
+                  <button
+                    onClick={toggleFollow}
+                    disabled={followBusy}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-all duration-300 ${
+                      profile.isFollowing
+                        ? "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        : "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/35 hover:scale-105"
+                    }`}
+                  >
+                    {profile.isFollowing ? <UserMinus className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                    {profile.isFollowing ? "Unfollow" : "Follow"}
+                  </button>
+                )}
+              </div>
+            </div>
+
             {isOwnProfile && (
-              <div className="flex items-center justify-center gap-2 mt-2 text-gray-500 dark:text-gray-400 text-sm">
+              <div className="flex items-center justify-center gap-2 mt-3 text-gray-500 dark:text-gray-400 text-sm">
                 <Mail className="w-4 h-4" />
                 <span>{profile.email}</span>
               </div>
             )}
-
-            {!isOwnProfile && (
-              <button
-                onClick={toggleFollow}
-                disabled={followBusy}
-                className={`mt-4 inline-flex items-center gap-2 px-5 py-2 rounded-xl font-medium transition-all duration-300 ${
-                  profile.isFollowing
-                    ? "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                    : "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25"
-                }`}
-              >
-                {profile.isFollowing ? <UserMinus className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
-                {profile.isFollowing ? "Unfollow" : "Follow"}
-              </button>
-            )}
           </div>
 
-          <div className="grid grid-cols-4 gap-4 px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-red-50/30 to-rose-50/30 dark:from-red-900/10 dark:to-rose-900/10">
+          {/* Stats */}
+          <div className="grid grid-cols-4 gap-2 px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-red-50/30 to-rose-50/30 dark:from-red-900/10 dark:to-rose-900/10">
             {[
               { icon: Sparkles, label: "Posts", value: stats.posts },
               { icon: Heart, label: "Followers", value: stats.followers },
@@ -304,122 +386,174 @@ export default function Profile() {
                   key={stat.label}
                   type="button"
                   onClick={clickable ? () => openList(stat.label.toLowerCase()) : undefined}
-                  className={`text-center ${clickable ? "cursor-pointer hover:opacity-70" : "cursor-default"}`}
+                  className={`text-center p-2 rounded-xl transition-all duration-200 ${
+                    clickable ? "hover:bg-white/50 dark:hover:bg-gray-700/50 hover:scale-105" : ""
+                  }`}
                 >
-                  <div className="text-xl font-bold text-gray-800 dark:text-white">{stat.value}</div>
-                  <div className="text-xs text-gray-500 flex items-center justify-center gap-1 mt-1">
-                    <Icon className="w-3 h-3 text-red-500" /> <span>{stat.label}</span>
+                  <div className="text-2xl font-bold text-gray-800 dark:text-white">{stat.value}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1.5 mt-1">
+                    <Icon className="w-3.5 h-3.5 text-red-500" />
+                    <span>{stat.label}</span>
                   </div>
                 </button>
               );
             })}
           </div>
 
+          {/* Mutual Followers */}
           {!isOwnProfile && mutualList.length > 0 && (
-            <div className="px-6 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-gray-500">Mutual followers:</span>
+            <div className="px-6 py-3 border-b border-gray-200/50 dark:border-gray-700/50 flex items-center gap-2 flex-wrap bg-gray-50/30 dark:bg-gray-800/30">
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Mutual followers:</span>
               {mutualList.slice(0, 5).map((m) => (
-                <span key={m.id} className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-gray-600 dark:text-gray-300">
+                <span key={m.id} className="text-xs bg-white dark:bg-gray-700 px-2.5 py-1 rounded-full text-gray-600 dark:text-gray-300 shadow-sm border border-gray-200 dark:border-gray-600">
                   {m.name}
                 </span>
               ))}
+              {mutualList.length > 5 && (
+                <span className="text-xs text-gray-400">+{mutualList.length - 5} more</span>
+              )}
             </div>
           )}
 
+          {/* Bio */}
           {profile.bio && !isEditing && (
-            <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-red-50/20 to-rose-50/20">
-              <p className="text-gray-600 dark:text-gray-300 italic text-center">"{profile.bio}"</p>
+            <div className="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-red-50/20 to-rose-50/20 dark:from-red-900/10 dark:to-rose-900/10">
+              <p className="text-gray-600 dark:text-gray-300 italic text-center text-base">"{profile.bio}"</p>
             </div>
           )}
 
+          {/* Profile Information */}
           <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-lg text-gray-800 dark:text-white">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-bold text-lg text-gray-800 dark:text-white flex items-center gap-2">
+                <div className="w-6 h-6 bg-gradient-to-r from-red-500 to-rose-600 rounded-lg flex items-center justify-center">
+                  <User className="w-3 h-3 text-white" />
+                </div>
                 {isEditing ? "Edit Profile" : "Profile Information"}
               </h3>
-              {isOwnProfile && !isEditing && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-4 py-2 rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 hover:scale-105"
-                >
-                  <Edit3 className="w-4 h-4" /> Edit
-                </button>
-              )}
             </div>
 
             {!isEditing ? (
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
-                  <label className="text-xs text-gray-500 uppercase tracking-wide">Full Name</label>
-                  <p className="text-gray-800 dark:text-white font-medium mt-1">{profile.name || "Not set"}</p>
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-4 border border-gray-200/50 dark:border-gray-700/50 hover:border-red-200/50 transition-all duration-200">
+                  <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Full Name</label>
+                  <p className="text-gray-800 dark:text-white font-semibold mt-1.5">{profile.name || "Not set"}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
-                  <label className="text-xs text-gray-500 uppercase tracking-wide">Department</label>
-                  <p className="text-gray-800 dark:text-white font-medium mt-1">{profile.department || "Not set"}</p>
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-4 border border-gray-200/50 dark:border-gray-700/50 hover:border-red-200/50 transition-all duration-200">
+                  <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Department</label>
+                  <p className="text-gray-800 dark:text-white font-semibold mt-1.5">{profile.department || "Not set"}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
-                  <label className="text-xs text-gray-500 uppercase tracking-wide">Batch</label>
-                  <p className="text-gray-800 dark:text-white font-medium mt-1">{profile.batch || "Not set"}</p>
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-4 border border-gray-200/50 dark:border-gray-700/50 hover:border-red-200/50 transition-all duration-200">
+                  <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Batch</label>
+                  <p className="text-gray-800 dark:text-white font-semibold mt-1.5">{profile.batch || "Not set"}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
-                  <label className="text-xs text-gray-500 uppercase tracking-wide">Username</label>
-                  <p className="text-gray-800 dark:text-white font-medium mt-1">{profile.userName || "Not set"}</p>
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-4 border border-gray-200/50 dark:border-gray-700/50 hover:border-red-200/50 transition-all duration-200">
+                  <label className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium">Username</label>
+                  <p className="text-gray-800 dark:text-white font-semibold mt-1.5">{profile.userName || "Not set"}</p>
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
-                <input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} placeholder="Full Name" className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 transition-all" />
-                <input value={edit.userName} onChange={(e) => setEdit({ ...edit, userName: e.target.value })} placeholder="Username" className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 transition-all" />
+              <div className="space-y-4 animate-slideDown">
+                <input
+                  value={edit.name}
+                  onChange={(e) => setEdit({ ...edit, name: e.target.value })}
+                  placeholder="Full Name"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/20 outline-none transition-all duration-200"
+                />
+                <input
+                  value={edit.userName}
+                  onChange={(e) => setEdit({ ...edit, userName: e.target.value })}
+                  placeholder="Username"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/20 outline-none transition-all duration-200"
+                />
                 <div className="grid md:grid-cols-2 gap-4">
-                  <input value={edit.department} onChange={(e) => setEdit({ ...edit, department: e.target.value })} placeholder="Department" className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 transition-all" />
-                  <input value={edit.batch} onChange={(e) => setEdit({ ...edit, batch: e.target.value })} placeholder="Batch" className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 transition-all" />
+                  <input
+                    value={edit.department}
+                    onChange={(e) => setEdit({ ...edit, department: e.target.value })}
+                    placeholder="Department"
+                    className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/20 outline-none transition-all duration-200"
+                  />
+                  <input
+                    value={edit.batch}
+                    onChange={(e) => setEdit({ ...edit, batch: e.target.value })}
+                    placeholder="Batch"
+                    className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/20 outline-none transition-all duration-200"
+                  />
                 </div>
-                <textarea value={edit.bio} onChange={(e) => setEdit({ ...edit, bio: e.target.value })} placeholder="Bio" rows="4" className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 transition-all resize-none" />
+                <textarea
+                  value={edit.bio}
+                  onChange={(e) => setEdit({ ...edit, bio: e.target.value })}
+                  placeholder="Bio"
+                  rows="4"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/20 outline-none transition-all duration-200 resize-none"
+                />
                 <div className="flex gap-3">
-                  <button onClick={cancelEditing} className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
+                  <button
+                    onClick={cancelEditing}
+                    className="flex-1 px-4 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 font-medium"
+                  >
                     Cancel
                   </button>
-                  <button onClick={updateProfile} disabled={updating} className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-4 py-3 rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300">
-                    {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Changes
+                  <button
+                    onClick={updateProfile}
+                    disabled={updating}
+                    className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-4 py-3 rounded-2xl font-medium hover:shadow-xl hover:shadow-red-500/25 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50"
+                  >
+                    {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    Save Changes
                   </button>
                 </div>
               </div>
             )}
           </div>
 
+          {/* Settings for Own Profile */}
           {isOwnProfile && !isEditing && (
             <>
-              <div className="p-6 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+              <div className="px-6 py-5 border-t border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between hover:bg-gray-50/30 dark:hover:bg-gray-800/30 transition-all duration-200">
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">Private Account</p>
-                  <p className="text-xs text-gray-500">Only approved followers can see your profile details.</p>
+                  <p className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-red-500" />
+                    Private Account
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Only approved followers can see your profile details.</p>
                 </div>
                 <button
                   onClick={togglePrivacy}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium ${isPrivate ? "bg-red-500 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}
+                  className={`px-5 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                    isPrivate
+                      ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  }`}
                 >
-                  {isPrivate ? "Private" : "Public"}
+                  {isPrivate ? "🔒 Private" : "🌐 Public"}
                 </button>
               </div>
 
-              <div className="p-6 border-t border-gray-100 dark:border-gray-700">
+              <div className="px-6 py-5 border-t border-gray-200/50 dark:border-gray-700/50 hover:bg-gray-50/30 dark:hover:bg-gray-800/30 transition-all duration-200">
                 <button
                   onClick={() => setShowPasswordForm(!showPasswordForm)}
-                  className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium hover:text-red-600 transition"
+                  className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 group"
                 >
-                  <Lock className="w-4 h-4" /> Change Password
+                  <Lock className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  Change Password
+                  <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${showPasswordForm ? "rotate-90" : ""}`} />
                 </button>
                 {showPasswordForm && (
-                  <div className="mt-4 space-y-3 max-w-sm">
+                  <div className="mt-4 space-y-3 max-w-sm animate-slideDown">
                     <div className="relative">
                       <input
                         type={showPw ? "text" : "password"}
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         placeholder="Current password"
-                        className="w-full px-4 py-2.5 pr-10 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400"
+                        className="w-full px-4 py-2.5 pr-10 bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all"
                       />
-                      <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <button
+                        type="button"
+                        onClick={() => setShowPw(!showPw)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      >
                         {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
@@ -428,32 +562,46 @@ export default function Profile() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="New password (6+ chars)"
-                      className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400"
+                      className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all"
                     />
-                    <button onClick={changePassword} className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-4 py-2 rounded-xl text-sm font-medium">
+                    <button
+                      onClick={changePassword}
+                      className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:shadow-xl hover:shadow-red-500/25 transition-all duration-300 hover:scale-105"
+                    >
                       Update Password
                     </button>
                   </div>
                 )}
               </div>
 
-              <div className="p-6 border-t border-red-100 dark:border-red-900/30 bg-gradient-to-r from-red-50/20 to-rose-50/20">
-                <div className="flex justify-between items-center flex-wrap gap-3">
+              {/* Danger Zone */}
+              <div className="px-6 py-5 border-t border-red-200/50 dark:border-red-900/30 bg-gradient-to-r from-red-50/30 to-rose-50/30 dark:from-red-900/20 dark:to-rose-900/20">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
                     <h4 className="font-semibold text-red-600 dark:text-red-400 flex items-center gap-2">
-                      <Trash2 className="w-4 h-4" /> Danger Zone
+                      <Trash2 className="w-4 h-4" />
+                      Danger Zone
                     </h4>
-                    <p className="text-xs text-gray-500">Delete your account permanently - this action cannot be undone</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Delete your account permanently - this action cannot be undone</p>
                   </div>
-                  <div className="flex gap-2 flex-wrap">
-                    <button onClick={() => { logout(); navigate("/login"); }} className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2.5 rounded-xl transition-all duration-300">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => { logout(); navigate("/login"); }}
+                      className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2.5 rounded-xl transition-all duration-300 hover:scale-105 text-sm font-medium"
+                    >
                       <LogOut className="w-4 h-4" /> Logout
                     </button>
-                    <button onClick={deactivateAccount} className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl transition-all duration-300">
-                      Deactivate Account
+                    <button
+                      onClick={deactivateAccount}
+                      className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl transition-all duration-300 hover:scale-105 text-sm font-medium"
+                    >
+                      Deactivate
                     </button>
-                    <button onClick={deleteAccount} className="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-red-500/25 flex items-center gap-2">
-                      <Trash2 className="w-4 h-4" /> Delete Account
+                    <button
+                      onClick={deleteAccount}
+                      className="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-red-500/25 flex items-center gap-2 text-sm font-medium"
+                    >
+                      <Trash2 className="w-4 h-4" /> Delete
                     </button>
                   </div>
                 </div>
@@ -463,25 +611,53 @@ export default function Profile() {
         </div>
       </div>
 
+      {/* List Modal */}
       {listModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setListModal(null)}>
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full max-h-[70vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex justify-between items-center">
-              <h3 className="font-bold text-white capitalize">{listModal}</h3>
-              <button onClick={() => setListModal(null)} className="text-white"><X className="w-5 h-5" /></button>
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"
+          onClick={() => setListModal(null)}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-sm w-full max-h-[70vh] overflow-hidden animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-gradient-to-r from-red-500 to-rose-600 px-6 py-4 flex justify-between items-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10" />
+              <div className="relative flex items-center gap-2">
+                <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
+                  {listModal === "followers" ? <Heart className="w-4 h-4 text-white" /> : <UsersIcon className="w-4 h-4 text-white" />}
+                </div>
+                <h3 className="font-bold text-white capitalize">{listModal}</h3>
+              </div>
+              <button
+                onClick={() => setListModal(null)}
+                className="relative p-2 hover:bg-white/20 rounded-xl transition-all duration-200 hover:scale-110"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
             </div>
             <div className="overflow-y-auto max-h-[calc(70vh-60px)] divide-y divide-gray-100 dark:divide-gray-700">
               {listItems.length === 0 ? (
-                <p className="text-center text-gray-500 text-sm py-8">No users to show.</p>
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
+                    <UsersIcon className="w-8 h-8 text-gray-300 dark:text-gray-500" />
+                  </div>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">No users to show</p>
+                </div>
               ) : (
                 listItems.map((u) => (
-                  <div key={u.id} className="flex items-center gap-3 p-3">
-                    <img
-                      src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=dc2626&color=fff`}
-                      alt={u.name}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                    <span className="text-sm font-medium text-gray-800 dark:text-white">{u.name}</span>
+                  <div key={u.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 group">
+                    <div className="relative">
+                      <img
+                        src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=dc2626&color=fff&bold=true`}
+                        alt={u.name}
+                        className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600 group-hover:ring-red-500/30 transition-all"
+                      />
+                      <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-800 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                      {u.name}
+                    </span>
                   </div>
                 ))
               )}
@@ -489,6 +665,55 @@ export default function Profile() {
           </div>
         </div>
       )}
+
+      {/* Global Styles for Animations */}
+      <style>{`
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          50% { transform: translateY(-20px) scale(1.05); }
+        }
+        @keyframes spin-slow {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.5; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+          from { opacity: 0; transform: scale(0.95) translateY(10px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-float-slow {
+          animation: float-slow 6s ease-in-out infinite;
+        }
+        .animate-spin-slow {
+          animation: spin-slow 30s linear infinite;
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 4s ease-in-out infinite;
+        }
+        .animate-slideDown {
+          animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+        .animate-scaleIn {
+          animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .animation-delay-1000 {
+          animation-delay: 1s;
+        }
+      `}</style>
     </div>
   );
 }

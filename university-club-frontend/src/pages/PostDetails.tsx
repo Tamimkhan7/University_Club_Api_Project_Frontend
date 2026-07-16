@@ -8,8 +8,24 @@ import {
   Reply, MoreVertical, Edit2, Check, X, Save,
   Image as ImageIcon, Loader2, User,
   Clock, Flag, Share2, Bookmark,
-  ChevronDown, ChevronUp, ThumbsUp, Quote
+  ChevronDown, ChevronUp, ThumbsUp, Quote,
+  Sparkles, Shield, Award, Crown, Star,
+  Zap, Rocket, Coffee, HeartHandshake
 } from "lucide-react";
+
+/**
+ * ============================================================
+ *  📄 PostDetails — Premium Post Details Experience
+ *  Designed with Glassmorphism + Animated Visuals
+ *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
+ * ============================================================
+ * 
+ *  ┌─────────────────────────────────────────────────────────────┐
+ *  │  🎯 Purpose: Display post with comments & interactions  │
+ *  │  🔥 Features: Comments, Replies, Editing, Reporting     │
+ *  │  📱 Responsive: Optimized for all screen sizes          │
+ *  └─────────────────────────────────────────────────────────────┘
+ */
 
 export default function PostDetails() {
   const { id } = useParams();
@@ -29,10 +45,10 @@ export default function PostDetails() {
   const [editingComment, setEditingComment] = useState(null);
   const [editCommentText, setEditCommentText] = useState("");
   const [updating, setUpdating] = useState(false);
-  const [replies, setReplies] = useState({}); // commentId -> [comments]
+  const [replies, setReplies] = useState({});
   const [showReplies, setShowReplies] = useState({});
   const [replyCounts, setReplyCounts] = useState({});
-  const [commentLikes, setCommentLikes] = useState({}); // commentId -> count
+  const [commentLikes, setCommentLikes] = useState({});
 
   const [isEditingPost, setIsEditingPost] = useState(false);
   const [editPostContent, setEditPostContent] = useState("");
@@ -62,7 +78,6 @@ export default function PostDetails() {
       const commentItems = commentRes.data?.items || [];
       setComments(commentItems);
 
-      // fetch like counts for each top-level comment (best-effort)
       commentItems.forEach(async (c) => {
         try {
           const likeRes = await api.get(`/comment/${c.id}/likes`);
@@ -88,8 +103,6 @@ export default function PostDetails() {
     }
   };
 
-  // Refresh just the comment list (used after create/update/delete) without
-  // touching the post itself or redirecting away on transient errors.
   const loadComments = async () => {
     try {
       const commentRes = await api.get(`/comment/post/${id}`, { params: { page: 1, pageSize: 50 } });
@@ -112,14 +125,11 @@ export default function PostDetails() {
 
   useEffect(() => {
     if (id) loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
     const highlightId = searchParams.get("highlight");
     if (!highlightId) return;
-    // Deep-link support: GET /comment/{id} to fetch and highlight a single comment
-    // (used e.g. when a notification links directly to a comment)
     api
       .get(`/comment/${highlightId}`)
       .then((res) => {
@@ -132,7 +142,6 @@ export default function PostDetails() {
       .catch((error) => {
         console.error("Failed to load highlighted comment:", error);
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const updatePost = async () => {
@@ -331,13 +340,13 @@ export default function PostDetails() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <MessageCircle className="w-10 h-10 text-gray-400" />
+          <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <MessageCircle className="w-12 h-12 text-gray-400" />
           </div>
-          <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Post not found</h3>
+          <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">Post not found</h3>
           <button
             onClick={() => navigate("/")}
-            className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-2 rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300"
+            className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-2.5 rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 hover:scale-105"
           >
             Go back to feed
           </button>
@@ -349,34 +358,59 @@ export default function PostDetails() {
   const canManage = post.userId === currentUserId;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pb-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5 sm:space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 pb-12 overflow-hidden">
+      
+      {/* Premium Background Decorations */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
+      </div>
+
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5 sm:space-y-6">
+        
+        {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="group flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all duration-300 mb-2 px-3 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20"
+          className="group inline-flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all duration-300 px-4 py-2.5 rounded-2xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:translate-x-[-4px]"
         >
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <ArrowLeft className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" />
           <span className="font-medium">Back</span>
         </button>
 
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl shadow-red-500/10 overflow-hidden border border-white/30 dark:border-gray-700/50">
+        {/* Post Card */}
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
           <div className="p-5 sm:p-6 pb-4">
-            <div className="flex justify-between items-start">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <img
-                  src={post.userImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.userName || "U")}&background=dc2626&color=fff&bold=true&length=2&size=64`}
-                  alt={post.userName}
-                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover ring-2 ring-red-500/30"
-                />
+            
+            {/* Post Header */}
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-600 rounded-full blur-md opacity-30" />
+                  <img
+                    src={post.userImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.userName || "U")}&background=dc2626&color=fff&bold=true&length=2&size=64`}
+                    alt={post.userName}
+                    className="relative w-14 h-14 rounded-full object-cover ring-2 ring-red-500/30 shadow-lg"
+                  />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                </div>
                 <div>
-                  <h2 className="font-bold text-lg sm:text-xl text-gray-800 dark:text-white">{post.userName || "Unknown User"}</h2>
-                  <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-400 dark:text-gray-500 mt-1">
+                  <h2 className="font-bold text-lg sm:text-xl text-gray-800 dark:text-white flex items-center gap-2">
+                    {post.userName || "Unknown User"}
+                    <span className="text-xs bg-gradient-to-r from-amber-400 to-orange-500 text-white px-2 py-0.5 rounded-full font-medium">
+                      <Crown className="w-3 h-3 inline" /> Member
+                    </span>
+                  </h2>
+                  <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-400 dark:text-gray-500 mt-1">
                     <Clock className="w-3 h-3" />
                     <span>{formatDate(post.createdAt)}</span>
                     {post.clubName && (
                       <>
-                        <span>•</span>
-                        <span className="text-red-500 font-medium">in {post.clubName}</span>
+                        <span className="w-px h-3 bg-gray-300 dark:bg-gray-600" />
+                        <span className="text-red-500 dark:text-red-400 font-medium flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" />
+                          in {post.clubName}
+                        </span>
                       </>
                     )}
                   </div>
@@ -391,28 +425,32 @@ export default function PostDetails() {
                   <MoreVertical className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 </button>
                 {showDeleteMenu && (
-                  <div className="absolute right-0 mt-2 w-44 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-10 overflow-hidden">
+                  <div className="absolute right-0 mt-2 w-48 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 z-20 overflow-hidden animate-slideDown">
+                    <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-red-500 to-rose-500" />
                     {canManage && !isEditingPost && (
                       <button
                         onClick={() => { setShowDeleteMenu(false); startEditingPost(); }}
-                        className="flex items-center gap-3 w-full px-4 py-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition text-sm"
+                        className="flex items-center gap-3 w-full px-4 py-3 text-red-600 dark:text-red-400 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 dark:hover:from-red-900/20 dark:hover:to-rose-900/20 transition-all duration-200 text-sm font-medium"
                       >
                         <Edit2 className="w-4 h-4" /> Edit Post
                       </button>
                     )}
-                    <button onClick={handleShare} className="flex items-center gap-3 w-full px-4 py-2.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition text-sm">
+                    <button
+                      onClick={handleShare}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-green-600 dark:text-green-400 hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 dark:hover:from-green-900/20 dark:hover:to-emerald-900/20 transition-all duration-200 text-sm font-medium"
+                    >
                       <Share2 className="w-4 h-4" /> Share
                     </button>
                     <button
                       onClick={() => { setShowDeleteMenu(false); setShowReportBox(true); }}
-                      className="flex items-center gap-3 w-full px-4 py-2.5 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition text-sm"
+                      className="flex items-center gap-3 w-full px-4 py-3 text-amber-600 dark:text-amber-400 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 dark:hover:from-amber-900/20 dark:hover:to-orange-900/20 transition-all duration-200 text-sm font-medium"
                     >
                       <Flag className="w-4 h-4" /> Report
                     </button>
                     {canManage && (
                       <button
                         onClick={() => { setShowDeleteMenu(false); deletePost(); }}
-                        className="flex items-center gap-3 w-full px-4 py-2.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition text-sm border-t border-gray-100 dark:border-gray-700"
+                        className="flex items-center gap-3 w-full px-4 py-3 text-rose-600 dark:text-rose-400 hover:bg-gradient-to-r hover:from-rose-50 hover:to-red-50 dark:hover:from-rose-900/20 dark:hover:to-red-900/20 transition-all duration-200 text-sm font-medium border-t border-gray-100 dark:border-gray-700"
                       >
                         <Trash2 className="w-4 h-4" /> Delete Post
                       </button>
@@ -422,40 +460,53 @@ export default function PostDetails() {
               </div>
             </div>
 
+            {/* Report Box */}
             {showReportBox && (
-              <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
-                <p className="text-sm font-medium text-amber-700 dark:text-amber-400 mb-2">Report this post</p>
+              <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl border border-amber-200 dark:border-amber-800/30 animate-slideDown">
+                <div className="flex items-center gap-2 mb-2">
+                  <Flag className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Report this post</p>
+                </div>
                 <textarea
                   value={reportReason}
                   onChange={(e) => setReportReason(e.target.value)}
                   placeholder="Reason (optional)"
                   rows="2"
-                  className="w-full p-2 border border-amber-300 dark:border-amber-700 rounded-lg text-sm bg-white dark:bg-gray-900"
+                  className="w-full p-3 border-2 border-amber-200 dark:border-amber-700 rounded-xl text-sm bg-white dark:bg-gray-900 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all"
                 />
                 <div className="flex gap-2 mt-2">
-                  <button onClick={submitReport} className="bg-amber-500 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-amber-600">
-                    Submit
+                  <button
+                    onClick={submitReport}
+                    className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-1.5 rounded-xl text-sm font-medium hover:shadow-lg hover:shadow-amber-500/25 transition-all duration-300 hover:scale-105"
+                  >
+                    Submit Report
                   </button>
-                  <button onClick={() => setShowReportBox(false)} className="bg-gray-200 dark:bg-gray-700 px-3 py-1.5 rounded-lg text-sm">
+                  <button
+                    onClick={() => setShowReportBox(false)}
+                    className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-1.5 rounded-xl text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+                  >
                     Cancel
                   </button>
                 </div>
               </div>
             )}
 
+            {/* Post Content */}
             {isEditingPost ? (
-              <div className="mt-5 space-y-4">
+              <div className="mt-5 space-y-4 animate-slideDown">
                 <textarea
                   value={editPostContent}
                   onChange={(e) => setEditPostContent(e.target.value)}
                   rows="6"
-                  className="w-full resize-none p-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 bg-gray-50 dark:bg-gray-900 transition"
+                  className="w-full resize-none p-4 border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/20 bg-gray-50 dark:bg-gray-900 transition-all duration-200 outline-none"
                   placeholder="Write your post content..."
                   autoFocus
                 />
-                <label className="flex items-center justify-center gap-2 w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl cursor-pointer hover:border-red-400 transition-colors">
-                  <ImageIcon className="w-5 h-5 text-gray-400" />
-                  <span className="text-sm text-gray-500">{editPostImage ? editPostImage.name : "Replace image (optional)"}</span>
+                <label className="flex items-center justify-center gap-3 w-full px-6 py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl cursor-pointer hover:border-red-400 hover:bg-red-50/50 dark:hover:bg-red-900/10 transition-all duration-300 group">
+                  <ImageIcon className="w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors" />
+                  <span className="text-sm text-gray-500 group-hover:text-red-500 transition-colors">
+                    {editPostImage ? editPostImage.name : "Replace image (optional)"}
+                  </span>
                   <input
                     type="file"
                     accept="image/*"
@@ -470,20 +521,23 @@ export default function PostDetails() {
                   />
                 </label>
                 {editPostImagePreview && (
-                  <div className="relative group">
-                    <img src={editPostImagePreview} alt="Preview" className="rounded-xl max-h-48 object-contain bg-gray-100 dark:bg-gray-700 p-2" />
+                  <div className="relative group rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-700 p-2">
+                    <img src={editPostImagePreview} alt="Preview" className="rounded-xl max-h-48 object-contain" />
                   </div>
                 )}
-                <div className="flex gap-3">
+                <div className="flex gap-3 flex-wrap">
                   <button
                     onClick={updatePost}
                     disabled={updatingPost}
-                    className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-5 py-2.5 rounded-xl hover:shadow-lg transition-all duration-200 disabled:opacity-50"
+                    className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2.5 rounded-xl font-medium hover:shadow-xl hover:shadow-green-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
                   >
                     {updatingPost ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                     Save Changes
                   </button>
-                  <button onClick={cancelEditingPost} className="flex items-center gap-2 bg-gray-500 text-white px-5 py-2.5 rounded-xl hover:bg-gray-600 transition-all duration-200">
+                  <button
+                    onClick={cancelEditingPost}
+                    className="flex items-center gap-2 bg-gray-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-gray-600 transition-all duration-300"
+                  >
                     <X className="w-4 h-4" /> Cancel
                   </button>
                 </div>
@@ -494,61 +548,73 @@ export default function PostDetails() {
                   <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed text-base">{post.content}</p>
                 </div>
                 {post.imageUrl && (
-                  <div className="mt-5 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 group relative">
+                  <div className="mt-5 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-700 group/image relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-rose-500/5 opacity-0 group-hover/image:opacity-100 transition-opacity duration-500" />
                     <img
                       src={post.imageUrl}
                       alt="Post content"
-                      className="w-full h-auto max-h-96 object-contain transition-transform duration-500 group-hover:scale-105"
-                      onError={(e) => { e.target.src = "https://placehold.co/600x400?text=Image+not+found"; }}
+                      className="w-full h-auto max-h-96 object-contain transition-transform duration-700 group-hover/image:scale-105"
+                      onError={(e) => { e.target.src = "https://placehold.co/600x400/e5e7eb/9ca3af?text=Image+not+found"; }}
                     />
                   </div>
                 )}
               </>
             )}
 
-            <div className="flex gap-5 mt-5 pt-4 border-t border-gray-100 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
-              <div className="flex items-center gap-1.5">
-                <Heart className={`w-4 h-4 ${post.isLiked ? "text-red-500 fill-red-500" : "text-red-500"}`} />
-                <span>{post.reactionCount || 0} reactions</span>
+            {/* Post Stats */}
+            <div className="flex gap-6 mt-5 pt-4 border-t border-gray-100 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-2">
+                <Heart className={`w-4 h-4 ${post.isLiked ? "text-red-500 fill-red-500 animate-pulse" : "text-red-500"}`} />
+                <span className="font-medium">{post.reactionCount || 0} reactions</span>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4" />
-                <span>{post.commentCount || 0} comments</span>
+                <span className="font-medium">{post.commentCount || 0} comments</span>
               </div>
-              <button onClick={toggleSave} className="flex items-center gap-1.5 hover:text-red-500 transition ml-auto">
-                <Bookmark className={`w-4 h-4 ${post.isSaved ? "fill-red-500 text-red-500" : ""}`} />
-                <span className="text-xs">{post.isSaved ? "Saved" : "Save"}</span>
+              <button
+                onClick={toggleSave}
+                className="flex items-center gap-2 hover:text-red-500 transition-all duration-200 ml-auto group/save"
+              >
+                <Bookmark className={`w-4 h-4 transition-all duration-300 ${post.isSaved ? "fill-red-500 text-red-500" : "group-hover/save:scale-110"}`} />
+                <span className="text-xs font-medium">{post.isSaved ? "Saved" : "Save"}</span>
               </button>
             </div>
           </div>
         </div>
 
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl shadow-red-500/10 overflow-hidden border border-white/30 dark:border-gray-700/50">
+        {/* Comments Section */}
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
           <div className="p-5 sm:p-6">
-            <h3 className="font-bold text-xl text-gray-800 dark:text-white mb-5 flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-rose-600 rounded-xl flex items-center justify-center">
+            <h3 className="font-bold text-xl text-gray-800 dark:text-white mb-5 flex items-center gap-3">
+              <div className="w-9 h-9 bg-gradient-to-r from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/25">
                 <MessageCircle className="w-4 h-4 text-white" />
               </div>
-              Comments ({comments.length})
+              Comments
+              <span className="text-sm font-normal text-gray-400 dark:text-gray-500">({comments.length})</span>
             </h3>
 
+            {/* Reply Indicator */}
             {replyTo && (
-              <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 mb-4 flex justify-between items-center border border-red-200 dark:border-red-800">
+              <div className="bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 rounded-2xl p-3 mb-4 flex justify-between items-center border border-red-200 dark:border-red-800/30 animate-slideDown">
                 <div className="flex items-center gap-2">
                   <Quote className="w-4 h-4 text-red-500" />
                   <span className="text-sm text-red-700 dark:text-red-400">
                     Replying to <span className="font-semibold">@{replyToName}</span>
                   </span>
                 </div>
-                <button onClick={() => { setReplyTo(null); setReplyToName(""); }} className="text-red-500 text-sm hover:text-red-600 font-medium flex items-center gap-1">
+                <button
+                  onClick={() => { setReplyTo(null); setReplyToName(""); }}
+                  className="text-red-500 hover:text-red-600 dark:hover:text-red-400 text-sm font-medium flex items-center gap-1 hover:bg-red-100 dark:hover:bg-red-900/20 px-3 py-1 rounded-xl transition-all"
+                >
                   <X className="w-3 h-3" /> Cancel
                 </button>
               </div>
             )}
 
+            {/* Comment Input */}
             <div className="flex gap-3 mb-6">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-rose-600 rounded-full flex items-center justify-center">
+                <div className="w-11 h-11 bg-gradient-to-r from-red-500 to-rose-600 rounded-full flex items-center justify-center shadow-lg shadow-red-500/25">
                   <User className="w-5 h-5 text-white" />
                 </div>
               </div>
@@ -559,7 +625,7 @@ export default function PostDetails() {
                   onChange={(e) => setText(e.target.value)}
                   placeholder={replyTo ? `Reply to @${replyToName}...` : "Write a comment..."}
                   rows="3"
-                  className="w-full resize-none p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 bg-gray-50 dark:bg-gray-900 transition"
+                  className="w-full resize-none p-3 border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/20 bg-gray-50 dark:bg-gray-900 transition-all duration-200 outline-none"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -571,7 +637,7 @@ export default function PostDetails() {
                   <button
                     onClick={sendComment}
                     disabled={sending || !text.trim()}
-                    className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-5 py-2 rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
+                    className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-2 rounded-xl font-medium hover:shadow-xl hover:shadow-red-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2 text-sm"
                   >
                     {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     Post Comment
@@ -580,10 +646,11 @@ export default function PostDetails() {
               </div>
             </div>
 
+            {/* Comments List */}
             {comments.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-xl">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                  <MessageCircle className="w-8 h-8 text-gray-400" />
+              <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
+                <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <MessageCircle className="w-10 h-10 text-gray-400" />
                 </div>
                 <p className="text-gray-500 dark:text-gray-400 font-medium">No comments yet</p>
                 <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Be the first to start the conversation!</p>
@@ -594,37 +661,47 @@ export default function PostDetails() {
                   <div
                     key={comment.id}
                     id={`comment-${comment.id}`}
-                    className={`bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 transition-all duration-200 hover:shadow-md hover:shadow-red-500/5 ${
-                      highlightedComment?.id === comment.id ? "ring-2 ring-red-500" : ""
+                    className={`bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-4 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/5 ${
+                      highlightedComment?.id === comment.id ? "ring-2 ring-red-500 shadow-lg shadow-red-500/10" : ""
                     }`}
                   >
                     {editingComment === comment.id ? (
-                      <div className="space-y-3">
+                      <div className="space-y-3 animate-slideDown">
                         <textarea
                           value={editCommentText}
                           onChange={(e) => setEditCommentText(e.target.value)}
                           rows="3"
-                          className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 bg-white dark:bg-gray-800 resize-none"
+                          className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 bg-white dark:bg-gray-800 resize-none outline-none transition-all"
                           autoFocus
                         />
                         <div className="flex gap-2">
-                          <button onClick={() => updateComment(comment.id)} disabled={updating} className="flex items-center gap-1 bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition text-sm">
+                          <button
+                            onClick={() => updateComment(comment.id)}
+                            disabled={updating}
+                            className="flex items-center gap-1.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-1.5 rounded-xl hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300 hover:scale-105 text-sm font-medium"
+                          >
                             <Check className="w-3 h-3" /> Save
                           </button>
-                          <button onClick={cancelEditingComment} className="flex items-center gap-1 bg-gray-500 text-white px-3 py-1.5 rounded-lg hover:bg-gray-600 transition text-sm">
+                          <button
+                            onClick={cancelEditingComment}
+                            className="flex items-center gap-1.5 bg-gray-500 text-white px-4 py-1.5 rounded-xl hover:bg-gray-600 transition-all duration-300 text-sm font-medium"
+                          >
                             <X className="w-3 h-3" /> Cancel
                           </button>
                         </div>
                       </div>
                     ) : (
                       <>
-                        <div className="flex justify-between items-start">
+                        <div className="flex items-start justify-between">
                           <div className="flex items-center gap-3">
-                            <img
-                              src={comment.userImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.userName)}&background=dc2626&color=fff&bold=true&length=2`}
-                              alt={comment.userName}
-                              className="w-9 h-9 rounded-full object-cover ring-2 ring-red-500/20"
-                            />
+                            <div className="relative">
+                              <img
+                                src={comment.userImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.userName)}&background=dc2626&color=fff&bold=true&length=2`}
+                                alt={comment.userName}
+                                className="w-10 h-10 rounded-full object-cover ring-2 ring-red-500/20"
+                              />
+                              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                            </div>
                             <div>
                               <b className="text-sm text-gray-800 dark:text-white">{comment.userName}</b>
                               <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5">
@@ -633,53 +710,77 @@ export default function PostDetails() {
                             </div>
                           </div>
                           <div className="flex gap-1">
-                            <button onClick={() => startEditingComment(comment)} className="text-red-400 hover:text-red-600 transition p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
+                            <button
+                              onClick={() => startEditingComment(comment)}
+                              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110"
+                            >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
-                            <button onClick={() => deleteComment(comment.id)} disabled={deleting} className="text-red-400 hover:text-red-600 transition p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
+                            <button
+                              onClick={() => deleteComment(comment.id)}
+                              disabled={deleting}
+                              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110"
+                            >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
 
-                        <p className="text-gray-700 dark:text-gray-300 ml-12 mt-2 leading-relaxed text-sm">{comment.content}</p>
+                        <p className="text-gray-700 dark:text-gray-300 ml-14 mt-2 leading-relaxed text-sm">{comment.content}</p>
 
-                        <div className="ml-12 mt-2 flex items-center gap-3">
-                          <button onClick={() => toggleCommentLike(comment.id)} className="flex items-center gap-1 text-blue-500 text-xs hover:text-blue-600 transition px-2 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                        <div className="ml-14 mt-2 flex flex-wrap items-center gap-2">
+                          <button
+                            onClick={() => toggleCommentLike(comment.id)}
+                            className="flex items-center gap-1.5 text-blue-500 text-xs hover:text-blue-600 transition-all duration-200 px-3 py-1.5 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:scale-105"
+                          >
                             <ThumbsUp className="w-3 h-3" />
-                            {commentLikes[comment.id] || 0}
+                            <span className="font-medium">{commentLikes[comment.id] || 0}</span>
                           </button>
-                          <button onClick={() => handleReply(comment.id, comment.userName)} className="flex items-center gap-1 text-red-500 text-xs hover:text-red-600 transition px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
+                          <button
+                            onClick={() => handleReply(comment.id, comment.userName)}
+                            className="flex items-center gap-1.5 text-red-500 text-xs hover:text-red-600 transition-all duration-200 px-3 py-1.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:scale-105"
+                          >
                             <Reply className="w-3 h-3" /> Reply
                           </button>
-                          <button onClick={() => toggleReplies(comment.id)} className="flex items-center gap-1 text-gray-500 text-xs hover:text-gray-700 transition px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                            {showReplies[comment.id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                          <button
+                            onClick={() => toggleReplies(comment.id)}
+                            className="flex items-center gap-1.5 text-gray-500 text-xs hover:text-gray-700 transition-all duration-200 px-3 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 hover:scale-105"
+                          >
+                            {showReplies[comment.id] ? (
+                              <ChevronUp className="w-3 h-3" />
+                            ) : (
+                              <ChevronDown className="w-3 h-3" />
+                            )}
                             {showReplies[comment.id] ? "Hide replies" : "View replies"}
                           </button>
                         </div>
 
+                        {/* Replies */}
                         {showReplies[comment.id] && (
-                          <div className="ml-11 mt-3 space-y-2 border-l-2 border-red-200 dark:border-red-800 pl-3">
+                          <div className="ml-11 mt-3 space-y-2 border-l-2 border-red-200 dark:border-red-800/50 pl-4 animate-slideDown">
                             {(replies[comment.id] || []).length === 0 ? (
-                              <p className="text-xs text-gray-400">No replies yet.</p>
+                              <p className="text-xs text-gray-400 py-2">No replies yet.</p>
                             ) : (
                               (replies[comment.id] || []).map((reply) => (
-                                <div key={reply.id} className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm hover:shadow-md transition">
+                                <div key={reply.id} className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 dark:border-gray-700">
                                   <div className="flex items-center gap-2">
                                     <img
                                       src={reply.userImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.userName)}&background=f59e0b&color=fff&bold=true&length=2`}
                                       alt={reply.userName}
-                                      className="w-7 h-7 rounded-full"
+                                      className="w-8 h-8 rounded-full"
                                     />
                                     <div>
                                       <b className="text-xs text-gray-800 dark:text-white">{reply.userName}</b>
                                       <p className="text-xs text-gray-400 dark:text-gray-500">{formatDate(reply.createdAt)}</p>
                                     </div>
-                                    <button onClick={() => deleteComment(reply.id)} className="ml-auto text-red-400 hover:text-red-600 transition p-1">
+                                    <button
+                                      onClick={() => deleteComment(reply.id)}
+                                      className="ml-auto text-gray-400 hover:text-red-500 transition-all duration-200 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                                    >
                                       <Trash2 className="w-3 h-3" />
                                     </button>
                                   </div>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 ml-9">{reply.content}</p>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 ml-10 leading-relaxed">{reply.content}</p>
                                 </div>
                               ))
                             )}
@@ -694,6 +795,48 @@ export default function PostDetails() {
           </div>
         </div>
       </div>
+
+      {/* Global Styles for Animations */}
+      <style>{`
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          50% { transform: translateY(-20px) scale(1.05); }
+        }
+        @keyframes spin-slow {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.5; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+        .animate-float-slow {
+          animation: float-slow 6s ease-in-out infinite;
+        }
+        .animate-spin-slow {
+          animation: spin-slow 30s linear infinite;
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 4s ease-in-out infinite;
+        }
+        .animate-slideDown {
+          animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .animate-pulse {
+          animation: pulse 1s ease-in-out infinite;
+        }
+        .animation-delay-1000 {
+          animation-delay: 1s;
+        }
+      `}</style>
     </div>
   );
 }

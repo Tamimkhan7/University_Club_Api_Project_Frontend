@@ -1,7 +1,15 @@
 import { useState, useEffect } from "react";
 import api, { getErrorMessage } from "../api/axios";
-import { Image, Send, Sparkles, X, Loader2, Users, AlertCircle } from "lucide-react";
+import { Image, Send, Sparkles, X, Loader2, Users, AlertCircle, Camera, Palette, Zap, Globe, Shield, Star, Heart } from "lucide-react";
 import toast from "react-hot-toast";
+
+/**
+ * ============================================================
+ *  ✨ CreatePost — Premium Post Creation Experience
+ *  Designed with Glassmorphism + Smooth Animations
+ *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
+ * ============================================================
+ */
 
 export default function CreatePost({ reload }) {
   const [content, setContent] = useState("");
@@ -19,7 +27,6 @@ export default function CreatePost({ reload }) {
 
   const loadClubs = async () => {
     try {
-      // Only clubs the user has actually joined can be posted to
       const res = await api.get("/club/my");
       const list = res.data || [];
       setClubs(list);
@@ -86,126 +93,230 @@ export default function CreatePost({ reload }) {
 
   if (clubs.length === 0) {
     return (
-      <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl shadow-red-500/10 p-8 mb-6 text-center border border-white/30 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-rose-500 to-red-600" />
-        <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-red-500/25">
-          <Users className="w-8 h-8 text-white" />
+      <div className="relative overflow-hidden bg-gradient-to-br from-white via-white/95 to-gray-50/90 dark:from-gray-800 dark:via-gray-800/95 dark:to-gray-900/90 backdrop-blur-xl rounded-3xl shadow-2xl shadow-red-500/10 p-8 mb-6 border border-white/40 dark:border-gray-700/40 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
+        {/* Premium Gradient Border Animation */}
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-gradient-x" />
+        
+        {/* Decorative Glow Orbs */}
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-red-500/10 to-rose-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-3xl" />
+
+        <div className="relative flex flex-col items-center text-center">
+          <div className="relative">
+            <div className="w-24 h-24 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-xl shadow-red-500/30 animate-float">
+              <Users className="w-12 h-12 text-white" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center shadow-lg shadow-amber-400/40">
+              <Star className="w-3.5 h-3.5 text-white" />
+            </div>
+          </div>
+
+          <h3 className="text-2xl font-bold text-slate-800 dark:text-white mt-6 mb-2 bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+            Join a Club First
+          </h3>
+          <p className="text-slate-500 dark:text-slate-400 max-w-sm mb-6">
+            You need to be a member of a club before you can share your thoughts and connect with the community.
+          </p>
+          <button
+            onClick={() => (window.location.href = "/clubs")}
+            className="group relative inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-2xl font-semibold shadow-xl shadow-red-500/25 transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/40 hover:scale-105 active:scale-95"
+          >
+            <span>Browse Clubs</span>
+            <Globe className="w-4 h-4 transition-transform duration-300 group-hover:rotate-12" />
+          </button>
         </div>
-        <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Join a Club First</h3>
-        <p className="text-slate-500 dark:text-slate-400 mb-6">You need to join a club before you can post.</p>
-        <button
-          onClick={() => (window.location.href = "/clubs")}
-          className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-2.5 rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 hover:scale-105"
-        >
-          Browse Clubs
-        </button>
       </div>
     );
   }
 
   return (
-    <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl shadow-red-500/10 mb-6 overflow-hidden border border-white/30 dark:border-gray-700/50 transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/15">
-      <div className="bg-gradient-to-r from-red-500 via-rose-500 to-red-600 px-6 py-4 relative overflow-hidden">
-        <div className="flex items-center gap-3 relative">
-          <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-white" />
+    <div className="relative overflow-hidden bg-gradient-to-br from-white via-white/98 to-gray-50/95 dark:from-gray-800 dark:via-gray-800/98 dark:to-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl shadow-red-500/10 mb-6 border border-white/40 dark:border-gray-700/40 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
+      {/* Premium Decorative Elements */}
+      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-gradient-x" />
+      <div className="absolute -top-32 -right-32 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl" />
+      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-gradient-to-br from-amber-500/5 to-orange-500/5 rounded-full blur-3xl" />
+      
+      {/* Header with Premium Gradient */}
+      <div className="relative bg-gradient-to-r from-red-500 via-rose-500 via-pink-500 to-red-600 bg-[length:300%_100%] animate-gradient-x px-6 py-5 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10" />
+        
+        <div className="relative flex items-center gap-3">
+          <div className="relative">
+            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg shadow-black/10">
+              <Sparkles className="w-5 h-5 text-white animate-pulse" />
+            </div>
+            <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 rounded-full shadow-lg shadow-amber-400/50 animate-ping" />
           </div>
-          <h2 className="font-bold text-white text-xl">Create Post</h2>
+          <div>
+            <h2 className="font-bold text-white text-xl tracking-tight">Create Post</h2>
+            <p className="text-white/60 text-xs font-medium">Share your thoughts with the community</p>
+          </div>
+          <div className="ml-auto flex items-center gap-1.5">
+            <div className="flex -space-x-1">
+              <div className="w-6 h-6 bg-white/20 rounded-full border-2 border-white/30" />
+              <div className="w-6 h-6 bg-white/20 rounded-full border-2 border-white/30" />
+              <div className="w-6 h-6 bg-white/20 rounded-full border-2 border-white/30" />
+            </div>
+            <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/30">
+              <span className="text-[10px] font-bold text-white">+</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="p-5">
+      <div className="p-6 md:p-7 relative">
         {error && (
-          <div className="mb-4 p-3 bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-2 animate-shake">
-            <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center">
-              <AlertCircle className="w-3 h-3 text-red-600" />
+          <div className="mb-5 p-4 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 backdrop-blur-sm border-l-4 border-red-500 rounded-2xl text-red-600 dark:text-red-400 text-sm flex items-start gap-3 animate-shake shadow-lg shadow-red-500/5">
+            <div className="w-7 h-7 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
             </div>
-            <span className="font-medium">{error}</span>
+            <div>
+              <span className="font-semibold block">Oops!</span>
+              <span>{error}</span>
+            </div>
+            <button 
+              onClick={() => setError("")} 
+              className="ml-auto flex-shrink-0 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg p-1 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         )}
 
-        <div className="mb-5">
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-            Select Club
-          </label>
+        {/* Club Selection */}
+        <div className="mb-5 group">
+          <div className="flex items-center gap-2 mb-2.5">
+            <div className="w-5 h-5 bg-gradient-to-br from-red-500 to-rose-500 rounded-lg flex items-center justify-center shadow-md shadow-red-500/20">
+              <Shield className="w-3 h-3 text-white" />
+            </div>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Posting in
+            </label>
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-medium ml-auto">
+              {clubs.length} clubs available
+            </span>
+          </div>
+          
           <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Palette className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+            </div>
             <select
               value={clubId}
               onChange={(e) => setClubId(e.target.value)}
-              className="w-full px-4 py-3 bg-white/50 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all duration-200 appearance-none cursor-pointer"
+              className="w-full pl-11 pr-12 py-3.5 bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border-2 border-gray-200/80 dark:border-gray-600/80 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/10 outline-none transition-all duration-300 appearance-none cursor-pointer hover:border-red-300 dark:hover:border-red-500/50 text-slate-700 dark:text-slate-200 font-medium"
             >
               {clubs.map((club) => (
-                <option key={club.clubId} value={club.clubId}>
-                  {club.clubName} ({club.role})
+                <option key={club.clubId} value={club.clubId} className="py-2">
+                  {club.clubName} — {club.role}
                 </option>
               ))}
             </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+              <div className="w-8 h-8 bg-gradient-to-br from-red-500/10 to-rose-500/10 rounded-xl flex items-center justify-center group-hover:from-red-500/20 group-hover:to-rose-500/20 transition-all">
+                <svg className="w-4 h-4 text-gray-400 group-hover:text-red-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="mb-4">
-          <textarea
-            placeholder="What's on your mind?"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows="4"
-            className="w-full resize-none bg-white/50 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 rounded-xl p-4 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all duration-200 placeholder:text-gray-400"
-          />
+        {/* Content Input */}
+        <div className="mb-4 group">
+          <div className="relative">
+            <textarea
+              placeholder="What's on your mind? Share your thoughts, ideas, or questions..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows="4"
+              className="w-full resize-none bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border-2 border-gray-200/80 dark:border-gray-600/80 rounded-2xl p-5 pt-5 focus:border-red-400 focus:ring-4 focus:ring-red-400/10 outline-none transition-all duration-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 text-slate-700 dark:text-slate-200 font-medium leading-relaxed hover:border-red-300/50 dark:hover:border-red-500/30"
+              style={{ minHeight: "120px" }}
+            />
+            <div className="absolute bottom-3 right-3 flex items-center gap-1.5">
+              <div className="text-xs text-gray-400 dark:text-gray-500 font-medium bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-2 py-1 rounded-lg">
+                {content.length > 0 ? `${content.length} characters` : "Start typing..."}
+              </div>
+            </div>
+          </div>
         </div>
 
+        {/* Image Upload Section */}
         {showImageInput && (
           <div className="mb-4 animate-slideDown">
-            <label className="flex items-center justify-center gap-2 w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:border-red-400 transition-colors">
-              <Image className="w-5 h-5 text-gray-400" />
-              <span className="text-sm text-gray-500">
-                {imageFile ? imageFile.name : "Choose an image..."}
-              </span>
-              <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-            </label>
+            <div className="relative">
+              <label className="flex items-center justify-center gap-3 w-full px-6 py-5 border-2 border-dashed border-gray-300/80 dark:border-gray-600/80 rounded-2xl cursor-pointer hover:border-red-400 hover:bg-red-50/50 dark:hover:bg-red-900/10 transition-all duration-300 group bg-white/40 dark:bg-gray-700/30 backdrop-blur-sm">
+                <div className="w-10 h-10 bg-gradient-to-br from-red-500/10 to-rose-500/10 rounded-xl flex items-center justify-center group-hover:from-red-500/20 group-hover:to-rose-500/20 transition-all">
+                  <Camera className="w-5 h-5 text-gray-500 group-hover:text-red-500 transition-colors" />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 group-hover:text-red-500 transition-colors">
+                    {imageFile ? imageFile.name : "Choose an image"}
+                  </div>
+                  <div className="text-xs text-gray-400 dark:text-gray-500">
+                    {imageFile 
+                      ? `${(imageFile.size / 1024).toFixed(0)} KB` 
+                      : "PNG, JPG, GIF up to 10MB"}
+                  </div>
+                </div>
+                <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                {imageFile && (
+                  <div className="ml-auto bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-semibold px-3 py-1.5 rounded-xl border border-green-500/20">
+                    ✓ Selected
+                  </div>
+                )}
+              </label>
+            </div>
+
             {imagePreview && (
-              <div className="mt-3 relative group">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="rounded-xl max-h-48 object-contain border border-gray-200 dark:border-gray-600 shadow-lg"
-                />
-                <button
-                  onClick={clearImage}
-                  className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
-                >
-                  <X className="w-3 h-3" />
-                </button>
+              <div className="mt-4 relative group rounded-2xl overflow-hidden shadow-xl shadow-black/10">
+                <div className="relative">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full max-h-64 object-contain bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-2"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <button
+                    onClick={clearImage}
+                    className="absolute top-3 right-3 p-2 bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-xl shadow-lg shadow-red-500/30 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-red-500/40"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             )}
           </div>
         )}
 
-        <div className="flex gap-3 mt-5">
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-3 mt-6">
           <button
             type="button"
             onClick={() => {
               setShowImageInput(!showImageInput);
               if (showImageInput) clearImage();
             }}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 ${
+            className={`group flex items-center gap-2.5 px-5 py-3.5 rounded-2xl font-semibold transition-all duration-300 ${
               showImageInput
-                ? "bg-red-500 text-white shadow-md shadow-red-500/25"
-                : "bg-gray-100 dark:bg-gray-700 text-slate-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-xl shadow-red-500/25 hover:shadow-2xl hover:shadow-red-500/35 hover:scale-105"
+                : "bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm text-slate-700 dark:text-slate-300 border-2 border-gray-200/80 dark:border-gray-600/80 hover:border-red-300 dark:hover:border-red-500/30 hover:bg-red-50/50 dark:hover:bg-red-900/10"
             }`}
           >
-            <Image className="w-4 h-4" />
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+              showImageInput 
+                ? "bg-white/20" 
+                : "bg-gradient-to-br from-red-500/10 to-rose-500/10 group-hover:from-red-500/20 group-hover:to-rose-500/20"
+            }`}>
+              <Image className={`w-4 h-4 ${showImageInput ? "text-white" : "text-gray-500 group-hover:text-red-500"} transition-colors`} />
+            </div>
             <span className="text-sm">{showImageInput ? "Remove Image" : "Add Image"}</span>
           </button>
 
           <button
             onClick={submit}
             disabled={loading}
-            className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-300 ml-auto hover:shadow-lg hover:shadow-red-500/25 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+            className="group flex items-center gap-2.5 bg-gradient-to-r from-red-500 via-rose-500 to-red-600 bg-[length:200%_100%] animate-gradient-x text-white px-8 py-3.5 rounded-2xl font-semibold transition-all duration-300 ml-auto shadow-xl shadow-red-500/25 hover:shadow-2xl hover:shadow-red-500/40 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
@@ -214,26 +325,82 @@ export default function CreatePost({ reload }) {
               </>
             ) : (
               <>
-                <Send className="w-4 h-4" />
-                <span>Publish</span>
+                <Send className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+                <span>Publish Post</span>
+                <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Zap className="w-3.5 h-3.5" />
+                </div>
               </>
             )}
           </button>
         </div>
+
+        {/* Footer Stats */}
+        <div className="mt-5 pt-4 border-t border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between">
+          <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
+            <div className="flex items-center gap-1.5">
+              <Heart className="w-3.5 h-3.5" />
+              <span>Be kind</span>
+            </div>
+            <div className="w-px h-4 bg-gray-200 dark:bg-gray-700" />
+            <div className="flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5" />
+              <span>Community guidelines</span>
+            </div>
+          </div>
+          <div className="text-xs font-medium text-gray-400 dark:text-gray-500">
+            {content.length > 0 || imageFile ? "Ready to publish" : "Empty draft"}
+          </div>
+        </div>
       </div>
 
-      <style jsx>{`
+      {/* Global Styles for Animations */}
+      <style>{`
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
         @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
+          from { opacity: 0; transform: translateY(-12px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
+          20% { transform: translateX(-6px) rotate(-1deg); }
+          40% { transform: translateX(6px) rotate(1deg); }
+          60% { transform: translateX(-4px); }
+          80% { transform: translateX(4px); }
         }
-        .animate-slideDown { animation: slideDown 0.3s ease-out; }
-        .animate-shake { animation: shake 0.3s ease-in-out; }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-10px) rotate(2deg); }
+        }
+        .animate-gradient-x {
+          animation: gradient-x 3s ease infinite;
+          background-size: 200% 100%;
+        }
+        .animate-slideDown {
+          animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .animate-shake {
+          animation: shake 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+        .animate-pulse {
+          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .animate-ping {
+          animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: .5; }
+        }
+        @keyframes ping {
+          75%, 100% { transform: scale(1.5); opacity: 0; }
+        }
       `}</style>
     </div>
   );

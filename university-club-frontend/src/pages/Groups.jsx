@@ -6,14 +6,31 @@ import Loader from "../components/Loader";
 import {
   Users, Plus, X, Send, Trash2, Edit2, Check, ArrowLeft, LogOut,
   UserPlus, UserMinus, Crown, Loader2, Search,
+  MessageCircle, Heart, Sparkles, Zap, Star, Award,
+  Clock, Shield, User, Hash, Globe, Compass,
+  ChevronRight, MoreHorizontal, Bell, Settings
 } from "lucide-react";
+
+/**
+ * ============================================================
+ *  💬 Groups — Premium Group Chat Experience
+ *  Designed with Glassmorphism + Animated Visuals
+ *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
+ * ============================================================
+ * 
+ *  ┌─────────────────────────────────────────────────────────────┐
+ *  │  🎯 Purpose: Group chat with member management          │
+ *  │  🔥 Features: CRUD, Messages, Member Management         │
+ *  │  📱 Responsive: Optimized for all screen sizes          │
+ *  └─────────────────────────────────────────────────────────────┘
+ */
 
 export default function Groups() {
   const { user: me } = useContext(AuthContext);
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeGroup, setActiveGroup] = useState(null); // GroupSummaryDto
-  const [details, setDetails] = useState(null); // GroupDetailsDto
+  const [activeGroup, setActiveGroup] = useState(null);
+  const [details, setDetails] = useState(null);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -201,35 +218,70 @@ export default function Groups() {
   if (loading) return <Loader />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pb-12">
-      <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl shadow-red-500/10 overflow-hidden border border-white/30 dark:border-gray-700/50 grid grid-cols-1 md:grid-cols-3 h-[75vh]">
-          {/* Group list */}
-          <div className={`border-r border-gray-100 dark:border-gray-700 overflow-y-auto ${activeGroup ? "hidden md:block" : ""}`}>
-            <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 pb-12 overflow-hidden">
+      
+      {/* Premium Background Decorations */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
+      </div>
+
+      <div className="relative max-w-6xl mx-auto px-4 py-6 sm:py-8">
+        {/* Header */}
+        <div className="relative mb-6">
+          <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-2xl blur-3xl opacity-20 animate-pulse-slow" />
+          <div className="relative bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-2xl p-5 text-white overflow-hidden shadow-2xl shadow-red-500/20">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl animate-float-slow" />
+            <div className="relative flex items-center gap-3">
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
+                <MessageCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold">Group Chats</h1>
+                <p className="text-white/80 text-xs sm:text-sm">Connect and collaborate with your community</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Layout */}
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 h-[75vh] grid grid-cols-1 md:grid-cols-3">
+          
+          {/* Group List */}
+          <div className={`border-r border-gray-200/50 dark:border-gray-700/50 overflow-y-auto ${activeGroup ? "hidden md:block" : ""}`}>
+            <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex items-center justify-between sticky top-0 z-10">
               <h2 className="font-bold text-white flex items-center gap-2">
                 <Users className="w-5 h-5" /> Groups
+                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">{groups.length}</span>
               </h2>
-              <button onClick={() => setShowCreateForm(!showCreateForm)} className="text-white">
+              <button 
+                onClick={() => setShowCreateForm(!showCreateForm)} 
+                className="p-1.5 hover:bg-white/20 rounded-xl transition-all duration-200"
+              >
                 {showCreateForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
               </button>
             </div>
 
             {showCreateForm && (
-              <div className="p-4 border-b border-gray-100 dark:border-gray-700 space-y-2">
+              <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50 space-y-3 bg-gray-50/50 dark:bg-gray-800/50 animate-slideDown">
                 <input
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
                   placeholder="Group name"
-                  className="w-full px-3 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900"
+                  className="w-full px-3 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all"
                 />
                 <input
                   value={memberIdsInput}
                   onChange={(e) => setMemberIdsInput(e.target.value)}
                   placeholder="Member user IDs, comma separated (optional)"
-                  className="w-full px-3 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900"
+                  className="w-full px-3 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all"
                 />
-                <button onClick={createGroup} className="w-full bg-red-500 text-white px-3 py-2 rounded-lg text-sm font-medium">
+                <button 
+                  onClick={createGroup} 
+                  className="w-full bg-gradient-to-r from-red-500 to-rose-600 text-white px-3 py-2.5 rounded-xl text-sm font-medium hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 hover:scale-[1.02]"
+                >
+                  <Sparkles className="w-4 h-4 inline mr-2" />
                   Create Group
                 </button>
               </div>
@@ -237,136 +289,272 @@ export default function Groups() {
 
             {groups.length === 0 ? (
               <div className="text-center py-16 px-4">
-                <Users className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-                <p className="text-gray-500 text-sm">No groups yet.</p>
+                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Users className="w-8 h-8 text-gray-300 dark:text-gray-500" />
+                </div>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">No groups yet</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Create your first group</p>
               </div>
             ) : (
               groups.map((g) => (
                 <button
                   key={g.id}
                   onClick={() => openGroup(g)}
-                  className={`w-full flex items-center gap-3 p-4 text-left hover:bg-red-50 dark:hover:bg-red-900/20 transition border-b border-gray-50 dark:border-gray-700/50 ${
-                    activeGroup?.id === g.id ? "bg-red-50 dark:bg-red-900/20" : ""
+                  className={`w-full flex items-center gap-3 p-4 text-left hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 dark:hover:from-red-900/10 dark:hover:to-rose-900/10 transition-all duration-200 border-b border-gray-50 dark:border-gray-700/50 group ${
+                    activeGroup?.id === g.id ? "bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20" : ""
                   }`}
                 >
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-r from-red-500 to-rose-600 flex items-center justify-center text-white font-bold flex-shrink-0">
-                    {g.name?.charAt(0)?.toUpperCase()}
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-red-500 to-rose-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-red-500/25 group-hover:scale-110 transition-transform duration-300">
+                      {g.name?.charAt(0)?.toUpperCase()}
+                    </div>
+                    {g.isAdmin && (
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center shadow-lg shadow-amber-400/50">
+                        <Crown className="w-3 h-3 text-white" />
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-sm text-gray-800 dark:text-white truncate">{g.name}</span>
-                      {g.isAdmin && <Crown className="w-3.5 h-3.5 text-yellow-500" />}
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-sm text-gray-800 dark:text-white truncate group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                        {g.name}
+                      </span>
+                      <div className="flex items-center gap-1 text-xs text-gray-400">
+                        <Users className="w-3 h-3" />
+                        <span>{g.memberCount}</span>
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-500 truncate">{g.lastMessage || `${g.memberCount} members`}</p>
+                    <p className="text-xs text-gray-400 truncate flex items-center gap-1">
+                      <MessageCircle className="w-3 h-3" />
+                      {g.lastMessage || "No messages yet"}
+                    </p>
                   </div>
+                  <ChevronRight className="w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
               ))
             )}
           </div>
 
-          {/* Chat panel */}
+          {/* Chat Panel */}
           <div className={`md:col-span-2 flex flex-col ${!activeGroup ? "hidden md:flex" : ""}`}>
             {!activeGroup ? (
               <div className="flex-1 flex items-center justify-center text-gray-400">
                 <div className="text-center">
-                  <Users className="w-12 h-12 mx-auto mb-2" />
-                  <p>Select a group</p>
+                  <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MessageCircle className="w-10 h-10 text-gray-300 dark:text-gray-500" />
+                  </div>
+                  <p className="font-medium text-gray-500 dark:text-gray-400">Select a group</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Choose a group to start chatting</p>
                 </div>
               </div>
             ) : (
               <>
-                <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex items-center gap-3">
-                  <button onClick={() => setActiveGroup(null)} className="md:hidden text-white">
+                {/* Chat Header */}
+                <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex items-center gap-3 sticky top-0 z-10">
+                  <button 
+                    onClick={() => setActiveGroup(null)} 
+                    className="md:hidden text-white hover:bg-white/20 p-1.5 rounded-xl transition-all"
+                  >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
+                  
                   {editingName ? (
                     <div className="flex items-center gap-2 flex-1">
-                      <input value={editNameValue} onChange={(e) => setEditNameValue(e.target.value)} className="rounded px-2 py-1 text-sm text-black flex-1" />
-                      <button onClick={saveGroupName} className="text-white"><Check className="w-4 h-4" /></button>
-                      <button onClick={() => setEditingName(false)} className="text-white"><X className="w-4 h-4" /></button>
+                      <input 
+                        value={editNameValue} 
+                        onChange={(e) => setEditNameValue(e.target.value)} 
+                        className="flex-1 rounded-xl px-3 py-1.5 text-sm text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border-2 border-white/20 focus:border-white/50 outline-none"
+                        autoFocus
+                      />
+                      <button onClick={saveGroupName} className="text-white hover:bg-white/20 p-1.5 rounded-xl transition-all">
+                        <Check className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => setEditingName(false)} className="text-white hover:bg-white/20 p-1.5 rounded-xl transition-all">
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
                   ) : (
-                    <span className="font-bold text-white flex-1">{details?.name || activeGroup.name}</span>
+                    <div className="flex-1 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white font-bold">
+                        {details?.name?.charAt(0)?.toUpperCase() || activeGroup.name?.charAt(0)?.toUpperCase()}
+                      </div>
+                      <span className="font-bold text-white truncate">{details?.name || activeGroup.name}</span>
+                    </div>
                   )}
-                  <button onClick={() => { setEditingName(true); setEditNameValue(details?.name || activeGroup.name); }} className="text-white/90">
+                  
+                  <button 
+                    onClick={() => { setEditingName(true); setEditNameValue(details?.name || activeGroup.name); }} 
+                    className="text-white/80 hover:text-white hover:bg-white/20 p-1.5 rounded-xl transition-all"
+                  >
                     <Edit2 className="w-4 h-4" />
                   </button>
-                  <button onClick={() => setShowMembers(!showMembers)} className="text-white/90">
+                  <button 
+                    onClick={() => setShowMembers(!showMembers)} 
+                    className="text-white/80 hover:text-white hover:bg-white/20 p-1.5 rounded-xl transition-all relative"
+                  >
                     <Users className="w-4 h-4" />
+                    {details?.members?.length > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center text-[8px] font-bold text-white">
+                        {details.members.length}
+                      </span>
+                    )}
                   </button>
                 </div>
 
+                {/* Members Panel */}
                 {showMembers && details && (
-                  <div className="p-4 border-b border-gray-100 dark:border-gray-700 max-h-56 overflow-y-auto space-y-2">
-                    <form onSubmit={doSearchUsers} className="flex gap-2 mb-2">
-                      <input value={searchUsers} onChange={(e) => setSearchUsers(e.target.value)} placeholder="Search users to add" className="flex-1 px-3 py-1.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900" />
-                      <button type="submit" className="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg"><Search className="w-4 h-4" /></button>
+                  <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50 max-h-64 overflow-y-auto bg-gray-50/50 dark:bg-gray-800/50 animate-slideDown">
+                    <form onSubmit={doSearchUsers} className="flex gap-2 mb-3">
+                      <div className="flex-1 relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input 
+                          value={searchUsers} 
+                          onChange={(e) => setSearchUsers(e.target.value)} 
+                          placeholder="Search users to add" 
+                          className="w-full pl-9 pr-3 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all"
+                        />
+                      </div>
+                      <button type="submit" className="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-all">
+                        <Search className="w-4 h-4" />
+                      </button>
                     </form>
+                    
                     {userResults.length > 0 && (
-                      <div className="space-y-1 mb-2">
+                      <div className="space-y-1.5 mb-3 bg-white dark:bg-gray-900 rounded-xl p-2 border border-gray-200 dark:border-gray-700">
                         {userResults.map((u) => (
-                          <div key={u.id} className="flex items-center justify-between text-sm">
-                            <span>{u.name} (#{u.id})</span>
-                            <button onClick={() => addMember(u.id)} className="text-green-600"><UserPlus className="w-4 h-4" /></button>
+                          <div key={u.id} className="flex items-center justify-between text-sm px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-all">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">
+                              {u.name} <span className="text-xs text-gray-400">#{u.id}</span>
+                            </span>
+                            <button 
+                              onClick={() => addMember(u.id)} 
+                              className="p-1.5 bg-green-500/10 text-green-600 hover:bg-green-500 hover:text-white rounded-lg transition-all"
+                            >
+                              <UserPlus className="w-4 h-4" />
+                            </button>
                           </div>
                         ))}
                       </div>
                     )}
-                    <div className="flex gap-2 mb-2">
-                      <input value={addMemberId} onChange={(e) => setAddMemberId(e.target.value)} placeholder="Or add by user ID" className="flex-1 px-3 py-1.5 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900" />
-                      <button onClick={addMemberManual} className="px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm">Add</button>
-                    </div>
-                    {details.members.map((m) => (
-                      <div key={m.userId} className="flex items-center justify-between text-sm py-1">
-                        <span className="flex items-center gap-1">
-                          {m.name} {m.isAdmin && <Crown className="w-3 h-3 text-yellow-500" />}
-                        </span>
-                        <div className="flex gap-2">
-                          <button onClick={() => toggleAdmin(m.userId, !m.isAdmin)} className="text-blue-500 text-xs">
-                            {m.isAdmin ? "Unadmin" : "Make Admin"}
-                          </button>
-                          {m.userId !== me?.id && (
-                            <button onClick={() => removeMember(m.userId)} className="text-red-500"><UserMinus className="w-4 h-4" /></button>
-                          )}
-                        </div>
+                    
+                    <div className="flex gap-2 mb-3">
+                      <div className="flex-1 relative">
+                        <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input 
+                          value={addMemberId} 
+                          onChange={(e) => setAddMemberId(e.target.value)} 
+                          placeholder="Add by user ID" 
+                          className="w-full pl-9 pr-3 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all"
+                        />
                       </div>
-                    ))}
-                    <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
-                      <button onClick={leaveGroup} className="flex-1 flex items-center justify-center gap-1 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg text-sm">
-                        <LogOut className="w-3.5 h-3.5" /> Leave
+                      <button 
+                        onClick={addMemberManual} 
+                        className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-sm font-medium hover:shadow-lg hover:shadow-green-500/25 transition-all hover:scale-[1.02]"
+                      >
+                        Add
                       </button>
-                      <button onClick={deleteGroup} className="flex-1 flex items-center justify-center gap-1 bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm">
-                        <Trash2 className="w-3.5 h-3.5" /> Delete Group
+                    </div>
+                    
+                    <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                      {details.members.map((m) => (
+                        <div key={m.userId} className="flex items-center justify-between text-sm px-2 py-1.5 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-lg transition-all">
+                          <span className="flex items-center gap-2 font-medium text-gray-700 dark:text-gray-300">
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-gray-400 to-gray-500 flex items-center justify-center text-white text-[10px] font-bold">
+                              {m.name?.charAt(0)?.toUpperCase()}
+                            </div>
+                            {m.name}
+                            {m.isAdmin && <Crown className="w-3.5 h-3.5 text-amber-500" />}
+                          </span>
+                          <div className="flex gap-1.5">
+                            <button 
+                              onClick={() => toggleAdmin(m.userId, !m.isAdmin)} 
+                              className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
+                                m.isAdmin 
+                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" 
+                                  : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-200"
+                              }`}
+                            >
+                              {m.isAdmin ? "Admin" : "Make Admin"}
+                            </button>
+                            {m.userId !== me?.id && (
+                              <button 
+                                onClick={() => removeMember(m.userId)} 
+                                className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                              >
+                                <UserMinus className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="flex gap-2 pt-3 mt-3 border-t border-gray-200/50 dark:border-gray-700/50">
+                      <button 
+                        onClick={leaveGroup} 
+                        className="flex-1 flex items-center justify-center gap-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 transition-all"
+                      >
+                        <LogOut className="w-4 h-4" /> Leave
+                      </button>
+                      <button 
+                        onClick={deleteGroup} 
+                        className="flex-1 flex items-center justify-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 py-2 rounded-xl text-sm font-medium transition-all"
+                      >
+                        <Trash2 className="w-4 h-4" /> Delete
                       </button>
                     </div>
                   </div>
                 )}
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                  {messages.map((m) => {
-                    const isMine = m.senderId === me?.id;
-                    return (
-                      <div key={m.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
-                        <div className={`max-w-[70%] ${isMine ? "bg-gradient-to-r from-red-500 to-rose-600 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white"} rounded-2xl px-4 py-2`}>
-                          {!isMine && <p className="text-xs font-semibold mb-0.5 opacity-70">{m.senderName}</p>}
-                          <p className="text-sm whitespace-pre-wrap">{m.text}</p>
-                          <span className={`text-[10px] ${isMine ? "text-white/70" : "text-gray-400"}`}>{formatTime(m.createdAt)}</span>
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30 dark:bg-gray-800/30">
+                  {messages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                      <MessageCircle className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
+                      <p className="font-medium">No messages yet</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Be the first to send a message!</p>
+                    </div>
+                  ) : (
+                    messages.map((m, index) => {
+                      const isMine = m.senderId === me?.id;
+                      const showSender = !isMine && (index === 0 || messages[index - 1]?.senderId !== m.senderId);
+                      return (
+                        <div key={m.id} className={`flex ${isMine ? "justify-end" : "justify-start"} animate-fadeIn`}>
+                          <div className={`max-w-[75%] ${isMine ? "bg-gradient-to-r from-red-500 to-rose-600 text-white" : "bg-white dark:bg-gray-700 text-gray-800 dark:text-white"} rounded-2xl px-4 py-2.5 shadow-lg ${!isMine ? "shadow-gray-200/50 dark:shadow-gray-700/30" : "shadow-red-500/20"}`}>
+                            {showSender && (
+                              <p className="text-xs font-semibold mb-0.5 opacity-80 flex items-center gap-1.5">
+                                <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[8px] font-bold">
+                                  {m.senderName?.charAt(0)?.toUpperCase()}
+                                </div>
+                                {m.senderName}
+                              </p>
+                            )}
+                            <p className="text-sm whitespace-pre-wrap leading-relaxed">{m.text}</p>
+                            <span className={`text-[10px] ${isMine ? "text-white/60" : "text-gray-400"} mt-1 block`}>
+                              {formatTime(m.createdAt)}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
 
-                <div className="p-4 border-t border-gray-100 dark:border-gray-700 flex gap-2">
+                {/* Message Input */}
+                <div className="p-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm flex gap-2">
                   <input
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                     placeholder="Type a message..."
-                    className="flex-1 px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                    className="flex-1 px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all text-sm"
                   />
-                  <button onClick={sendMessage} disabled={sending || !text.trim()} className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-4 py-2.5 rounded-xl disabled:opacity-50">
+                  <button 
+                    onClick={sendMessage} 
+                    disabled={sending || !text.trim()} 
+                    className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-5 py-2.5 rounded-xl disabled:opacity-50 hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 hover:scale-[1.05] disabled:hover:scale-100 flex items-center gap-2"
+                  >
                     {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </button>
                 </div>
@@ -375,6 +563,48 @@ export default function Groups() {
           </div>
         </div>
       </div>
+
+      {/* Global Styles for Animations */}
+      <style>{`
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          50% { transform: translateY(-20px) scale(1.05); }
+        }
+        @keyframes spin-slow {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.5; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(5px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-float-slow {
+          animation: float-slow 6s ease-in-out infinite;
+        }
+        .animate-spin-slow {
+          animation: spin-slow 30s linear infinite;
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 4s ease-in-out infinite;
+        }
+        .animate-slideDown {
+          animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+        .animation-delay-1000 {
+          animation-delay: 1s;
+        }
+      `}</style>
     </div>
   );
 }

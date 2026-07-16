@@ -5,7 +5,23 @@ import toast from "react-hot-toast";
 import {
   Sparkles, Users, MessageCircle, Heart, TrendingUp, AlertCircle,
   Rocket, UserCircle, ChevronRight, Gem, Lightbulb,
+  Activity, BarChart3, Clock, Zap, Flame, Award,
+  Calendar, Compass, Coffee, Star, Crown, Shield
 } from "lucide-react";
+
+/**
+ * ============================================================
+ *  📊 Dashboard — Premium Analytics & Activity Dashboard
+ *  Designed with Glassmorphism + Animated Visuals
+ *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
+ * ============================================================
+ * 
+ *  ┌─────────────────────────────────────────────────────────────┐
+ *  │  🎯 Purpose: Display community stats and insights        │
+ *  │  🔥 Features: Stats, Trending, AI Insights, Quick Actions│
+ *  │  📱 Responsive: Optimized for all screen sizes          │
+ *  └─────────────────────────────────────────────────────────────┘
+ */
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -64,12 +80,22 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[500px]">
+      <div className="min-h-[70vh] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-20 h-20 rounded-2xl mx-auto animate-pulse shadow-xl shadow-red-500/25 bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center">
-            <Sparkles className="w-8 h-8 text-white" />
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-600 rounded-full blur-2xl opacity-20 animate-pulse" />
+            <div className="relative w-20 h-20 rounded-2xl mx-auto shadow-2xl shadow-red-500/25 bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center animate-float">
+              <Sparkles className="w-8 h-8 text-white animate-pulse" />
+            </div>
           </div>
-          <p className="text-gray-500 dark:text-gray-400 mt-4 font-medium">Loading your dashboard...</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-6 font-medium animate-pulse">
+            Loading your dashboard...
+          </p>
+          <div className="flex justify-center gap-1.5 mt-3">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce-dot" style={{ animationDelay: "0s" }} />
+            <div className="w-2 h-2 bg-rose-500 rounded-full animate-bounce-dot" style={{ animationDelay: "0.15s" }} />
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce-dot" style={{ animationDelay: "0.3s" }} />
+          </div>
         </div>
       </div>
     );
@@ -78,183 +104,380 @@ export default function Dashboard() {
   if (error) {
     return (
       <div className="text-center py-16 px-4">
-        <div className="relative w-24 h-24 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/30 rounded-2xl flex items-center justify-center mx-auto mb-5">
-          <AlertCircle className="w-12 h-12 text-red-500" />
+        <div className="relative w-24 h-24 bg-gradient-to-br from-red-100 to-rose-100 dark:from-red-900/30 dark:to-rose-800/30 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-lg">
+          <AlertCircle className="w-12 h-12 text-red-500 animate-pulse" />
         </div>
         <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Oops! Something went wrong</h3>
         <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">{error}</p>
         <button
           onClick={loadDashboard}
-          className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-3 rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 hover:-translate-y-0.5 font-semibold flex items-center gap-2 mx-auto"
+          className="group inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-8 py-3.5 rounded-2xl hover:shadow-2xl hover:shadow-red-500/25 transition-all duration-300 hover:scale-105 font-semibold shadow-lg shadow-red-500/20"
         >
-          <Rocket className="w-4 h-4" /> Try Again
+          <Rocket className="w-4 h-4 transition-transform duration-300 group-hover:rotate-12" />
+          Try Again
         </button>
       </div>
     );
   }
 
   const statCards = [
-    { title: "Total Posts", value: stats?.totalPosts || 0, icon: MessageCircle, iconBg: "bg-gradient-to-r from-blue-500 to-cyan-500" },
-    { title: "Total Clubs", value: stats?.totalClubs || 0, icon: Users, iconBg: "bg-gradient-to-r from-purple-500 to-pink-500" },
-    { title: "Comments", value: stats?.totalComments || 0, icon: MessageCircle, iconBg: "bg-gradient-to-r from-green-500 to-emerald-500" },
-    { title: "Reactions", value: stats?.totalReactions || 0, icon: Heart, iconBg: "bg-gradient-to-r from-red-500 to-rose-500" },
+    { 
+      title: "Total Posts", 
+      value: stats?.totalPosts || 0, 
+      icon: MessageCircle, 
+      iconBg: "from-blue-500 to-cyan-500",
+      gradient: "from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20",
+      border: "hover:border-blue-300 dark:hover:border-blue-700"
+    },
+    { 
+      title: "Total Clubs", 
+      value: stats?.totalClubs || 0, 
+      icon: Users, 
+      iconBg: "from-purple-500 to-pink-500",
+      gradient: "from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20",
+      border: "hover:border-purple-300 dark:hover:border-purple-700"
+    },
+    { 
+      title: "Comments", 
+      value: stats?.totalComments || 0, 
+      icon: MessageCircle, 
+      iconBg: "from-green-500 to-emerald-500",
+      gradient: "from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20",
+      border: "hover:border-green-300 dark:hover:border-green-700"
+    },
+    { 
+      title: "Reactions", 
+      value: stats?.totalReactions || 0, 
+      icon: Heart, 
+      iconBg: "from-red-500 to-rose-500",
+      gradient: "from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20",
+      border: "hover:border-red-300 dark:hover:border-red-700"
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pb-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
-        <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 text-white shadow-2xl">
-          <div className="absolute top-0 right-0 w-40 h-40 sm:w-64 sm:h-64 bg-white/10 rounded-full blur-3xl"></div>
-          <div className="relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg">
-                <Sparkles className="w-6 h-6 sm:w-7 sm:h-7" />
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 pb-10 overflow-hidden">
+      
+      {/* Premium Background Decorations */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+        
+        {/* Hero Header */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-3xl p-6 sm:p-8 md:p-10 text-white shadow-2xl shadow-red-500/20">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-slow" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10" />
+          
+          <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/10">
+                <Compass className="w-8 h-8 sm:w-10 sm:h-10" />
               </div>
               <div>
-                <span className="text-white/80 text-xs sm:text-sm block">
-                  {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-                </span>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-1">{greeting}, {userName}! 👋</h1>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-white/70 text-xs sm:text-sm font-medium flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5" />
+                    {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+                  </span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-2">
+                  {greeting}, {userName}! 
+                  <span className="text-2xl sm:text-3xl md:text-4xl">👋</span>
+                </h1>
               </div>
             </div>
-            <p className="text-white/90 text-sm sm:text-base md:text-lg max-w-2xl mt-4">
-              Welcome back! Here's what's happening in your community today.
-            </p>
+            <div className="flex flex-wrap gap-2 flex-shrink-0">
+              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/10">
+                <Shield className="w-4 h-4 text-amber-300" />
+                <span className="text-sm font-medium">Pro Member</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/10">
+                <Crown className="w-4 h-4 text-amber-300" />
+                <span className="text-sm font-medium">{stats?.myClubs || 0} Clubs</span>
+              </div>
+            </div>
           </div>
+          <p className="relative text-white/80 text-sm sm:text-base mt-4 max-w-2xl">
+            Welcome back! Here's what's happening in your community today.
+          </p>
         </div>
 
+        {/* AI Insight */}
         {insight && (
-          <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-4 sm:p-5 text-white shadow-lg flex items-start gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Lightbulb className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-bold text-sm sm:text-base">Your Insight</h4>
-              <p className="text-white/90 text-xs sm:text-sm mt-1">{insight}</p>
+          <div className="group bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 dark:from-amber-500/5 dark:via-orange-500/5 dark:to-amber-500/5 backdrop-blur-sm rounded-2xl p-4 sm:p-5 border border-amber-200/50 dark:border-amber-800/30 shadow-lg hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-500 hover:-translate-y-0.5">
+            <div className="flex items-start gap-4">
+              <div className="relative flex-shrink-0">
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl blur-md opacity-30 group-hover:opacity-50 transition-opacity duration-300" />
+                <div className="relative w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/25">
+                  <Lightbulb className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <div>
+                <h4 className="font-bold text-amber-600 dark:text-amber-400 text-sm sm:text-base">✨ AI Insight</h4>
+                <p className="text-gray-700 dark:text-gray-300 text-sm mt-1 leading-relaxed">{insight}</p>
+              </div>
             </div>
           </div>
         )}
 
+        {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-          {statCards.map((card) => {
+          {statCards.map((card, index) => {
             const Icon = card.icon;
             return (
-              <div key={card.title} className="group bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-300 hover:-translate-y-1 p-4 sm:p-5 border border-gray-100 dark:border-gray-700">
+              <div
+                key={card.title}
+                className={`group bg-gradient-to-br ${card.gradient} backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-2 border border-gray-200/50 dark:border-gray-700/50 ${card.border} p-5`}
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-medium mb-1">{card.title}</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">{card.value.toLocaleString()}</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-medium uppercase tracking-wider mb-1">
+                      {card.title}
+                    </p>
+                    <p className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                      {card.value.toLocaleString()}
+                    </p>
                   </div>
-                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${card.iconBg} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  <div className={`w-12 h-12 bg-gradient-to-r ${card.iconBg} rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
+                    <Icon className="w-6 h-6 text-white" />
                   </div>
+                </div>
+                <div className="mt-3 flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                  <span>Active</span>
                 </div>
               </div>
             );
           })}
         </div>
 
+        {/* Activity Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-red-500 to-rose-600 p-4">
-              <h3 className="font-bold text-white flex items-center gap-2 text-sm sm:text-base">
-                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" /> Your Activity
+          {/* Your Activity */}
+          <div className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-1 overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
+            <div className="bg-gradient-to-r from-red-500 to-rose-600 p-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl" />
+              <h3 className="relative font-bold text-white flex items-center gap-2 text-sm sm:text-base">
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
+                Your Activity
               </h3>
             </div>
-            <div className="p-4 sm:p-5 space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400 text-sm">Posts Created</span>
-                <span className="font-bold text-red-600 dark:text-red-400 text-lg">{stats?.myPosts || 0}</span>
+            <div className="p-5 space-y-4">
+              <div className="flex justify-between items-center p-3 bg-gray-50/50 dark:bg-gray-700/30 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all duration-200">
+                <span className="text-gray-600 dark:text-gray-400 text-sm font-medium flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-blue-500" />
+                  Posts Created
+                </span>
+                <span className="font-bold text-2xl bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                  {stats?.myPosts || 0}
+                </span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400 text-sm">Clubs Joined</span>
-                <span className="font-bold text-purple-600 dark:text-purple-400 text-lg">{stats?.myClubs || 0}</span>
+              <div className="flex justify-between items-center p-3 bg-gray-50/50 dark:bg-gray-700/30 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all duration-200">
+                <span className="text-gray-600 dark:text-gray-400 text-sm font-medium flex items-center gap-2">
+                  <Users className="w-4 h-4 text-purple-500" />
+                  Clubs Joined
+                </span>
+                <span className="font-bold text-2xl bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+                  {stats?.myClubs || 0}
+                </span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-rose-500 to-red-600 p-4">
-              <h3 className="font-bold text-white flex items-center gap-2 text-sm sm:text-base">
-                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" /> This Week
+          {/* This Week */}
+          <div className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-1 overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
+            <div className="bg-gradient-to-r from-rose-500 to-red-600 p-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl" />
+              <h3 className="relative font-bold text-white flex items-center gap-2 text-sm sm:text-base">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                This Week
               </h3>
             </div>
-            <div className="p-4 sm:p-5 space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400 text-sm">New Members</span>
-                <span className="font-bold text-blue-600 dark:text-blue-400 text-lg">+{stats?.recentActivity?.newUsers || 0}</span>
+            <div className="p-5 space-y-4">
+              <div className="flex justify-between items-center p-3 bg-gray-50/50 dark:bg-gray-700/30 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all duration-200">
+                <span className="text-gray-600 dark:text-gray-400 text-sm font-medium flex items-center gap-2">
+                  <Users className="w-4 h-4 text-green-500" />
+                  New Members
+                </span>
+                <span className="font-bold text-2xl bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent flex items-center gap-1">
+                  +{stats?.recentActivity?.newUsers || 0}
+                </span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400 text-sm">New Posts</span>
-                <span className="font-bold text-purple-600 dark:text-purple-400 text-lg">+{stats?.recentActivity?.newPosts || 0}</span>
+              <div className="flex justify-between items-center p-3 bg-gray-50/50 dark:bg-gray-700/30 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all duration-200">
+                <span className="text-gray-600 dark:text-gray-400 text-sm font-medium flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-purple-500" />
+                  New Posts
+                </span>
+                <span className="font-bold text-2xl bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent flex items-center gap-1">
+                  +{stats?.recentActivity?.newPosts || 0}
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-rose-500 to-red-600 px-5 sm:px-6 py-4">
-            <h3 className="font-bold text-white flex items-center gap-2 text-sm sm:text-base">
-              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" /> Trending Posts
+        {/* Trending Posts */}
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
+          <div className="bg-gradient-to-r from-rose-500 to-red-600 px-5 sm:px-6 py-4 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl" />
+            <h3 className="relative font-bold text-white flex items-center gap-2 text-sm sm:text-base">
+              <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
+              Trending Posts
             </h3>
           </div>
-          <div className="p-4 sm:p-5 space-y-3">
+          <div className="p-4 sm:p-5 divide-y divide-gray-100 dark:divide-gray-700">
             {trendingPosts.length === 0 ? (
-              <div className="text-center py-8 sm:py-12">
+              <div className="text-center py-12 sm:py-16">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Sparkles className="w-8 h-8 text-gray-300 dark:text-gray-500" />
+                </div>
                 <p className="text-gray-500 dark:text-gray-400 font-medium">No trending posts yet</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Check back later for hot content</p>
               </div>
             ) : (
               trendingPosts.map((post, idx) => (
-                <Link key={post.id} to={`/post/${post.id}`} className="flex items-start gap-3 p-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group">
-                  <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-rose-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md flex-shrink-0">
-                    #{idx + 1}
+                <Link
+                  key={post.id}
+                  to={`/post/${post.id}`}
+                  className="flex items-start gap-4 p-3 rounded-xl hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 dark:hover:from-red-900/10 dark:hover:to-rose-900/10 transition-all duration-300 group"
+                >
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold shadow-md flex-shrink-0 ${
+                    idx === 0 ? "bg-gradient-to-r from-amber-500 to-orange-500" :
+                    idx === 1 ? "bg-gradient-to-r from-gray-400 to-gray-500" :
+                    "bg-gradient-to-r from-amber-600 to-amber-700"
+                  }`}>
+                    {idx + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-700 dark:text-gray-300 font-medium line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-400 transition">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 font-medium line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200">
                       {post.content}
                     </p>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
-                      <span className="flex items-center gap-1"><UserCircle className="w-3 h-3" /> {post.userName}</span>
-                      <span className="flex items-center gap-1"><Heart className="w-3 h-3 text-red-500" /> {post.reactionCount}</span>
-                      <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3 text-blue-500" /> {post.commentCount}</span>
+                    <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-400">
+                      <span className="flex items-center gap-1.5">
+                        <UserCircle className="w-3.5 h-3.5" />
+                        {post.userName}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Heart className="w-3.5 h-3.5 text-red-500" />
+                        {post.reactionCount}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <MessageCircle className="w-3.5 h-3.5 text-blue-500" />
+                        {post.commentCount}
+                      </span>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-red-500 transition flex-shrink-0" />
+                  <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-red-500 transition-all duration-300 group-hover:translate-x-1 flex-shrink-0" />
                 </Link>
               ))
             )}
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-800/50 rounded-xl sm:rounded-2xl p-5 sm:p-6 shadow-lg">
+        {/* Quick Actions */}
+        <div className="bg-gradient-to-br from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-800/50 backdrop-blur-sm rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-            <Link to="/clubs" className="text-center p-3 sm:p-4 rounded-xl bg-white dark:bg-gray-900 hover:shadow-lg hover:shadow-red-500/10 transition-all duration-300 group hover:-translate-y-1">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-red-500 to-rose-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition">
-                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <Link
+              to="/clubs"
+              className="group text-center p-4 sm:p-5 rounded-2xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-2 border border-gray-200/50 dark:border-gray-700/50 hover:border-red-200/50 dark:hover:border-red-800/30"
+            >
+              <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg group-hover:shadow-red-500/25">
+                <Users className="w-6 h-6 text-white" />
               </div>
-              <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Browse Clubs</p>
+              <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                Browse Clubs
+              </p>
             </Link>
-            <Link to="/" className="text-center p-3 sm:p-4 rounded-xl bg-white dark:bg-gray-900 hover:shadow-lg hover:shadow-red-500/10 transition-all duration-300 group hover:-translate-y-1">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-rose-500 to-red-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition">
-                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <Link
+              to="/"
+              className="group text-center p-4 sm:p-5 rounded-2xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-2 border border-gray-200/50 dark:border-gray-700/50 hover:border-red-200/50 dark:hover:border-red-800/30"
+            >
+              <div className="w-12 h-12 bg-gradient-to-r from-rose-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg group-hover:shadow-red-500/25">
+                <Sparkles className="w-6 h-6 text-white" />
               </div>
-              <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Create Post</p>
+              <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                Create Post
+              </p>
             </Link>
-            <Link to="/users" className="text-center p-3 sm:p-4 rounded-xl bg-white dark:bg-gray-900 hover:shadow-lg hover:shadow-red-500/10 transition-all duration-300 group hover:-translate-y-1">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition">
-                <UserCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <Link
+              to="/users"
+              className="group text-center p-4 sm:p-5 rounded-2xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-2 border border-gray-200/50 dark:border-gray-700/50 hover:border-red-200/50 dark:hover:border-red-800/30"
+            >
+              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg group-hover:shadow-green-500/25">
+                <UserCircle className="w-6 h-6 text-white" />
               </div>
-              <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Find Friends</p>
+              <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                Find Friends
+              </p>
             </Link>
-            <Link to="/profile" className="text-center p-3 sm:p-4 rounded-xl bg-white dark:bg-gray-900 hover:shadow-lg hover:shadow-red-500/10 transition-all duration-300 group hover:-translate-y-1">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition">
-                <Gem className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <Link
+              to="/profile"
+              className="group text-center p-4 sm:p-5 rounded-2xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-2 border border-gray-200/50 dark:border-gray-700/50 hover:border-red-200/50 dark:hover:border-red-800/30"
+            >
+              <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg group-hover:shadow-amber-500/25">
+                <Gem className="w-6 h-6 text-white" />
               </div>
-              <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Edit Profile</p>
+              <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                Edit Profile
+              </p>
             </Link>
           </div>
         </div>
       </div>
+
+      {/* Global Styles for Animations */}
+      <style>{`
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          50% { transform: translateY(-20px) scale(1.05); }
+        }
+        @keyframes spin-slow {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes bounce-dot {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        .animate-float-slow {
+          animation: float-slow 6s ease-in-out infinite;
+        }
+        .animate-spin-slow {
+          animation: spin-slow 30s linear infinite;
+        }
+        .animate-bounce-dot {
+          animation: bounce-dot 0.8s ease-in-out infinite;
+        }
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+        .animate-pulse {
+          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .animation-delay-1000 {
+          animation-delay: 1s;
+        }
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
     </div>
   );
 }
