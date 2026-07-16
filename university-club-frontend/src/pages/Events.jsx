@@ -12,6 +12,7 @@ const TABS = [
   { id: "all", label: "All Events", endpoint: "/event" },
   { id: "my", label: "Created by Me", endpoint: "/event/my" },
   { id: "joined", label: "Joined", endpoint: "/event/joined" },
+  { id: "my-clubs", label: "My Clubs Upcoming", endpoint: "/event/my-clubs-upcoming" },
 ];
 
 export default function Events() {
@@ -26,6 +27,7 @@ export default function Events() {
   const [editingEvent, setEditingEvent] = useState(null);
   const [expanded, setExpanded] = useState({});
   const [attendees, setAttendees] = useState({});
+  const [eventStats, setEventStats] = useState({});
   const [joinStatus, setJoinStatus] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -156,6 +158,12 @@ export default function Events() {
       try {
         const res = await api.get(`/event/${id}/attendees`);
         setAttendees((prev) => ({ ...prev, [id]: res.data || [] }));
+      } catch (error) {
+        console.error(error);
+      }
+      try {
+        const statsRes = await api.get(`/event/${id}/stats`);
+        setEventStats((prev) => ({ ...prev, [id]: statsRes.data }));
       } catch (error) {
         console.error(error);
       }
@@ -295,6 +303,11 @@ export default function Events() {
 
                   {expanded[ev.id] && (
                     <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-1 max-h-40 overflow-y-auto">
+                      {eventStats[ev.id] && (
+                        <p className="text-xs text-gray-500 mb-2">
+                          Total attendees: {eventStats[ev.id].totalAttendees ?? eventStats[ev.id].total ?? 0}
+                        </p>
+                      )}
                       {(attendees[ev.id] || []).length === 0 ? (
                         <p className="text-xs text-gray-400">No attendees yet.</p>
                       ) : (

@@ -1,4 +1,5 @@
 import { useEffect, useState, useContext } from "react";
+import { Link } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import Loader from "../components/Loader";
 import { AuthContext } from "../context/AuthContext";
@@ -287,6 +288,9 @@ export default function Clubs() {
                           <Hash className="w-3 h-3 text-white/70" />
                           <span className="text-white/70 text-xs">ID: {club.id}</span>
                         </div>
+                        <Link to={`/clubs/${club.id}`} className="inline-block mt-2 text-xs text-white/90 underline">
+                          View Details →
+                        </Link>
                       </div>
                     </div>
 

@@ -19,6 +19,19 @@ export default function Messages() {
   const [editText, setEditText] = useState("");
   const messagesEndRef = useRef(null);
   const pollRef = useRef(null);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchResults, setSearchResults] = useState(null);
+
+  const handleMessageSearch = async (e) => {
+    e.preventDefault();
+    if (!searchKeyword.trim()) return;
+    try {
+      const res = await api.get("/message/search", { params: { keyword: searchKeyword.trim(), page: 1, pageSize: 20 } });
+      setSearchResults(res.data?.items || []);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Search failed"));
+    }
+  };
 
   const loadConversations = async () => {
     try {
@@ -125,6 +138,45 @@ export default function Messages() {
                 <MessageSquare className="w-5 h-5" /> Messages
               </h2>
             </div>
+
+            <form onSubmit={handleMessageSearch} className="p-3 border-b border-gray-100 dark:border-gray-700 flex gap-2">
+              <input
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                placeholder="Search messages..."
+                className="flex-1 px-3 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900"
+              />
+              <button type="submit" className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg"><Search className="w-4 h-4" /></button>
+            </form>
+
+            {searchResults !== null && (
+              <div className="border-b border-gray-100 dark:border-gray-700">
+                <div className="flex justify-between items-center px-4 py-2 bg-amber-50 dark:bg-amber-900/20">
+                  <span className="text-xs font-medium text-amber-700 dark:text-amber-400">Search results</span>
+                  <button onClick={() => { setSearchResults(null); setSearchKeyword(""); }} className="text-amber-600"><X className="w-3.5 h-3.5" /></button>
+                </div>
+                {searchResults.length === 0 ? (
+                  <p className="text-center text-gray-400 text-xs py-4">No messages found.</p>
+                ) : (
+                  searchResults.map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => {
+                        const otherId = m.senderId === me?.id ? m.receiverId : m.senderId;
+                        const otherName = m.senderId === me?.id ? m.receiverName : m.senderName;
+                        openChat({ userId: otherId, userName: otherName, profileImage: m.senderImage });
+                        setSearchResults(null);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 border-b border-gray-50 dark:border-gray-700/50"
+                    >
+                      <p className="text-xs font-medium text-gray-700 dark:text-gray-300">{m.senderName} → {m.receiverName}</p>
+                      <p className="text-xs text-gray-500 truncate">{m.text}</p>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+
             {conversations.length === 0 ? (
               <div className="text-center py-16 px-4">
                 <MessageSquare className="w-10 h-10 text-gray-300 mx-auto mb-2" />

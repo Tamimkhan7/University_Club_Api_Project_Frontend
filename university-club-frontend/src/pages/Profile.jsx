@@ -32,6 +32,12 @@ export default function Profile() {
   const [newPassword, setNewPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
 
+  // privacy / mutual / followers-following modal
+  const [isPrivate, setIsPrivateState] = useState(false);
+  const [mutualList, setMutualList] = useState([]);
+  const [listModal, setListModal] = useState(null); // "followers" | "following" | null
+  const [listItems, setListItems] = useState([]);
+
   const loadProfile = async () => {
     setLoading(true);
     try {
@@ -61,6 +67,17 @@ export default function Profile() {
         setStats(statsRes.data);
       } catch {
         setStats({ followers: 0, following: 0, posts: 0, profileViews: 0 });
+      }
+
+      if (own) {
+        setIsPrivateState(!!profileRes.data.isPrivate);
+      } else {
+        try {
+          const mutualRes = await api.get(`/user/mutual/${id}`, { params: { page: 1, pageSize: 10 } });
+          setMutualList(mutualRes.data?.items || []);
+        } catch {
+          setMutualList([]);
+        }
       }
     } catch (error) {
       console.error("Error loading profile:", error);
@@ -122,6 +139,40 @@ export default function Profile() {
       setNewPassword("");
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to change password"));
+    }
+  };
+
+  const togglePrivacy = async () => {
+    const next = !isPrivate;
+    try {
+      await api.put("/user/privacy", null, { params: { isPrivate: next } });
+      setIsPrivateState(next);
+      toast.success(`Account is now ${next ? "private" : "public"}`);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to update privacy"));
+    }
+  };
+
+  const deactivateAccount = async () => {
+    if (!confirm("Deactivate your account? You can ask an admin to reactivate it later.")) return;
+    try {
+      await api.put("/user/deactivate");
+      toast.success("Account deactivated");
+      logout();
+      navigate("/login");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to deactivate account"));
+    }
+  };
+
+  const openList = async (type) => {
+    const targetId = isOwnProfile ? me?.id ?? profile.id : Number(id);
+    try {
+      const res = await api.get(`/user/${type}/${targetId}`, { params: { page: 1, pageSize: 30 } });
+      setListItems(res.data?.items || []);
+      setListModal(type);
+    } catch (error) {
+      toast.error(getErrorMessage(error, `Failed to load ${type}`));
     }
   };
 
@@ -247,16 +298,33 @@ export default function Profile() {
               { icon: Eye, label: "Views", value: stats.profileViews },
             ].map((stat) => {
               const Icon = stat.icon;
+              const clickable = stat.label === "Followers" || stat.label === "Following";
               return (
-                <div key={stat.label} className="text-center">
+                <button
+                  key={stat.label}
+                  type="button"
+                  onClick={clickable ? () => openList(stat.label.toLowerCase()) : undefined}
+                  className={`text-center ${clickable ? "cursor-pointer hover:opacity-70" : "cursor-default"}`}
+                >
                   <div className="text-xl font-bold text-gray-800 dark:text-white">{stat.value}</div>
                   <div className="text-xs text-gray-500 flex items-center justify-center gap-1 mt-1">
                     <Icon className="w-3 h-3 text-red-500" /> <span>{stat.label}</span>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
+
+          {!isOwnProfile && mutualList.length > 0 && (
+            <div className="px-6 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-gray-500">Mutual followers:</span>
+              {mutualList.slice(0, 5).map((m) => (
+                <span key={m.id} className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-gray-600 dark:text-gray-300">
+                  {m.name}
+                </span>
+              ))}
+            </div>
+          )}
 
           {profile.bio && !isEditing && (
             <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-red-50/20 to-rose-50/20">
@@ -321,6 +389,19 @@ export default function Profile() {
 
           {isOwnProfile && !isEditing && (
             <>
+              <div className="p-6 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-700 dark:text-gray-300">Private Account</p>
+                  <p className="text-xs text-gray-500">Only approved followers can see your profile details.</p>
+                </div>
+                <button
+                  onClick={togglePrivacy}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium ${isPrivate ? "bg-red-500 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}
+                >
+                  {isPrivate ? "Private" : "Public"}
+                </button>
+              </div>
+
               <div className="p-6 border-t border-gray-100 dark:border-gray-700">
                 <button
                   onClick={() => setShowPasswordForm(!showPasswordForm)}
@@ -364,9 +445,12 @@ export default function Profile() {
                     </h4>
                     <p className="text-xs text-gray-500">Delete your account permanently - this action cannot be undone</p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <button onClick={() => { logout(); navigate("/login"); }} className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2.5 rounded-xl transition-all duration-300">
                       <LogOut className="w-4 h-4" /> Logout
+                    </button>
+                    <button onClick={deactivateAccount} className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl transition-all duration-300">
+                      Deactivate Account
                     </button>
                     <button onClick={deleteAccount} className="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-red-500/25 flex items-center gap-2">
                       <Trash2 className="w-4 h-4" /> Delete Account
@@ -378,6 +462,33 @@ export default function Profile() {
           )}
         </div>
       </div>
+
+      {listModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setListModal(null)}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full max-h-[70vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex justify-between items-center">
+              <h3 className="font-bold text-white capitalize">{listModal}</h3>
+              <button onClick={() => setListModal(null)} className="text-white"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="overflow-y-auto max-h-[calc(70vh-60px)] divide-y divide-gray-100 dark:divide-gray-700">
+              {listItems.length === 0 ? (
+                <p className="text-center text-gray-500 text-sm py-8">No users to show.</p>
+              ) : (
+                listItems.map((u) => (
+                  <div key={u.id} className="flex items-center gap-3 p-3">
+                    <img
+                      src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=dc2626&color=fff`}
+                      alt={u.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <span className="text-sm font-medium text-gray-800 dark:text-white">{u.name}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import { Sparkles } from "lucide-react";
+import api from "../api/axios";
 
 export const AuthContext = createContext();
 
@@ -18,7 +19,26 @@ export default function AuthProvider({ children }) {
         localStorage.removeItem("user");
       }
     }
-    setLoading(false);
+
+    const storedToken = localStorage.getItem("accessToken");
+    if (storedToken) {
+      // Refresh/verify the current user from the server (GET /auth/me)
+      // instead of blindly trusting whatever is cached in localStorage.
+      api
+        .get("/auth/me")
+        .then((res) => {
+          if (res.data) {
+            setUser(res.data);
+            localStorage.setItem("user", JSON.stringify(res.data));
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to refresh current user via /auth/me:", error);
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   // login(accessToken, refreshToken, userObj)

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import Loader from "../components/Loader";
 import toast from "react-hot-toast";
@@ -14,6 +14,8 @@ import {
 export default function PostDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [highlightedComment, setHighlightedComment] = useState(null);
 
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
@@ -86,10 +88,52 @@ export default function PostDetails() {
     }
   };
 
+  // Refresh just the comment list (used after create/update/delete) without
+  // touching the post itself or redirecting away on transient errors.
+  const loadComments = async () => {
+    try {
+      const commentRes = await api.get(`/comment/post/${id}`, { params: { page: 1, pageSize: 50 } });
+      const commentItems = commentRes.data?.items || [];
+      setComments(commentItems);
+
+      commentItems.forEach(async (c) => {
+        try {
+          const likeRes = await api.get(`/comment/${c.id}/likes`);
+          setCommentLikes((prev) => ({ ...prev, [c.id]: likeRes.data?.likeCount || 0 }));
+        } catch {
+          /* ignore */
+        }
+      });
+    } catch (error) {
+      console.error("Error refreshing comments:", error);
+      toast.error(getErrorMessage(error, "Failed to refresh comments"));
+    }
+  };
+
   useEffect(() => {
     if (id) loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  useEffect(() => {
+    const highlightId = searchParams.get("highlight");
+    if (!highlightId) return;
+    // Deep-link support: GET /comment/{id} to fetch and highlight a single comment
+    // (used e.g. when a notification links directly to a comment)
+    api
+      .get(`/comment/${highlightId}`)
+      .then((res) => {
+        setHighlightedComment(res.data);
+        toast.success("Jumped to comment");
+        setTimeout(() => {
+          document.getElementById(`comment-${highlightId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 300);
+      })
+      .catch((error) => {
+        console.error("Failed to load highlighted comment:", error);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const updatePost = async () => {
     if (!editPostContent.trim() && !editPostImage) {
@@ -123,7 +167,7 @@ export default function PostDetails() {
       });
       setEditingComment(null);
       setEditCommentText("");
-      await loadData();
+      await loadComments();
       toast.success("Comment updated successfully!");
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to update comment"));
@@ -144,7 +188,7 @@ export default function PostDetails() {
       setText("");
       setReplyTo(null);
       setReplyToName("");
-      await loadData();
+      await loadComments();
       toast.success("Comment posted!");
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to post comment"));
@@ -158,7 +202,7 @@ export default function PostDetails() {
     setDeleting(true);
     try {
       await api.delete(`/comment/delete/${commentId}`);
-      await loadData();
+      await loadComments();
       toast.success("Comment deleted successfully");
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to delete comment"));
@@ -547,7 +591,13 @@ export default function PostDetails() {
             ) : (
               <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                 {comments.map((comment) => (
-                  <div key={comment.id} className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 transition-all duration-200 hover:shadow-md hover:shadow-red-500/5">
+                  <div
+                    key={comment.id}
+                    id={`comment-${comment.id}`}
+                    className={`bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 transition-all duration-200 hover:shadow-md hover:shadow-red-500/5 ${
+                      highlightedComment?.id === comment.id ? "ring-2 ring-red-500" : ""
+                    }`}
+                  >
                     {editingComment === comment.id ? (
                       <div className="space-y-3">
                         <textarea

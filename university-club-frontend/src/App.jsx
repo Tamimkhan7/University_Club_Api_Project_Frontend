@@ -8,6 +8,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Feed from "./pages/Feed";
 import Clubs from "./pages/Clubs";
+import ClubDetails from "./pages/ClubDetails";
 import Profile from "./pages/Profile";
 import PostDetails from "./pages/PostDetails";
 import Dashboard from "./pages/Dashboard";
@@ -15,6 +16,9 @@ import Users from "./pages/Users";
 import Events from "./pages/Events";
 import Messages from "./pages/Messages";
 import Notifications from "./pages/Notifications";
+import Groups from "./pages/Groups";
+import Files from "./pages/Files";
+import Connections from "./pages/Connections";
 import { Toaster } from "react-hot-toast";
 import Footer from "./components/Footer";
 
@@ -33,9 +37,13 @@ export default function App() {
         <Route path="/" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/clubs" element={<ProtectedRoute><Clubs /></ProtectedRoute>} />
+        <Route path="/clubs/:id" element={<ProtectedRoute><ClubDetails /></ProtectedRoute>} />
         <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
         <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
         <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+        <Route path="/groups" element={<ProtectedRoute><Groups /></ProtectedRoute>} />
+        <Route path="/files" element={<ProtectedRoute><Files /></ProtectedRoute>} />
+        <Route path="/connections" element={<ProtectedRoute><Connections /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/profile/:id" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

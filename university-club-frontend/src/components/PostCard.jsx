@@ -25,6 +25,9 @@ export default function PostCard({ post, onReact }) {
   const [showOptions, setShowOptions] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSaved, setIsSaved] = useState(!!post.isSaved);
+  const [showReactorsModal, setShowReactorsModal] = useState(false);
+  const [reactorFilter, setReactorFilter] = useState("all"); // "all" | reaction type label
+  const [reactors, setReactors] = useState([]);
 
   const loadSummary = async () => {
     try {
@@ -37,8 +40,41 @@ export default function PostCard({ post, onReact }) {
           : null
       );
     } catch (error) {
-      console.error("Error loading reaction summary:", error);
+      // Fallback to the individual count/my-reaction endpoints if summary fails
+      console.error("Error loading reaction summary, falling back:", error);
+      try {
+        const [countRes, myRes] = await Promise.all([
+          api.get(`/reaction/count/${post.id}`),
+          api.get(`/reaction/my/${post.id}`),
+        ]);
+        setReactionCount(countRes.data?.count ?? 0);
+        const myVal = myRes.data?.myReaction;
+        setUserReaction(myVal !== null && myVal !== undefined ? REACTIONS[myVal]?.type ?? null : null);
+      } catch (fallbackError) {
+        console.error("Reaction fallback also failed:", fallbackError);
+      }
     }
+  };
+
+  const loadReactors = async (filter) => {
+    try {
+      if (filter === "all") {
+        const res = await api.get(`/reaction/all/${post.id}`, { params: { page: 1, pageSize: 50 } });
+        setReactors(res.data?.items || []);
+      } else {
+        const reactionMeta = REACTIONS.find((r) => r.type === filter);
+        const res = await api.get(`/reaction/by-type/${post.id}/${reactionMeta.value}`, { params: { page: 1, pageSize: 50 } });
+        setReactors(res.data?.items || []);
+      }
+    } catch (error) {
+      console.error("Error loading reactors:", error);
+    }
+  };
+
+  const openReactorsModal = () => {
+    setShowReactorsModal(true);
+    setReactorFilter("all");
+    loadReactors("all");
   };
 
   useEffect(() => {
@@ -230,9 +266,9 @@ export default function PostCard({ post, onReact }) {
               {getReactionEmoji(userReaction)}
             </span>
           )}
-          <span className="text-gray-600 dark:text-gray-400 font-medium">
+          <button onClick={openReactorsModal} className="text-gray-600 dark:text-gray-400 font-medium hover:underline">
             {reactionCount} {reactionCount === 1 ? "reaction" : "reactions"}
-          </span>
+          </button>
         </div>
         <div className="flex items-center gap-1.5">
           <MessageCircle className="w-4 h-4 text-gray-400" />
@@ -299,6 +335,51 @@ export default function PostCard({ post, onReact }) {
           <span className="text-sm font-medium hidden xs:inline">Share</span>
         </button>
       </div>
+
+      {showReactorsModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowReactorsModal(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full max-h-[70vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex justify-between items-center">
+              <h3 className="font-bold text-white">Reactions</h3>
+              <button onClick={() => setShowReactorsModal(false)} className="text-white"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="flex gap-1 p-3 border-b border-gray-100 dark:border-gray-700 overflow-x-auto">
+              <button
+                onClick={() => { setReactorFilter("all"); loadReactors("all"); }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex-shrink-0 ${reactorFilter === "all" ? "bg-red-500 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}
+              >
+                All
+              </button>
+              {REACTIONS.map((r) => (
+                <button
+                  key={r.type}
+                  onClick={() => { setReactorFilter(r.type); loadReactors(r.type); }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium flex-shrink-0 ${reactorFilter === r.type ? "bg-red-500 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}
+                >
+                  {r.emoji} {r.type}
+                </button>
+              ))}
+            </div>
+            <div className="overflow-y-auto max-h-[calc(70vh-110px)] divide-y divide-gray-100 dark:divide-gray-700">
+              {reactors.length === 0 ? (
+                <p className="text-center text-gray-500 text-sm py-8">No reactions yet.</p>
+              ) : (
+                reactors.map((r) => (
+                  <div key={r.userId || r.id} className="flex items-center gap-3 p-3">
+                    <img
+                      src={r.userImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.userName || "U")}&background=dc2626&color=fff`}
+                      alt={r.userName}
+                      className="w-9 h-9 rounded-full object-cover"
+                    />
+                    <span className="text-sm font-medium text-gray-800 dark:text-white flex-1">{r.userName}</span>
+                    {r.type !== undefined && <span className="text-lg">{REACTIONS[r.type]?.emoji}</span>}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

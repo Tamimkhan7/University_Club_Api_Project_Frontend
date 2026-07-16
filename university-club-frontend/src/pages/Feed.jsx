@@ -3,7 +3,7 @@ import api, { getErrorMessage } from "../api/axios";
 import PostCard from "../components/PostCard";
 import CreatePost from "../components/CreatePost";
 import Loader from "../components/Loader";
-import { Sparkles, RefreshCw, AlertCircle, ChevronUp, Coffee, Flame, Users2, Bookmark, Compass } from "lucide-react";
+import { Sparkles, RefreshCw, AlertCircle, ChevronUp, Coffee, Flame, Users2, Bookmark, Compass, Search } from "lucide-react";
 
 const TABS = [
   { id: "global", label: "Global", icon: Compass, endpoint: "/feed/global" },
@@ -11,6 +11,7 @@ const TABS = [
   { id: "trending", label: "Trending", icon: Flame, endpoint: "/feed/trending" },
   { id: "my-clubs-trending", label: "My Clubs", icon: Sparkles, endpoint: "/feed/my-clubs-trending" },
   { id: "saved", label: "Saved", icon: Bookmark, endpoint: "/feed/saved" },
+  { id: "browse", label: "Browse / Search", icon: Search, endpoint: "/post/all" },
 ];
 
 export default function Feed() {
@@ -22,6 +23,9 @@ export default function Feed() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [browseQuery, setBrowseQuery] = useState("");
+  const [browseClubId, setBrowseClubId] = useState("");
+  const [browseUserId, setBrowseUserId] = useState("");
 
   const currentEndpoint = TABS.find((t) => t.id === tab)?.endpoint || "/feed/global";
 
@@ -32,9 +36,25 @@ export default function Feed() {
       setError("");
 
       try {
-        const res = await api.get(currentEndpoint, {
-          params: { page: targetPage, pageSize: 10 },
-        });
+        let res;
+        if (tab === "browse" && browseQuery.trim()) {
+          // /post/search: text search across all posts
+          res = await api.get("/post/search", {
+            params: { query: browseQuery.trim(), page: targetPage, pageSize: 10 },
+          });
+        } else if (tab === "browse") {
+          // /post/all: filterable listing (clubId / userId / query)
+          res = await api.get("/post/all", {
+            params: {
+              clubId: browseClubId || undefined,
+              userId: browseUserId || undefined,
+              page: targetPage,
+              pageSize: 10,
+            },
+          });
+        } else {
+          res = await api.get(currentEndpoint, { params: { page: targetPage, pageSize: 10 } });
+        }
         const data = res.data || {};
         setPosts(data.items || []);
         setPage(data.page || 1);
@@ -47,7 +67,7 @@ export default function Feed() {
         setRefreshing(false);
       }
     },
-    [currentEndpoint]
+    [currentEndpoint, tab, browseQuery, browseClubId, browseUserId]
   );
 
   useEffect(() => {
@@ -122,6 +142,48 @@ export default function Feed() {
         {tab === "global" && (
           <div className="mb-6">
             <CreatePost reload={handlePostCreated} />
+          </div>
+        )}
+
+        {tab === "browse" && (
+          <div className="bg-white/80 dark:bg-gray-800/80 rounded-2xl p-4 mb-6 border border-white/30 dark:border-gray-700/50 space-y-3">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                loadPosts(1);
+              }}
+              className="flex flex-col sm:flex-row gap-2"
+            >
+              <input
+                value={browseQuery}
+                onChange={(e) => setBrowseQuery(e.target.value)}
+                placeholder="Search posts by text (/post/search)..."
+                className="flex-1 px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
+              />
+              <button type="submit" className="px-4 py-2.5 bg-red-500 text-white rounded-xl text-sm font-medium">
+                Search
+              </button>
+            </form>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                value={browseClubId}
+                onChange={(e) => setBrowseClubId(e.target.value)}
+                placeholder="Filter by Club ID (/post/all)"
+                className="flex-1 px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
+              />
+              <input
+                value={browseUserId}
+                onChange={(e) => setBrowseUserId(e.target.value)}
+                placeholder="Filter by User ID (/post/all)"
+                className="flex-1 px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
+              />
+              <button
+                onClick={() => { setBrowseQuery(""); loadPosts(1); }}
+                className="px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl text-sm font-medium"
+              >
+                Apply Filters
+              </button>
+            </div>
           </div>
         )}
 

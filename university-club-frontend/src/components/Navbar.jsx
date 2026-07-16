@@ -5,6 +5,7 @@ import api from "../api/axios";
 import {
   Menu, X, Home, Users, UserCircle, LogOut, Sparkles, LayoutDashboard,
   Search, Bell, ChevronDown, Sun, Moon, User, Calendar, MessageSquare,
+  FolderOpen, UsersRound, Link2,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -217,6 +218,15 @@ export default function Navbar() {
                           <Link to="/profile" className="flex items-center space-x-3 px-4 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200" onClick={() => setShowUserMenu(false)}>
                             <User className="w-4 h-4" /> <span>My Profile</span>
                           </Link>
+                          <Link to="/groups" className="flex items-center space-x-3 px-4 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200" onClick={() => setShowUserMenu(false)}>
+                            <UsersRound className="w-4 h-4" /> <span>Group Chats</span>
+                          </Link>
+                          <Link to="/files" className="flex items-center space-x-3 px-4 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200" onClick={() => setShowUserMenu(false)}>
+                            <FolderOpen className="w-4 h-4" /> <span>Files</span>
+                          </Link>
+                          <Link to="/connections" className="flex items-center space-x-3 px-4 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200" onClick={() => setShowUserMenu(false)}>
+                            <Link2 className="w-4 h-4" /> <span>Connections</span>
+                          </Link>
                           <button onClick={handleLogout} className="flex items-center space-x-3 w-full px-4 py-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200">
                             <LogOut className="w-4 h-4" /> <span>Logout</span>
                           </button>
@@ -277,7 +287,13 @@ export default function Navbar() {
                     </div>
                   </div>
 
-                  {[...navLinks, { path: "/messages", icon: MessageSquare, label: "Messages" }, { path: "/notifications", icon: Bell, label: "Notifications" }].map((link) => {
+                  {[...navLinks,
+                    { path: "/messages", icon: MessageSquare, label: "Messages" },
+                    { path: "/groups", icon: UsersRound, label: "Group Chats" },
+                    { path: "/files", icon: FolderOpen, label: "Files" },
+                    { path: "/connections", icon: Link2, label: "Connections" },
+                    { path: "/notifications", icon: Bell, label: "Notifications" },
+                  ].map((link) => {
                     const Icon = link.icon;
                     const active = isActive(link.path);
                     return (
