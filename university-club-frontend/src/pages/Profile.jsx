@@ -5,56 +5,13 @@ import Loader from "../components/Loader";
 import toast from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
 import {
-  Mail,
-  Save,
-  Edit3,
-  Sparkles,
-  MapPin,
-  Heart,
-  Users as UsersIcon,
-  Trash2,
-  X,
-  Loader2,
-  Camera,
-  UserPlus,
-  UserMinus,
-  Lock,
-  EyeOff,
-  Eye,
-  LogOut,
-  Shield,
-  Award,
-  Crown,
-  Star,
-  Zap,
-  Rocket,
-  Calendar,
-  Clock,
-  Compass,
-  Gift,
-  Gem,
-  BadgeCheck,
-  ChevronRight,
-  Settings,
-  Bell,
-  Share2,
-  Link2, 
-  User
+  Mail, Save, Edit3, Sparkles, MapPin, Heart, Users as UsersIcon,
+  Trash2, X, Loader2, Camera, UserPlus, UserMinus, Lock, EyeOff, Eye,
+  LogOut, Shield, Award, Crown, Star, Zap, Rocket, Calendar, Clock,
+  Compass, Gift, Gem, BadgeCheck, ChevronRight, Settings, Bell,
+  Share2, Link2, User, Building2, BookOpen, Target, Globe,
+  Phone, MessageCircle
 } from "lucide-react";
-
-/**
- * ============================================================
- *  👤 Profile — Premium User Profile Experience
- *  Designed with Glassmorphism + Animated Visuals
- *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
- * ============================================================
- * 
- *  ┌─────────────────────────────────────────────────────────────┐
- *  │  🎯 Purpose: Display and manage user profile            │
- *  │  🔥 Features: Edit, Follow, Stats, Privacy            │
- *  │  📱 Responsive: Optimized for all screen sizes          │
- *  └─────────────────────────────────────────────────────────────┘
- */
 
 export default function Profile() {
   const { id } = useParams();
@@ -268,10 +225,9 @@ export default function Profile() {
   const displayCover = coverPhotoFile ? URL.createObjectURL(coverPhotoFile) : profile.coverPhoto;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 pb-12 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
       
-      {/* Premium Background Decorations */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
@@ -285,7 +241,7 @@ export default function Profile() {
             {displayCover ? (
               <img src={displayCover} alt="Cover" className="w-full h-full object-cover" />
             ) : (
-              <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-rose-600 to-red-700">
+              <div className="absolute inset-0 bg-gradient-to-br from-rose-600 via-red-700 to-amber-600">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-20" />
               </div>
             )}
@@ -321,7 +277,7 @@ export default function Profile() {
         </div>
 
         {/* Profile Card */}
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/10 mt-20 sm:mt-16 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
+        <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 mt-20 sm:mt-16 overflow-hidden transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
           
           {/* Header */}
           <div className="pt-20 sm:pt-16 pb-4 px-6 text-center border-b border-gray-200/50 dark:border-gray-700/50">
@@ -341,7 +297,7 @@ export default function Profile() {
                 {isOwnProfile && !isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-5 py-2.5 rounded-xl font-medium hover:shadow-xl hover:shadow-red-500/25 transition-all duration-300 hover:scale-105"
+                    className="btn-primary flex items-center gap-2"
                   >
                     <Edit3 className="w-4 h-4" /> Edit Profile
                   </button>
@@ -353,7 +309,7 @@ export default function Profile() {
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-all duration-300 ${
                       profile.isFollowing
                         ? "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                        : "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/35 hover:scale-105"
+                        : "btn-primary"
                     }`}
                   >
                     {profile.isFollowing ? <UserMinus className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
@@ -458,26 +414,26 @@ export default function Profile() {
                   value={edit.name}
                   onChange={(e) => setEdit({ ...edit, name: e.target.value })}
                   placeholder="Full Name"
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/20 outline-none transition-all duration-200"
+                  className="input-premium"
                 />
                 <input
                   value={edit.userName}
                   onChange={(e) => setEdit({ ...edit, userName: e.target.value })}
                   placeholder="Username"
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/20 outline-none transition-all duration-200"
+                  className="input-premium"
                 />
                 <div className="grid md:grid-cols-2 gap-4">
                   <input
                     value={edit.department}
                     onChange={(e) => setEdit({ ...edit, department: e.target.value })}
                     placeholder="Department"
-                    className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/20 outline-none transition-all duration-200"
+                    className="input-premium"
                   />
                   <input
                     value={edit.batch}
                     onChange={(e) => setEdit({ ...edit, batch: e.target.value })}
                     placeholder="Batch"
-                    className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/20 outline-none transition-all duration-200"
+                    className="input-premium"
                   />
                 </div>
                 <textarea
@@ -485,7 +441,7 @@ export default function Profile() {
                   onChange={(e) => setEdit({ ...edit, bio: e.target.value })}
                   placeholder="Bio"
                   rows="4"
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/20 outline-none transition-all duration-200 resize-none"
+                  className="input-premium resize-none"
                 />
                 <div className="flex gap-3">
                   <button
@@ -497,7 +453,7 @@ export default function Profile() {
                   <button
                     onClick={updateProfile}
                     disabled={updating}
-                    className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-4 py-3 rounded-2xl font-medium hover:shadow-xl hover:shadow-red-500/25 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50"
+                    className="flex-1 btn-primary flex items-center justify-center gap-2"
                   >
                     {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                     Save Changes
@@ -522,7 +478,7 @@ export default function Profile() {
                   onClick={togglePrivacy}
                   className={`px-5 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                     isPrivate
-                      ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25"
+                      ? "btn-primary"
                       : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                   }`}
                 >
@@ -547,7 +503,7 @@ export default function Profile() {
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         placeholder="Current password"
-                        className="w-full px-4 py-2.5 pr-10 bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all"
+                        className="input-premium pr-10"
                       />
                       <button
                         type="button"
@@ -562,11 +518,11 @@ export default function Profile() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="New password (6+ chars)"
-                      className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all"
+                      className="input-premium"
                     />
                     <button
                       onClick={changePassword}
-                      className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:shadow-xl hover:shadow-red-500/25 transition-all duration-300 hover:scale-105"
+                      className="btn-primary px-6 py-2.5 text-sm"
                     >
                       Update Password
                     </button>
@@ -618,7 +574,7 @@ export default function Profile() {
           onClick={() => setListModal(null)}
         >
           <div
-            className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-sm w-full max-h-[70vh] overflow-hidden animate-scaleIn"
+            className="glass-card rounded-3xl shadow-2xl max-w-sm w-full max-h-[70vh] overflow-hidden animate-scaleIn"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="bg-gradient-to-r from-red-500 to-rose-600 px-6 py-4 flex justify-between items-center relative overflow-hidden">
@@ -638,9 +594,9 @@ export default function Profile() {
             </div>
             <div className="overflow-y-auto max-h-[calc(70vh-60px)] divide-y divide-gray-100 dark:divide-gray-700">
               {listItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
-                    <UsersIcon className="w-8 h-8 text-gray-300 dark:text-gray-500" />
+                <div className="empty-state py-12">
+                  <div className="icon w-16 h-16">
+                    <UsersIcon className="w-8 h-8 text-gray-400" />
                   </div>
                   <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">No users to show</p>
                 </div>
@@ -665,55 +621,6 @@ export default function Profile() {
           </div>
         </div>
       )}
-
-      {/* Global Styles for Animations */}
-      <style>{`
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-20px) scale(1.05); }
-        }
-        @keyframes spin-slow {
-          from { transform: translate(-50%, -50%) rotate(0deg); }
-          to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1.05); }
-        }
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes scaleIn {
-          from { opacity: 0; transform: scale(0.95) translateY(10px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-        .animate-spin-slow {
-          animation: spin-slow 30s linear infinite;
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-        .animate-scaleIn {
-          animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-      `}</style>
     </div>
   );
 }

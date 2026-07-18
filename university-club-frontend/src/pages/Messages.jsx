@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useContext, useCallback } from "react";
+import { Link } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import toast from "react-hot-toast";
@@ -7,22 +8,10 @@ import {
   Send, Search, Trash2, Edit2, Check, X, MessageSquare, ArrowLeft, Loader2,
   Users, Heart, Star, Zap, Sparkles, Clock, Shield, User, 
   CheckCheck, ChevronRight, MoreVertical, Paperclip, Smile,
-  Camera, Mic, Phone, Video, UserPlus, Crown, Award
+  Camera, Mic, Phone, Video, UserPlus, Crown, Award,
+  Circle, CircleCheck, CircleDot, CircleSlash, Mail,
+  UserCircle, Plus, Hash, Building2, BookOpen, Target
 } from "lucide-react";
-
-/**
- * ============================================================
- *  💬 Messages — Premium Messaging Experience
- *  Designed with Glassmorphism + Animated Visuals
- *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
- * ============================================================
- * 
- *  ┌─────────────────────────────────────────────────────────────┐
- *  │  🎯 Purpose: Direct messaging between users             │
- *  │  🔥 Features: CRUD, Search, Real-time polling          │
- *  │  📱 Responsive: Optimized for all screen sizes          │
- *  └─────────────────────────────────────────────────────────────┘
- */
 
 export default function Messages() {
   const { user: me } = useContext(AuthContext);
@@ -38,12 +27,70 @@ export default function Messages() {
   const pollRef = useRef(null);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchResults, setSearchResults] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [showUserSearch, setShowUserSearch] = useState(false);
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+  const [userSearchResults, setUserSearchResults] = useState([]);
+  const [isSearchingUsers, setIsSearchingUsers] = useState(false);
+
+  const loadUsers = async (query = "") => {
+    setIsSearchingUsers(true);
+    try {
+      const res = await api.get("/user/search", { 
+        params: { query: query.trim() || "", page: 1, pageSize: 20 } 
+      });
+      setUserSearchResults(res.data?.items || []);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to search users"));
+    } finally {
+      setIsSearchingUsers(false);
+    }
+  };
+
+  const handleUserSearch = (e) => {
+    e.preventDefault();
+    if (userSearchQuery.trim()) {
+      loadUsers(userSearchQuery);
+    }
+  };
+
+  const startNewConversation = async (userId) => {
+    try {
+      const existing = conversations.find(c => c.userId === userId);
+      if (existing) {
+        openChat(existing);
+        setShowUserSearch(false);
+        return;
+      }
+      
+      const res = await api.get(`/user/profile/${userId}`);
+      const userData = res.data;
+      const newConv = {
+        userId: userData.id,
+        userName: userData.name,
+        profileImage: userData.profileImage,
+        lastMessage: "Start a conversation",
+        unreadCount: 0
+      };
+      
+      setConversations(prev => [newConv, ...prev]);
+      openChat(newConv);
+      setShowUserSearch(false);
+      setUserSearchQuery("");
+      setUserSearchResults([]);
+      toast.success(`Started conversation with ${userData.name}`);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to start conversation"));
+    }
+  };
 
   const handleMessageSearch = async (e) => {
     e.preventDefault();
     if (!searchKeyword.trim()) return;
     try {
-      const res = await api.get("/message/search", { params: { keyword: searchKeyword.trim(), page: 1, pageSize: 20 } });
+      const res = await api.get("/message/search", { 
+        params: { keyword: searchKeyword.trim(), page: 1, pageSize: 20 } 
+      });
       setSearchResults(res.data?.items || []);
     } catch (error) {
       toast.error(getErrorMessage(error, "Search failed"));
@@ -69,7 +116,9 @@ export default function Messages() {
 
   const loadChat = useCallback(async (userId) => {
     try {
-      const res = await api.get(`/message/${userId}`, { params: { page: 1, pageSize: 50, sortOrder: "asc" } });
+      const res = await api.get(`/message/${userId}`, { 
+        params: { page: 1, pageSize: 50, sortOrder: "asc" } 
+      });
       setMessages(res.data?.items || []);
       api.put(`/message/seen/${userId}`).catch(() => {});
     } catch (error) {
@@ -98,7 +147,10 @@ export default function Messages() {
     if (!text.trim() || !activeUser) return;
     setSending(true);
     try {
-      await api.post("/message", { receiverId: activeUser.userId, text: text.trim() });
+      await api.post("/message", { 
+        receiverId: activeUser.userId, 
+        text: text.trim() 
+      });
       setText("");
       loadChat(activeUser.userId);
       loadConversations();
@@ -140,25 +192,27 @@ export default function Messages() {
   };
 
   const formatTime = (date) =>
-    new Date(date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    new Date(date).toLocaleTimeString("en-US", { 
+      hour: "2-digit", 
+      minute: "2-digit" 
+    });
 
   if (loadingConvos) return <Loader />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 pb-12 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
       
-      {/* Premium Background Decorations */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 py-6 sm:py-8">
+        
         {/* Header */}
         <div className="relative mb-6">
-          <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-2xl blur-3xl opacity-20 animate-pulse-slow" />
-          <div className="relative bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-2xl p-5 text-white overflow-hidden shadow-2xl shadow-red-500/20">
+          <div className="page-hero rounded-2xl p-5">
             <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl animate-float-slow" />
             <div className="relative flex items-center gap-3">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
@@ -169,6 +223,13 @@ export default function Messages() {
                 <p className="text-white/80 text-xs sm:text-sm">Connect with your friends and community</p>
               </div>
               <div className="ml-auto flex items-center gap-2">
+                <button
+                  onClick={() => setShowUserSearch(!showUserSearch)}
+                  className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 text-xs font-medium hover:bg-white/30 transition-all flex items-center gap-1.5"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  New Message
+                </button>
                 <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
                   {conversations.length} conversations
                 </div>
@@ -177,19 +238,114 @@ export default function Messages() {
           </div>
         </div>
 
+        {/* New Message User Search */}
+        {showUserSearch && (
+          <div className="mb-6 animate-slideDown">
+            <div className="glass-card rounded-2xl p-4 shadow-xl">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-rose-600 rounded-xl flex items-center justify-center">
+                  <UserPlus className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-semibold text-gray-700 dark:text-gray-300">Start a new conversation</span>
+                <button
+                  onClick={() => {
+                    setShowUserSearch(false);
+                    setUserSearchQuery("");
+                    setUserSearchResults([]);
+                  }}
+                  className="ml-auto p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-400" />
+                </button>
+              </div>
+              
+              <form onSubmit={handleUserSearch} className="flex gap-2">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    value={userSearchQuery}
+                    onChange={(e) => {
+                      setUserSearchQuery(e.target.value);
+                      if (!e.target.value.trim()) {
+                        setUserSearchResults([]);
+                      }
+                    }}
+                    placeholder="Search by name or email..."
+                    className="input-premium pl-10 pr-4 py-2.5 text-sm"
+                  />
+                </div>
+                <button type="submit" className="btn-primary px-4 py-2.5 text-sm">
+                  <Search className="w-4 h-4" />
+                </button>
+              </form>
+
+              {userSearchResults.length > 0 && (
+                <div className="mt-3 space-y-1.5 max-h-60 overflow-y-auto">
+                  {userSearchResults.map((u) => (
+                    <button
+                      key={u.id}
+                      onClick={() => startNewConversation(u.id)}
+                      className="w-full flex items-center gap-3 p-3 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 dark:hover:from-red-900/10 dark:hover:to-rose-900/10 rounded-xl transition-all duration-200 group"
+                    >
+                      <div className="relative">
+                        <img
+                          src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=dc2626&color=fff&bold=true`}
+                          alt={u.name}
+                          className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600 group-hover:ring-red-500/30 transition-all"
+                        />
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-gray-800 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                          {u.name}
+                        </p>
+                        {u.department && (
+                          <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                            <Building2 className="w-3 h-3" />
+                            {u.department}
+                          </p>
+                        )}
+                      </div>
+                      <Send className="w-4 h-4 text-gray-400 group-hover:text-red-500 transition-colors" />
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {isSearchingUsers && (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="w-6 h-6 text-red-500 animate-spin" />
+                </div>
+              )}
+
+              {userSearchQuery && userSearchResults.length === 0 && !isSearchingUsers && (
+                <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                  <Search className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm">No users found</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Main Layout */}
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 h-[75vh] grid grid-cols-1 md:grid-cols-3">
+        <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden h-[75vh] grid grid-cols-1 md:grid-cols-3">
           
           {/* Conversations List */}
           <div className={`border-r border-gray-200/50 dark:border-gray-700/50 overflow-y-auto ${activeUser ? "hidden md:block" : ""}`}>
-            <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 sticky top-0 z-10">
+            <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 sticky top-0 z-10 flex items-center justify-between">
               <h2 className="font-bold text-white flex items-center gap-2">
                 <MessageSquare className="w-5 h-5" /> Messages
-                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full ml-auto">{conversations.length}</span>
               </h2>
+              <button
+                onClick={() => setShowUserSearch(true)}
+                className="text-white/80 hover:text-white hover:bg-white/20 p-1.5 rounded-xl transition-all"
+              >
+                <UserPlus className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Search */}
+            {/* Search Messages */}
             <form onSubmit={handleMessageSearch} className="p-3 border-b border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -197,7 +353,7 @@ export default function Messages() {
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
                   placeholder="Search messages..."
-                  className="w-full pl-9 pr-3 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all"
+                  className="input-premium pl-9 pr-3 py-2 text-sm"
                 />
               </div>
             </form>
@@ -229,7 +385,12 @@ export default function Messages() {
                       onClick={() => {
                         const otherId = m.senderId === me?.id ? m.receiverId : m.senderId;
                         const otherName = m.senderId === me?.id ? m.receiverName : m.senderName;
-                        openChat({ userId: otherId, userName: otherName, profileImage: m.senderImage });
+                        const otherImage = m.senderId === me?.id ? m.receiverImage : m.senderImage;
+                        openChat({ 
+                          userId: otherId, 
+                          userName: otherName, 
+                          profileImage: otherImage 
+                        });
                         setSearchResults(null);
                       }}
                       className="w-full text-left px-4 py-2.5 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 dark:hover:from-red-900/10 dark:hover:to-rose-900/10 transition-all border-b border-gray-50 dark:border-gray-700/50 group"
@@ -250,11 +411,15 @@ export default function Messages() {
             {/* Conversations */}
             {conversations.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-[60%] text-center px-4">
-                <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
-                  <MessageSquare className="w-10 h-10 text-gray-300 dark:text-gray-500" />
+                <div className="empty-state">
+                  <div className="icon w-20 h-20">
+                    <MessageSquare className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500 dark:text-gray-400 font-medium">No conversations yet</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Click the <UserPlus className="w-3 h-3 inline" /> icon to start a new chat
+                  </p>
                 </div>
-                <p className="text-gray-500 dark:text-gray-400 font-medium">No conversations yet</p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Visit a profile to start messaging</p>
               </div>
             ) : (
               conversations.map((c) => (
@@ -300,11 +465,22 @@ export default function Messages() {
             {!activeUser ? (
               <div className="flex-1 flex items-center justify-center text-gray-400">
                 <div className="text-center">
-                  <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <MessageSquare className="w-10 h-10 text-gray-300 dark:text-gray-500" />
+                  <div className="empty-state">
+                    <div className="icon w-20 h-20">
+                      <MessageSquare className="w-10 h-10 text-gray-400" />
+                    </div>
+                    <p className="font-medium text-gray-500 dark:text-gray-400">Select a conversation</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      Choose a chat to start messaging or start a new one
+                    </p>
+                    <button
+                      onClick={() => setShowUserSearch(true)}
+                      className="btn-primary mt-4 px-6 py-2.5 text-sm"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      New Message
+                    </button>
                   </div>
-                  <p className="font-medium text-gray-500 dark:text-gray-400">Select a conversation</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Choose a chat to start messaging</p>
                 </div>
               </div>
             ) : (
@@ -330,6 +506,12 @@ export default function Messages() {
                     </p>
                   </div>
                   <div className="ml-auto flex gap-1">
+                    <button 
+                      onClick={() => window.location.href = `/profile/${activeUser.userId}`}
+                      className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all"
+                    >
+                      <User className="w-4 h-4" />
+                    </button>
                     <button className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all">
                       <Phone className="w-4 h-4" />
                     </button>
@@ -353,7 +535,6 @@ export default function Messages() {
                   ) : (
                     messages.map((m, index) => {
                       const isMine = m.senderId === me?.id;
-                      const showTimestamp = index === 0 || new Date(m.createdAt) - new Date(messages[index - 1].createdAt) > 60000;
                       return (
                         <div key={m.id} className={`flex ${isMine ? "justify-end" : "justify-start"} animate-fadeIn`}>
                           <div className={`max-w-[75%] ${isMine ? "bg-gradient-to-r from-red-500 to-rose-600 text-white" : "bg-white dark:bg-gray-700 text-gray-800 dark:text-white"} rounded-2xl px-4 py-2.5 shadow-lg ${!isMine ? "shadow-gray-200/50 dark:shadow-gray-700/30" : "shadow-red-500/20"} relative group`}>
@@ -424,12 +605,12 @@ export default function Messages() {
                     onChange={(e) => setText(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                     placeholder="Type a message..."
-                    className="flex-1 px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all text-sm"
+                    className="flex-1 input-premium py-2.5 text-sm"
                   />
                   <button 
                     onClick={sendMessage} 
                     disabled={sending || !text.trim()} 
-                    className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-5 py-2.5 rounded-xl disabled:opacity-50 hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 hover:scale-[1.05] disabled:hover:scale-100 flex items-center gap-2"
+                    className="btn-primary px-5 py-2.5 disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2"
                   >
                     {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </button>
@@ -439,48 +620,6 @@ export default function Messages() {
           </div>
         </div>
       </div>
-
-      {/* Global Styles for Animations */}
-      <style>{`
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-20px) scale(1.05); }
-        }
-        @keyframes spin-slow {
-          from { transform: translate(-50%, -50%) rotate(0deg); }
-          to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1.05); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(5px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-        .animate-spin-slow {
-          animation: spin-slow 30s linear infinite;
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-        .animate-pulse {
-          animation: pulse 1s ease-in-out infinite;
-        }
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-      `}</style>
     </div>
   );
 }

@@ -6,7 +6,8 @@ import {
   Calendar, Plus, X, Users, MapPin, Clock, Trash2, Edit3,
   UserCheck, UserX, Search, Sparkles, ChevronDown, ChevronUp,
   Star, Award, Flame, Rocket, Heart, Zap, Globe,
-  Filter, Grid3x3, List, ChevronRight, Ticket, PartyPopper
+  Filter, Grid3x3, List, ChevronRight, Ticket, PartyPopper,
+  Building2, BookOpen, Target, Eye, ThumbsUp
 } from "lucide-react";
 
 const TABS = [
@@ -16,20 +17,6 @@ const TABS = [
   { id: "joined", label: "Joined", icon: UserCheck },
   { id: "my-clubs", label: "My Clubs Upcoming", icon: Users },
 ];
-
-/**
- * ============================================================
- *  🎪 Events — Premium Events Management Page
- *  Designed with Glassmorphism + Animated Visuals
- *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
- * ============================================================
- * 
- *  ┌─────────────────────────────────────────────────────────────┐
- *  │  🎯 Purpose: Discover, join, and manage events           │
- *  │  🔥 Features: CRUD, Join/Leave, Attendees, Search       │
- *  │  📱 Responsive: Optimized for all screen sizes          │
- *  └─────────────────────────────────────────────────────────────┘
- */
 
 export default function Events() {
   const [tab, setTab] = useState("upcoming");
@@ -189,10 +176,9 @@ export default function Events() {
   if (loading) return <Loader />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 pb-12 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
       
-      {/* Premium Background Decorations */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
@@ -202,8 +188,7 @@ export default function Events() {
         
         {/* Hero Header */}
         <div className="relative mb-8">
-          <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-3xl blur-3xl opacity-20 animate-pulse-slow" />
-          <div className="relative bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-3xl p-6 sm:p-8 md:p-10 text-white overflow-hidden shadow-2xl shadow-red-500/20">
+          <div className="page-hero p-6 sm:p-8 md:p-10">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-slow" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10" />
@@ -214,7 +199,11 @@ export default function Events() {
                   <Calendar className="w-8 h-8 sm:w-10 sm:h-10" />
                 </div>
                 <div>
-                  <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Events</h1>
+                  <span className="hero-pill mb-2">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                    Hackathons · Workshops · Contests
+                  </span>
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mt-2">Events</h1>
                   <p className="text-white/80 text-sm mt-1">Discover and join upcoming club events</p>
                 </div>
               </div>
@@ -233,7 +222,7 @@ export default function Events() {
         </div>
 
         {/* Tabs and Create Button */}
-        <div className="flex flex-wrap items-center gap-2 mb-6 p-1.5 bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg">
+        <div className="flex flex-wrap items-center gap-2 mb-6 p-1.5 glass-card rounded-2xl shadow-lg">
           <div className="flex flex-wrap gap-1 flex-1">
             {TABS.map((t) => {
               const Icon = t.icon;
@@ -243,7 +232,7 @@ export default function Events() {
                   onClick={() => setTab(t.id)}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
                     tab === t.id 
-                      ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/35 hover:scale-105" 
+                      ? "btn-primary"
                       : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50"
                   }`}
                 >
@@ -255,10 +244,8 @@ export default function Events() {
           </div>
           <button
             onClick={() => { setShowCreateForm(!showCreateForm); setEditingEvent(null); }}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-              showCreateForm 
-                ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25 hover:shadow-2xl hover:shadow-red-500/35 hover:scale-105" 
-                : "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25 hover:shadow-2xl hover:shadow-red-500/35 hover:scale-105"
+            className={`btn-primary flex items-center gap-2 ${
+              showCreateForm ? "bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700" : ""
             }`}
           >
             {showCreateForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
@@ -274,7 +261,7 @@ export default function Events() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search events by title, description, or club..."
-              className="w-full px-5 py-3.5 pl-12 pr-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-4 focus:ring-red-400/20 focus:border-red-400 transition-all duration-300 outline-none"
+              className="input-premium pl-12 pr-4 py-3.5"
             />
             {searchTerm && (
               <button
@@ -291,7 +278,7 @@ export default function Events() {
         {/* Create Form */}
         {showCreateForm && (
           <div className="mb-8 animate-slideDown">
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
+            <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden">
               <div className="bg-gradient-to-r from-red-500 via-rose-500 to-red-600 px-6 py-4 relative">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10" />
                 <h2 className="relative text-xl font-bold text-white flex items-center gap-2">
@@ -303,26 +290,26 @@ export default function Events() {
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   placeholder="Event title"
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-4 focus:ring-red-400/20 focus:border-red-400 transition-all duration-200 outline-none"
+                  className="input-premium"
                 />
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   placeholder="Description"
                   rows="3"
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-4 focus:ring-red-400/20 focus:border-red-400 resize-none transition-all duration-200 outline-none"
+                  className="input-premium resize-none"
                 />
                 <div className="grid sm:grid-cols-2 gap-4">
                   <input
                     type="datetime-local"
                     value={form.eventDate}
                     onChange={(e) => setForm({ ...form, eventDate: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-4 focus:ring-red-400/20 focus:border-red-400 transition-all duration-200 outline-none"
+                    className="input-premium"
                   />
                   <select
                     value={form.clubId}
                     onChange={(e) => setForm({ ...form, clubId: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-4 focus:ring-red-400/20 focus:border-red-400 transition-all duration-200 outline-none"
+                    className="input-premium"
                   >
                     {clubs.map((c) => (
                       <option key={c.clubId} value={c.clubId}>{c.clubName}</option>
@@ -331,7 +318,7 @@ export default function Events() {
                 </div>
                 <button
                   onClick={submitEvent}
-                  className="w-full bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-3.5 rounded-2xl hover:shadow-2xl hover:shadow-red-500/25 transition-all duration-300 font-semibold flex items-center justify-center gap-2 hover:scale-[1.02]"
+                  className="btn-primary w-full py-3.5 group"
                 >
                   <Rocket className="w-4 h-4" />
                   {editingEvent ? "Save Changes" : "Create Event"}
@@ -343,23 +330,24 @@ export default function Events() {
 
         {/* Events Grid */}
         {events.length === 0 ? (
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-xl shadow-red-500/10 p-12 sm:p-16 text-center border border-gray-200/50 dark:border-gray-700/50">
-            <div className="w-24 h-24 bg-gradient-to-br from-red-100 to-rose-100 dark:from-gray-700 dark:to-gray-600 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <Calendar className="w-12 h-12 text-red-500" />
+          <div className="glass-card rounded-3xl shadow-xl shadow-red-500/10 p-12 sm:p-16 text-center">
+            <div className="empty-state">
+              <div className="icon">
+                <Calendar className="w-12 h-12 text-red-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">No events found</h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                {searchTerm ? "Try a different search term" : "Create your first event to get started!"}
+              </p>
             </div>
-            <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">No events found</h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              {searchTerm ? "Try a different search term" : "Create your first event to get started!"}
-            </p>
           </div>
         ) : (
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {events.map((ev) => (
               <div
                 key={ev.id}
-                className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-3xl hover:shadow-red-500/15 transition-all duration-500 overflow-hidden hover:-translate-y-2 border border-gray-100 dark:border-gray-700 hover:border-red-200/50 dark:hover:border-red-800/30"
+                className="glass-card rounded-2xl shadow-lg hover:shadow-3xl hover:shadow-red-500/15 transition-all duration-500 overflow-hidden hover:-translate-y-2 border border-gray-100/80 dark:border-gray-700/80 hover:border-red-200/50 dark:hover:border-red-800/30 animate-fadeIn"
               >
-                {/* Card Header */}
                 <div className={`relative overflow-hidden p-5 ${
                   new Date(ev.eventDate) > new Date()
                     ? "bg-gradient-to-r from-red-500 to-rose-600"
@@ -391,7 +379,6 @@ export default function Events() {
                   </div>
                 </div>
 
-                {/* Card Body */}
                 <div className="p-5">
                   <p className="text-sm text-gray-600 dark:text-gray-300 min-h-[40px] line-clamp-2">
                     {ev.description || "No description"}
@@ -399,7 +386,7 @@ export default function Events() {
                   
                   <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
                     <div className="flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5" />
+                      <Building2 className="w-3.5 h-3.5" />
                       <span className="truncate max-w-[120px]">{ev.club?.name || `Club #${ev.clubId}`}</span>
                     </div>
                     <div className="w-px h-4 bg-gray-200 dark:bg-gray-700" />
@@ -409,7 +396,6 @@ export default function Events() {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
                   <div className="flex gap-2 mt-4">
                     {joinStatus[ev.id] ? (
                       <button
@@ -438,7 +424,6 @@ export default function Events() {
                     </button>
                   </div>
 
-                  {/* Attendees List */}
                   {expanded[ev.id] && (
                     <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 space-y-2 max-h-48 overflow-y-auto">
                       {eventStats[ev.id] && (
@@ -464,7 +449,6 @@ export default function Events() {
                     </div>
                   )}
 
-                  {/* Edit/Delete for Created Events */}
                   {tab === "my" && (
                     <div className="flex gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                       <button
@@ -512,7 +496,7 @@ export default function Events() {
                     onClick={() => loadEvents(pageNum, searchTerm)}
                     className={`w-10 h-10 rounded-xl text-sm font-medium transition-all duration-200 ${
                       page === pageNum
-                        ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25"
+                        ? "btn-primary w-10 h-10 flex items-center justify-center"
                         : "bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-500/30"
                     }`}
                   >
@@ -533,47 +517,6 @@ export default function Events() {
           </div>
         )}
       </div>
-
-      {/* Global Styles for Animations */}
-      <style>{`
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-20px) scale(1.05); }
-        }
-        @keyframes spin-slow {
-          from { transform: translate(-50%, -50%) rotate(0deg); }
-          to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1.05); }
-        }
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-        .animate-spin-slow {
-          animation: spin-slow 30s linear infinite;
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `}</style>
     </div>
   );
 }

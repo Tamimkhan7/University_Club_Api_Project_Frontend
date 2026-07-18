@@ -8,27 +8,6 @@ import {
   ArrowRight, Check, X, Loader2, PartyPopper
 } from "lucide-react";
 
-/**
- * ============================================================
- *  ✨ Register — Premium Registration Experience
- *  Designed with Glassmorphism + Animated Visuals
- *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
- * ============================================================
- * 
- *  ┌─────────────────────────────────────────────────────────────┐
- *  │  🎯 Purpose: Create new user account                    │
- *  │  🔥 Features: Password validation, Email verification  │
- *  │  📱 Responsive: Optimized for all screen sizes          │
- *  └─────────────────────────────────────────────────────────────┘
- * 
- *  ⚡ Flow:
- *  1. User fills registration form
- *  2. Validates inputs
- *  3. Sends registration request
- *  4. Shows email verification success
- *  5. Redirects to login
- */
-
 export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [loading, setLoading] = useState(false);
@@ -36,6 +15,16 @@ export default function Register() {
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
+
+  const checkPasswordStrength = (pwd) => {
+    let strength = 0;
+    if (pwd.length >= 6) strength++;
+    if (pwd.match(/[a-z]/) && pwd.match(/[A-Z]/)) strength++;
+    if (pwd.match(/[0-9]/)) strength++;
+    if (pwd.match(/[^a-zA-Z0-9]/)) strength++;
+    setPasswordStrength(strength);
+  };
 
   const validatePassword = (pwd) => {
     if (pwd.length < 6) return "Password must be at least 6 characters";
@@ -70,9 +59,7 @@ export default function Register() {
 
   if (success) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 overflow-hidden">
-        
-        {/* Premium Background Decorations */}
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 overflow-hidden">
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
           <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-full blur-3xl animate-float-slow" />
           <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
@@ -82,9 +69,8 @@ export default function Register() {
         <div className="relative w-full max-w-md">
           <div className="absolute -inset-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-3xl blur-2xl animate-pulse-slow" />
           
-          <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-green-500/20 dark:shadow-green-500/10 p-8 md:p-10 border border-gray-200/50 dark:border-gray-700/50 text-center transition-all duration-500 hover:shadow-3xl hover:shadow-green-500/25">
-            
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 bg-[length:200%_100%] animate-gradient-x rounded-t-3xl" />
+          <div className="relative glass-card rounded-3xl p-8 md:p-10 text-center">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 bg-[length:200%_100%] animate-shimmer rounded-t-3xl" />
 
             <div className="relative">
               <div className="relative inline-block mb-6">
@@ -116,7 +102,7 @@ export default function Register() {
 
               <Link
                 to="/login"
-                className="mt-6 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-8 py-3.5 rounded-2xl font-semibold shadow-xl shadow-red-500/25 hover:shadow-2xl hover:shadow-red-500/35 transition-all duration-300 hover:scale-[1.02] w-full group"
+                className="mt-6 inline-flex items-center justify-center gap-2 btn-primary w-full group"
               >
                 <span>Go to Sign In</span>
                 <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -134,9 +120,8 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 overflow-hidden">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 overflow-hidden">
       
-      {/* Premium Background Decorations */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/10 to-rose-500/10 rounded-full blur-3xl animate-float-slow" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/10 to-amber-500/10 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
@@ -145,20 +130,13 @@ export default function Register() {
       </div>
 
       <div className="relative w-full max-w-md">
-        {/* Outer Glow Ring */}
         <div className="absolute -inset-4 bg-gradient-to-r from-red-500/10 to-rose-500/10 rounded-3xl blur-2xl animate-pulse-slow" />
         
-        <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/20 dark:shadow-red-500/10 p-8 md:p-10 border border-gray-200/50 dark:border-gray-700/50 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/25">
+        <div className="relative glass-card rounded-3xl p-8 md:p-10 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/25">
           
-          {/* Top Gradient Bar */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-gradient-x rounded-t-3xl" />
-
-          {/* Decorative Elements */}
-          <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-2xl" />
-          <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-gradient-to-br from-amber-500/5 to-orange-500/5 rounded-full blur-2xl" />
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-shimmer rounded-t-3xl" />
 
           <div className="relative text-center">
-            {/* Icon */}
             <div className="relative inline-block mb-6">
               <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-600 rounded-3xl blur-2xl opacity-30 animate-pulse-slow" />
               <div className="relative w-24 h-24 bg-gradient-to-br from-red-500 via-rose-500 to-red-700 rounded-3xl flex items-center justify-center shadow-2xl shadow-red-500/30 transform hover:scale-110 transition-transform duration-500">
@@ -169,7 +147,6 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Title */}
             <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-red-600 to-rose-600 dark:from-red-400 dark:to-rose-400 bg-clip-text text-transparent">
               Create Account
             </h1>
@@ -177,7 +154,6 @@ export default function Register() {
               Join the university community
             </p>
 
-            {/* Error Message */}
             {error && (
               <div className="mt-6 p-4 bg-red-50/90 dark:bg-red-950/20 backdrop-blur-sm border border-red-200 dark:border-red-800/30 rounded-2xl text-red-700 dark:text-red-300 text-sm flex items-start gap-3 text-left animate-shake">
                 <div className="w-7 h-7 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -190,7 +166,6 @@ export default function Register() {
               </div>
             )}
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="mt-8 space-y-4">
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -201,14 +176,9 @@ export default function Register() {
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="Full Name"
-                  className="w-full pl-12 pr-4 py-3.5 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-4 focus:ring-red-400/20 focus:border-red-400 outline-none transition-all duration-300 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
+                  className="input-premium pl-12 pr-4"
                   required
                 />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                  <div className="w-7 h-7 bg-gray-100 dark:bg-gray-600 rounded-lg flex items-center justify-center text-[10px] font-mono text-gray-400">
-                    ✨
-                  </div>
-                </div>
               </div>
 
               <div className="relative group">
@@ -220,14 +190,9 @@ export default function Register() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="Email address"
-                  className="w-full pl-12 pr-4 py-3.5 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-4 focus:ring-red-400/20 focus:border-red-400 outline-none transition-all duration-300 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
+                  className="input-premium pl-12 pr-4"
                   required
                 />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                  <div className="w-7 h-7 bg-gray-100 dark:bg-gray-600 rounded-lg flex items-center justify-center text-[10px] font-mono text-gray-400">
-                    @
-                  </div>
-                </div>
               </div>
 
               <div className="relative group">
@@ -237,9 +202,12 @@ export default function Register() {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  onChange={(e) => {
+                    setForm({ ...form, password: e.target.value });
+                    checkPasswordStrength(e.target.value);
+                  }}
                   placeholder="Password (min 6 characters)"
-                  className="w-full pl-12 pr-12 py-3.5 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-4 focus:ring-red-400/20 focus:border-red-400 outline-none transition-all duration-300 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
+                  className="input-premium pl-12 pr-12"
                   required
                 />
                 <button
@@ -251,6 +219,30 @@ export default function Register() {
                 </button>
               </div>
 
+              {form.password && (
+                <div className="space-y-1.5">
+                  <div className="flex gap-1">
+                    {[...Array(4)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                          i < passwordStrength
+                            ? i === 0 ? "bg-red-500" : i === 1 ? "bg-orange-500" : i === 2 ? "bg-yellow-500" : "bg-green-500"
+                            : "bg-gray-200 dark:bg-gray-700"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 text-left">
+                    {passwordStrength === 0 && "Weak"}
+                    {passwordStrength === 1 && "Fair"}
+                    {passwordStrength === 2 && "Good"}
+                    {passwordStrength === 3 && "Strong"}
+                    {passwordStrength === 4 && "Very Strong"}
+                  </p>
+                </div>
+              )}
+
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <Lock className="w-5 h-5 text-gray-400 group-focus-within:text-red-500 transition-colors duration-300" />
@@ -260,7 +252,7 @@ export default function Register() {
                   value={form.confirmPassword}
                   onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
                   placeholder="Confirm Password"
-                  className="w-full pl-12 pr-12 py-3.5 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-4 focus:ring-red-400/20 focus:border-red-400 outline-none transition-all duration-300 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
+                  className="input-premium pl-12 pr-12"
                   required
                 />
                 <button
@@ -272,7 +264,6 @@ export default function Register() {
                 </button>
               </div>
 
-              {/* Password Requirements */}
               <div className="p-3 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl border border-gray-200/50 dark:border-gray-700/50">
                 <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                   <Shield className="w-3.5 h-3.5 text-amber-500" />
@@ -283,16 +274,15 @@ export default function Register() {
               <button
                 type="submit"
                 disabled={loading}
-                className="relative w-full bg-gradient-to-r from-red-500 via-rose-500 to-red-600 bg-[length:200%_100%] animate-gradient-x text-white py-3.5 rounded-2xl font-semibold hover:shadow-2xl hover:shadow-red-500/25 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 overflow-hidden group"
+                className="btn-primary w-full py-3.5 group"
               >
-                <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                 {loading ? (
-                  <div className="flex items-center justify-center gap-2 relative z-10">
+                  <div className="flex items-center justify-center gap-2">
                     <Loader2 className="w-5 h-5 animate-spin" />
                     <span>Creating Account...</span>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center gap-2 relative z-10">
+                  <div className="flex items-center justify-center gap-2">
                     <Rocket className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
                     <span>Create Account</span>
                   </div>
@@ -300,17 +290,12 @@ export default function Register() {
               </button>
             </form>
 
-            {/* Divider */}
-            <div className="relative mt-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200 dark:border-gray-700" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white/90 dark:bg-gray-800/90 text-gray-400 dark:text-gray-500">Already a member?</span>
+            <div className="divider-premium mt-8">
+              <div className="content">
+                <span>Already a member?</span>
               </div>
             </div>
 
-            {/* Footer */}
             <div className="mt-6">
               <Link
                 to="/login"
@@ -334,57 +319,6 @@ export default function Register() {
           </div>
         </div>
       </div>
-
-      {/* Global Styles for Animations */}
-      <style>{`
-        @keyframes gradient-x {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-20px) scale(1.05); }
-        }
-        @keyframes spin-slow {
-          from { transform: translate(-50%, -50%) rotate(0deg); }
-          to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1.05); }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-4px); }
-          75% { transform: translateX(4px); }
-        }
-        @keyframes bounce-slow {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
-        }
-        .animate-gradient-x {
-          animation: gradient-x 3s ease infinite;
-          background-size: 200% 100%;
-        }
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-        .animate-spin-slow {
-          animation: spin-slow 30s linear infinite;
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-        .animate-shake {
-          animation: shake 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .animate-bounce-slow {
-          animation: bounce-slow 2s ease-in-out infinite;
-        }
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-      `}</style>
     </div>
   );
 }

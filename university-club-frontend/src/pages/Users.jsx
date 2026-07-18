@@ -2,15 +2,17 @@ import { useEffect, useState, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
+import Loader from "../components/Loader";
+import Logo from "../components/Logo";
 import toast from "react-hot-toast";
 import {
   Search, Users as UsersIcon, Sparkles, UserPlus, UserMinus,
   ChevronRight, UserCheck, Star, TrendingUp, Award, 
   Crown, MessageCircle, Heart, Activity, Globe,
-  Bell, Settings, MoreVertical, Filter
+  Bell, Settings, MoreVertical, Filter, Building2,
+  BookOpen, Target, Eye, ThumbsUp, Mail, MapPin
 } from "lucide-react";
 
-const logoImage = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVifde8HHEEoz6yz-nSHMKMMRNOeHfCE-GoA&s";
 
 export default function Users() {
   const { user: me } = useContext(AuthContext);
@@ -48,7 +50,6 @@ export default function Users() {
     } else {
       loadUsers(1);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location]);
 
   const handleSearch = (e) => {
@@ -84,42 +85,36 @@ export default function Users() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
-            <div className="w-24 h-24 bg-gradient-to-r from-red-500 via-rose-500 to-red-600 rounded-3xl flex items-center justify-center mx-auto animate-pulse shadow-2xl shadow-red-500/30">
-              <img src={logoImage} alt="Logo" className="w-12 h-12 object-contain" />
-            </div>
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-400 rounded-full animate-bounce"></div>
-          </div>
-          <p className="text-gray-600 dark:text-gray-300 mt-6 font-medium text-lg">Loading community members...</p>
-          <div className="mt-4 flex justify-center space-x-2">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-            <div className="w-2 h-2 bg-rose-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 space-y-6 lg:space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-16">
+      
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 space-y-6 lg:space-y-8">
         
-        {/* Hero Header - Enhanced */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-3xl p-8 lg:p-12 text-white shadow-2xl shadow-red-500/30">
+        {/* Hero Header */}
+        <div className="page-hero p-8 lg:p-12">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl"></div>
           <div className="relative z-10">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl border border-white/20">
-                  <img src={logoImage} alt="Logo" className="w-8 h-8 object-contain" />
+                <div className="page-hero-icon">
+                  <Logo size={32} className="rounded-lg" />
                 </div>
                 <div>
-                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">Community</h1>
+                  <span className="hero-pill mb-2">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                    Where Code Meets Community
+                  </span>
+                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mt-2">Community</h1>
                   <p className="text-white/80 text-sm sm:text-base mt-1 flex items-center gap-2">
                     <UsersIcon className="w-4 h-4" />
                     Connect with fellow university students
@@ -139,8 +134,8 @@ export default function Users() {
           </div>
         </div>
 
-        {/* Search & Filter - Enhanced */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-xl shadow-red-500/10 p-5 lg:p-6 border border-gray-200/50 dark:border-gray-700/50">
+        {/* Search */}
+        <div className="glass-card rounded-2xl shadow-xl shadow-red-500/10 p-5 lg:p-6">
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -149,32 +144,32 @@ export default function Users() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by name, department, or skills..."
-                className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-red-400 focus:ring-4 focus:ring-red-400/20 bg-white dark:bg-gray-900 text-gray-800 dark:text-white placeholder-gray-400 transition-all duration-300"
+                className="input-premium pl-12 pr-4 py-3.5"
               />
             </div>
-            <button type="submit" className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-8 py-3.5 rounded-xl hover:shadow-lg hover:shadow-red-500/30 transition-all duration-300 font-medium flex items-center justify-center gap-2 transform hover:scale-[1.02] active:scale-[0.98]">
+            <button type="submit" className="btn-primary px-8 py-3.5 flex items-center justify-center gap-2">
               <Search className="w-4 h-4" /> Search
             </button>
           </form>
         </div>
 
-        {/* Stats & Filters - New */}
+        {/* Stats */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl px-4 py-2 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="glass-card rounded-xl px-4 py-2">
               <span className="text-sm text-gray-600 dark:text-gray-300">Total: <strong className="text-red-600 dark:text-red-400">{users.length}</strong></span>
             </div>
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl px-4 py-2 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="glass-card rounded-xl px-4 py-2">
               <span className="text-sm text-gray-600 dark:text-gray-300">Page: <strong className="text-red-600 dark:text-red-400">{page} of {totalPages}</strong></span>
             </div>
           </div>
-          <button className="flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl px-4 py-2 border border-gray-200/50 dark:border-gray-700/50 hover:border-red-300 transition-colors">
+          <button className="flex items-center gap-2 glass-card rounded-xl px-4 py-2 hover:border-red-300 transition-colors">
             <Filter className="w-4 h-4 text-gray-600 dark:text-gray-300" />
             <span className="text-sm text-gray-600 dark:text-gray-300">Filter</span>
           </button>
         </div>
 
-        {/* User Grid - Enhanced Cards */}
+        {/* User Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-7">
           {users.map((u, index) => {
             const gradient = getRandomGradient(u.id);
@@ -182,7 +177,7 @@ export default function Users() {
             return (
               <div
                 key={u.id}
-                className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/20 transition-all duration-500 hover:-translate-y-2 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 hover:border-red-300/50"
+                className="glass-card rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/20 transition-all duration-500 hover:-translate-y-2 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 hover:border-red-300/50 animate-fadeIn"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <Link to={`/profile/${u.id}`} className="block">
@@ -225,12 +220,12 @@ export default function Users() {
                     {(u.department || u.batch) && (
                       <p className="text-sm text-gray-400 dark:text-gray-500 mt-1.5 flex items-center justify-center gap-2">
                         <span className="inline-flex items-center gap-1">
-                          <Award className="w-3.5 h-3.5" />
+                          <Building2 className="w-3.5 h-3.5" />
                           {u.department}
                         </span>
                         {u.batch && (
                           <span className="inline-flex items-center gap-1">
-                            <UsersIcon className="w-3.5 h-3.5" />
+                            <BookOpen className="w-3.5 h-3.5" />
                             Batch {u.batch}
                           </span>
                         )}
@@ -257,7 +252,7 @@ export default function Users() {
                       className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
                         u.isFollowing
                           ? "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
-                          : "bg-gradient-to-r from-red-500 to-rose-600 text-white hover:shadow-lg hover:shadow-red-500/30 transform hover:scale-[1.02] active:scale-[0.98]"
+                          : "btn-primary"
                       }`}
                     >
                       {u.isFollowing ? (
@@ -290,24 +285,26 @@ export default function Users() {
           })}
         </div>
 
-        {/* Empty State - Enhanced */}
+        {/* Empty State */}
         {users.length === 0 && (
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-xl p-16 text-center border border-gray-200/50 dark:border-gray-700/50">
-            <div className="w-24 h-24 bg-gradient-to-r from-red-100 to-rose-100 dark:from-red-900/20 dark:to-rose-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <UsersIcon className="w-12 h-12 text-red-400" />
+          <div className="glass-card rounded-3xl shadow-xl p-16 text-center">
+            <div className="empty-state">
+              <div className="icon">
+                <UsersIcon className="w-12 h-12 text-red-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">No members found</h3>
+              <p className="text-gray-500 dark:text-gray-400">Try adjusting your search or filters</p>
             </div>
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">No members found</h3>
-            <p className="text-gray-500 dark:text-gray-400">Try adjusting your search or filters</p>
           </div>
         )}
 
-        {/* Pagination - Enhanced */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
             <button 
               disabled={page <= 1} 
               onClick={() => loadUsers(page - 1, searchQuery)} 
-              className="px-6 py-2.5 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed hover:border-red-300 transition-colors font-medium text-gray-700 dark:text-gray-300"
+              className="px-6 py-2.5 rounded-xl glass-card border border-gray-200/50 dark:border-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed hover:border-red-300 transition-colors font-medium text-gray-700 dark:text-gray-300"
             >
               Previous
             </button>
@@ -320,7 +317,7 @@ export default function Users() {
                     onClick={() => loadUsers(pageNum, searchQuery)}
                     className={`w-10 h-10 rounded-xl font-medium transition-all duration-300 ${
                       pageNum === page
-                        ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25"
+                        ? "btn-primary w-10 h-10 flex items-center justify-center"
                         : "bg-white/80 dark:bg-gray-800/80 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                     }`}
                   >
@@ -333,14 +330,14 @@ export default function Users() {
             <button 
               disabled={page >= totalPages} 
               onClick={() => loadUsers(page + 1, searchQuery)} 
-              className="px-6 py-2.5 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed hover:border-red-300 transition-colors font-medium text-gray-700 dark:text-gray-300"
+              className="px-6 py-2.5 rounded-xl glass-card border border-gray-200/50 dark:border-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed hover:border-red-300 transition-colors font-medium text-gray-700 dark:text-gray-300"
             >
               Next
             </button>
           </div>
         )}
 
-        {/* Footer Stats - Enhanced */}
+        {/* Footer Stats */}
         <div className="bg-gradient-to-r from-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-800/50 backdrop-blur-sm rounded-2xl p-6 lg:p-8 mt-8 border border-gray-200/50 dark:border-gray-700/50">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="flex items-center gap-3 text-gray-600 dark:text-gray-300">

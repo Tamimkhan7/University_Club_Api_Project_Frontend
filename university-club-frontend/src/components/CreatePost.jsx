@@ -3,14 +3,6 @@ import api, { getErrorMessage } from "../api/axios";
 import { Image, Send, Sparkles, X, Loader2, Users, AlertCircle, Camera, Palette, Zap, Globe, Shield, Star, Heart } from "lucide-react";
 import toast from "react-hot-toast";
 
-/**
- * ============================================================
- *  ✨ CreatePost — Premium Post Creation Experience
- *  Designed with Glassmorphism + Smooth Animations
- *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
- * ============================================================
- */
-
 export default function CreatePost({ reload }) {
   const [content, setContent] = useState("");
   const [imageFile, setImageFile] = useState(null);
@@ -93,15 +85,9 @@ export default function CreatePost({ reload }) {
 
   if (clubs.length === 0) {
     return (
-      <div className="relative overflow-hidden bg-gradient-to-br from-white via-white/95 to-gray-50/90 dark:from-gray-800 dark:via-gray-800/95 dark:to-gray-900/90 backdrop-blur-xl rounded-3xl shadow-2xl shadow-red-500/10 p-8 mb-6 border border-white/40 dark:border-gray-700/40 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
-        {/* Premium Gradient Border Animation */}
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-gradient-x" />
-        
-        {/* Decorative Glow Orbs */}
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-red-500/10 to-rose-500/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-3xl" />
-
-        <div className="relative flex flex-col items-center text-center">
+      <div className="glass-card rounded-3xl p-8 mb-6 text-center relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-shimmer" />
+        <div className="relative flex flex-col items-center">
           <div className="relative">
             <div className="w-24 h-24 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-xl shadow-red-500/30 animate-float">
               <Users className="w-12 h-12 text-white" />
@@ -111,15 +97,15 @@ export default function CreatePost({ reload }) {
             </div>
           </div>
 
-          <h3 className="text-2xl font-bold text-slate-800 dark:text-white mt-6 mb-2 bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+          <h3 className="text-2xl font-bold text-gray-800 dark:text-white mt-6 mb-2 bg-gradient-to-r from-gray-800 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
             Join a Club First
           </h3>
-          <p className="text-slate-500 dark:text-slate-400 max-w-sm mb-6">
+          <p className="text-gray-500 dark:text-gray-400 max-w-sm mb-6">
             You need to be a member of a club before you can share your thoughts and connect with the community.
           </p>
           <button
             onClick={() => (window.location.href = "/clubs")}
-            className="group relative inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-2xl font-semibold shadow-xl shadow-red-500/25 transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/40 hover:scale-105 active:scale-95"
+            className="btn-primary inline-flex items-center gap-2 group"
           >
             <span>Browse Clubs</span>
             <Globe className="w-4 h-4 transition-transform duration-300 group-hover:rotate-12" />
@@ -130,14 +116,10 @@ export default function CreatePost({ reload }) {
   }
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-white via-white/98 to-gray-50/95 dark:from-gray-800 dark:via-gray-800/98 dark:to-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl shadow-red-500/10 mb-6 border border-white/40 dark:border-gray-700/40 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
-      {/* Premium Decorative Elements */}
-      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-gradient-x" />
-      <div className="absolute -top-32 -right-32 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl" />
-      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-gradient-to-br from-amber-500/5 to-orange-500/5 rounded-full blur-3xl" />
+    <div className="glass-card rounded-3xl mb-6 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15 overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-shimmer" />
       
-      {/* Header with Premium Gradient */}
-      <div className="relative bg-gradient-to-r from-red-500 via-rose-500 via-pink-500 to-red-600 bg-[length:300%_100%] animate-gradient-x px-6 py-5 overflow-hidden">
+      <div className="relative bg-gradient-to-r from-red-500 via-rose-500 via-pink-500 to-red-600 bg-[length:300%_100%] animate-shimmer px-6 py-5 overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10" />
         
         <div className="relative flex items-center gap-3">
@@ -150,16 +132,6 @@ export default function CreatePost({ reload }) {
           <div>
             <h2 className="font-bold text-white text-xl tracking-tight">Create Post</h2>
             <p className="text-white/60 text-xs font-medium">Share your thoughts with the community</p>
-          </div>
-          <div className="ml-auto flex items-center gap-1.5">
-            <div className="flex -space-x-1">
-              <div className="w-6 h-6 bg-white/20 rounded-full border-2 border-white/30" />
-              <div className="w-6 h-6 bg-white/20 rounded-full border-2 border-white/30" />
-              <div className="w-6 h-6 bg-white/20 rounded-full border-2 border-white/30" />
-            </div>
-            <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/30">
-              <span className="text-[10px] font-bold text-white">+</span>
-            </div>
           </div>
         </div>
       </div>
@@ -189,10 +161,10 @@ export default function CreatePost({ reload }) {
             <div className="w-5 h-5 bg-gradient-to-br from-red-500 to-rose-500 rounded-lg flex items-center justify-center shadow-md shadow-red-500/20">
               <Shield className="w-3 h-3 text-white" />
             </div>
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
               Posting in
             </label>
-            <span className="text-xs text-slate-400 dark:text-slate-500 font-medium ml-auto">
+            <span className="text-xs text-gray-400 dark:text-gray-500 font-medium ml-auto">
               {clubs.length} clubs available
             </span>
           </div>
@@ -204,7 +176,7 @@ export default function CreatePost({ reload }) {
             <select
               value={clubId}
               onChange={(e) => setClubId(e.target.value)}
-              className="w-full pl-11 pr-12 py-3.5 bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border-2 border-gray-200/80 dark:border-gray-600/80 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/10 outline-none transition-all duration-300 appearance-none cursor-pointer hover:border-red-300 dark:hover:border-red-500/50 text-slate-700 dark:text-slate-200 font-medium"
+              className="w-full pl-11 pr-12 py-3.5 bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border-2 border-gray-200/80 dark:border-gray-600/80 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/10 outline-none transition-all duration-300 appearance-none cursor-pointer hover:border-red-300 dark:hover:border-red-500/50 text-gray-700 dark:text-gray-200 font-medium"
             >
               {clubs.map((club) => (
                 <option key={club.clubId} value={club.clubId} className="py-2">
@@ -230,7 +202,7 @@ export default function CreatePost({ reload }) {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows="4"
-              className="w-full resize-none bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border-2 border-gray-200/80 dark:border-gray-600/80 rounded-2xl p-5 pt-5 focus:border-red-400 focus:ring-4 focus:ring-red-400/10 outline-none transition-all duration-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 text-slate-700 dark:text-slate-200 font-medium leading-relaxed hover:border-red-300/50 dark:hover:border-red-500/30"
+              className="w-full resize-none bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border-2 border-gray-200/80 dark:border-gray-600/80 rounded-2xl p-5 pt-5 focus:border-red-400 focus:ring-4 focus:ring-red-400/10 outline-none transition-all duration-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-700 dark:text-gray-200 font-medium leading-relaxed hover:border-red-300/50 dark:hover:border-red-500/30"
               style={{ minHeight: "120px" }}
             />
             <div className="absolute bottom-3 right-3 flex items-center gap-1.5">
@@ -241,7 +213,7 @@ export default function CreatePost({ reload }) {
           </div>
         </div>
 
-        {/* Image Upload Section */}
+        {/* Image Upload */}
         {showImageInput && (
           <div className="mb-4 animate-slideDown">
             <div className="relative">
@@ -250,7 +222,7 @@ export default function CreatePost({ reload }) {
                   <Camera className="w-5 h-5 text-gray-500 group-hover:text-red-500 transition-colors" />
                 </div>
                 <div className="text-left">
-                  <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 group-hover:text-red-500 transition-colors">
+                  <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-red-500 transition-colors">
                     {imageFile ? imageFile.name : "Choose an image"}
                   </div>
                   <div className="text-xs text-gray-400 dark:text-gray-500">
@@ -289,7 +261,7 @@ export default function CreatePost({ reload }) {
           </div>
         )}
 
-        {/* Action Buttons */}
+        {/* Actions */}
         <div className="flex flex-wrap gap-3 mt-6">
           <button
             type="button"
@@ -299,8 +271,8 @@ export default function CreatePost({ reload }) {
             }}
             className={`group flex items-center gap-2.5 px-5 py-3.5 rounded-2xl font-semibold transition-all duration-300 ${
               showImageInput
-                ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-xl shadow-red-500/25 hover:shadow-2xl hover:shadow-red-500/35 hover:scale-105"
-                : "bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm text-slate-700 dark:text-slate-300 border-2 border-gray-200/80 dark:border-gray-600/80 hover:border-red-300 dark:hover:border-red-500/30 hover:bg-red-50/50 dark:hover:bg-red-900/10"
+                ? "btn-primary"
+                : "bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm text-gray-700 dark:text-gray-300 border-2 border-gray-200/80 dark:border-gray-600/80 hover:border-red-300 dark:hover:border-red-500/30 hover:bg-red-50/50 dark:hover:bg-red-900/10"
             }`}
           >
             <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
@@ -316,7 +288,7 @@ export default function CreatePost({ reload }) {
           <button
             onClick={submit}
             disabled={loading}
-            className="group flex items-center gap-2.5 bg-gradient-to-r from-red-500 via-rose-500 to-red-600 bg-[length:200%_100%] animate-gradient-x text-white px-8 py-3.5 rounded-2xl font-semibold transition-all duration-300 ml-auto shadow-xl shadow-red-500/25 hover:shadow-2xl hover:shadow-red-500/40 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
+            className="btn-primary flex items-center gap-2.5 ml-auto group"
           >
             {loading ? (
               <>
@@ -335,7 +307,6 @@ export default function CreatePost({ reload }) {
           </button>
         </div>
 
-        {/* Footer Stats */}
         <div className="mt-5 pt-4 border-t border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between">
           <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
             <div className="flex items-center gap-1.5">
@@ -353,55 +324,6 @@ export default function CreatePost({ reload }) {
           </div>
         </div>
       </div>
-
-      {/* Global Styles for Animations */}
-      <style>{`
-        @keyframes gradient-x {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-12px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          20% { transform: translateX(-6px) rotate(-1deg); }
-          40% { transform: translateX(6px) rotate(1deg); }
-          60% { transform: translateX(-4px); }
-          80% { transform: translateX(4px); }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-10px) rotate(2deg); }
-        }
-        .animate-gradient-x {
-          animation: gradient-x 3s ease infinite;
-          background-size: 200% 100%;
-        }
-        .animate-slideDown {
-          animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .animate-shake {
-          animation: shake 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-        .animate-pulse {
-          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        .animate-ping {
-          animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: .5; }
-        }
-        @keyframes ping {
-          75%, 100% { transform: scale(1.5); opacity: 0; }
-        }
-      `}</style>
     </div>
   );
 }

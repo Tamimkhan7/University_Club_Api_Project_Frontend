@@ -7,7 +7,8 @@ import {
   Bell, Check, Trash2, CheckCheck, UserPlus, MessageSquare,
   Heart, MessageCircle, FileText, CalendarCheck, X,
   Sparkles, Zap, Star, Award, Crown, Gift, Rocket,
-  Clock, Filter, MoreVertical, Shield, Users
+  Clock, Filter, MoreVertical, Shield, Users,
+  ChevronDown, ChevronUp, Circle, CircleCheck, CircleDot
 } from "lucide-react";
 
 const TYPE_META = {
@@ -18,20 +19,6 @@ const TYPE_META = {
   Reaction: { icon: Heart, color: "text-red-500 bg-red-50", emoji: "❤️" },
   NewPost: { icon: FileText, color: "text-indigo-500 bg-indigo-50", emoji: "📝" },
 };
-
-/**
- * ============================================================
- *  🔔 Notifications — Premium Notification Center
- *  Designed with Glassmorphism + Animated Visuals
- *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
- * ============================================================
- * 
- *  ┌─────────────────────────────────────────────────────────────┐
- *  │  🎯 Purpose: Display and manage user notifications       │
- *  │  🔥 Features: Filter, Mark Read, Delete, Bulk Actions   │
- *  │  📱 Responsive: Optimized for all screen sizes          │
- *  └─────────────────────────────────────────────────────────────┘
- */
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
@@ -135,10 +122,9 @@ export default function Notifications() {
   if (loading) return <Loader />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 pb-12 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
       
-      {/* Premium Background Decorations */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
@@ -148,8 +134,7 @@ export default function Notifications() {
         
         {/* Header */}
         <div className="relative mb-6">
-          <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-2xl blur-3xl opacity-20 animate-pulse-slow" />
-          <div className="relative bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-2xl p-5 text-white overflow-hidden shadow-2xl shadow-red-500/20">
+          <div className="page-hero rounded-2xl p-5">
             <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl animate-float-slow" />
             <div className="relative flex items-center gap-3">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
@@ -169,7 +154,7 @@ export default function Notifications() {
         </div>
 
         {/* Main Card */}
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
+        <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
           
           {/* Header Actions */}
           <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex items-center justify-between relative overflow-hidden">
@@ -201,7 +186,7 @@ export default function Notifications() {
                   onClick={() => setFilterType(t)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 ${
                     filterType === t 
-                      ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25" 
+                      ? "btn-primary py-1.5 px-3"
                       : "bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
                   }`}
                 >
@@ -229,10 +214,10 @@ export default function Notifications() {
           {/* Notifications List */}
           <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 px-4">
+              <div className="empty-state py-16">
                 <div className="relative">
-                  <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
-                    <Bell className="w-12 h-12 text-gray-300 dark:text-gray-500" />
+                  <div className="icon w-24 h-24">
+                    <Bell className="w-12 h-12 text-gray-400" />
                   </div>
                   <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30">
                     <Check className="w-3.5 h-3.5 text-white" />
@@ -251,10 +236,9 @@ export default function Notifications() {
                     key={n.id}
                     className={`flex items-start gap-3 p-4 transition-all duration-300 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 dark:hover:from-red-900/10 dark:hover:to-rose-900/10 group ${
                       isUnread ? "bg-red-50/40 dark:bg-red-900/10 border-l-4 border-l-red-500" : ""
-                    }`}
-                    style={{ animationDelay: `${index * 0.05}s` }}
+                    } animate-fadeIn`}
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    {/* Checkbox */}
                     <div className="relative pt-1">
                       <input
                         type="checkbox"
@@ -264,12 +248,10 @@ export default function Notifications() {
                       />
                     </div>
 
-                    {/* Icon */}
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md transition-transform duration-300 group-hover:scale-110 ${meta.color}`}>
                       <Icon className="w-5 h-5" />
                     </div>
 
-                    {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <p className={`text-sm ${isUnread ? "font-semibold text-gray-800 dark:text-white" : "text-gray-600 dark:text-gray-400"} leading-relaxed`}>
@@ -290,7 +272,6 @@ export default function Notifications() {
                       </div>
                     </div>
 
-                    {/* Actions */}
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       {!n.isRead && (
                         <button 
@@ -340,7 +321,7 @@ export default function Notifications() {
                       onClick={() => load(pageNum, filterType)}
                       className={`w-9 h-9 rounded-xl text-sm font-medium transition-all duration-200 ${
                         page === pageNum
-                          ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25"
+                          ? "btn-primary w-9 h-9 flex items-center justify-center"
                           : "bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-500/30"
                       }`}
                     >
@@ -373,34 +354,6 @@ export default function Notifications() {
           )}
         </div>
       </div>
-
-      {/* Global Styles for Animations */}
-      <style>{`
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-20px) scale(1.05); }
-        }
-        @keyframes spin-slow {
-          from { transform: translate(-50%, -50%) rotate(0deg); }
-          to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1.05); }
-        }
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-        .animate-spin-slow {
-          animation: spin-slow 30s linear infinite;
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-      `}</style>
     </div>
   );
 }

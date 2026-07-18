@@ -4,65 +4,20 @@ import PostCard from "../components/PostCard";
 import CreatePost from "../components/CreatePost";
 import Loader from "../components/Loader";
 import {
-  Sparkles,
-  RefreshCw,
-  AlertCircle,
-  ChevronUp,
-  Coffee,
-  Flame,
-  Users2,
-  Bookmark,
-  Compass,
-  Search,
-  Home,
-  Zap,
-  Heart,
-  Crown,
-  Award,
-  Star,
-  Rocket,
-  Gift,
-  PartyPopper,
-  UserCircle,
+  Sparkles, RefreshCw, AlertCircle, ChevronUp, Coffee,
+  Flame, Users2, Bookmark, Compass, Search, Home,
+  Zap, Heart, Crown, Award, Star, Rocket, Gift,
+  PartyPopper, UserCircle, TrendingUp, Globe
 } from "lucide-react";
 
 const TABS = [
-  { id: "global", label: "Global", icon: Compass, endpoint: "/feed/global" },
-  {
-    id: "following",
-    label: "Following",
-    icon: Users2,
-    endpoint: "/feed/following",
-  },
-  {
-    id: "trending",
-    label: "Trending",
-    icon: Flame,
-    endpoint: "/feed/trending",
-  },
-  {
-    id: "my-clubs-trending",
-    label: "My Clubs",
-    icon: Sparkles,
-    endpoint: "/feed/my-clubs-trending",
-  },
+  { id: "global", label: "Global", icon: Globe, endpoint: "/feed/global" },
+  { id: "following", label: "Following", icon: Users2, endpoint: "/feed/following" },
+  { id: "trending", label: "Trending", icon: Flame, endpoint: "/feed/trending" },
+  { id: "my-clubs-trending", label: "My Clubs", icon: Sparkles, endpoint: "/feed/my-clubs-trending" },
   { id: "saved", label: "Saved", icon: Bookmark, endpoint: "/feed/saved" },
   { id: "browse", label: "Browse", icon: Search, endpoint: "/post/all" },
 ];
-
-/**
- * ============================================================
- *  📱 Feed — Premium Social Feed Experience
- *  Designed with Glassmorphism + Animated Visuals
- *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
- * ============================================================
- *
- *  ┌─────────────────────────────────────────────────────────────┐
- *  │  🎯 Purpose: Display posts with multiple feed views      │
- *  │  🔥 Features: Tabs, Search, Browse, Refresh            │
- *  │  📱 Responsive: Optimized for all screen sizes          │
- *  └─────────────────────────────────────────────────────────────┘
- */
 
 export default function Feed() {
   const [tab, setTab] = useState("global");
@@ -77,8 +32,7 @@ export default function Feed() {
   const [browseClubId, setBrowseClubId] = useState("");
   const [browseUserId, setBrowseUserId] = useState("");
 
-  const currentEndpoint =
-    TABS.find((t) => t.id === tab)?.endpoint || "/feed/global";
+  const currentEndpoint = TABS.find((t) => t.id === tab)?.endpoint || "/feed/global";
 
   const loadPosts = useCallback(
     async (targetPage = 1, isRefresh = false) => {
@@ -90,25 +44,14 @@ export default function Feed() {
         let res;
         if (tab === "browse" && browseQuery.trim()) {
           res = await api.get("/post/search", {
-            params: {
-              query: browseQuery.trim(),
-              page: targetPage,
-              pageSize: 10,
-            },
+            params: { query: browseQuery.trim(), page: targetPage, pageSize: 10 },
           });
         } else if (tab === "browse") {
           res = await api.get("/post/all", {
-            params: {
-              clubId: browseClubId || undefined,
-              userId: browseUserId || undefined,
-              page: targetPage,
-              pageSize: 10,
-            },
+            params: { clubId: browseClubId || undefined, userId: browseUserId || undefined, page: targetPage, pageSize: 10 },
           });
         } else {
-          res = await api.get(currentEndpoint, {
-            params: { page: targetPage, pageSize: 10 },
-          });
+          res = await api.get(currentEndpoint, { params: { page: targetPage, pageSize: 10 } });
         }
         const data = res.data || {};
         setPosts(data.items || []);
@@ -116,18 +59,13 @@ export default function Feed() {
         setTotalPages(data.totalPages || 1);
       } catch (err) {
         console.error("Error loading posts:", err);
-        setError(
-          getErrorMessage(
-            err,
-            "Failed to load posts. Please refresh the page.",
-          ),
-        );
+        setError(getErrorMessage(err, "Failed to load posts. Please refresh the page."));
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [currentEndpoint, tab, browseQuery, browseClubId, browseUserId],
+    [currentEndpoint, tab, browseQuery, browseClubId, browseUserId]
   );
 
   useEffect(() => {
@@ -144,9 +82,8 @@ export default function Feed() {
   if (loading) return <Loader />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 pb-12 overflow-hidden">
-      {/* Premium Background Decorations */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
+      <div className="fixed inset-0 pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
@@ -155,9 +92,9 @@ export default function Feed() {
       <div className="relative max-w-2xl mx-auto px-4 pb-12">
         {/* Hero Header */}
         <div className="relative mb-6 mt-4">
-          <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-3xl blur-3xl opacity-20 animate-pulse-slow" />
-          <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/10 p-5 sm:p-6 border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-gradient-x" />
+          <div className="absolute inset-0 bg-gradient-to-br from-rose-500 via-red-600 to-amber-500 rounded-3xl blur-3xl opacity-20 animate-pulse-slow" />
+          <div className="relative glass-card rounded-3xl p-5 sm:p-6 overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-shimmer" />
 
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -192,13 +129,11 @@ export default function Feed() {
                     onClick={() => setTab(t.id)}
                     className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                       isActive
-                        ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/35 hover:scale-105"
+                        ? "btn-primary py-2 px-3.5"
                         : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50"
                     }`}
                   >
-                    <Icon
-                      className={`w-3.5 h-3.5 ${isActive ? "text-white" : ""}`}
-                    />
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : ""}`} />
                     {t.label}
                   </button>
                 );
@@ -207,7 +142,7 @@ export default function Feed() {
           </div>
         </div>
 
-        {/* Error Message */}
+        {/* Error */}
         {error && (
           <div className="bg-red-50/90 dark:bg-red-950/20 backdrop-blur-sm border border-red-200 dark:border-red-800/30 rounded-2xl p-5 mb-6 animate-shake shadow-lg shadow-red-500/5">
             <div className="flex items-start gap-3">
@@ -215,9 +150,7 @@ export default function Feed() {
                 <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
               </div>
               <div className="flex-1">
-                <p className="text-red-700 dark:text-red-300 text-sm font-medium">
-                  {error}
-                </p>
+                <p className="text-red-700 dark:text-red-300 text-sm font-medium">{error}</p>
                 <button
                   onClick={handleRefresh}
                   className="mt-2 inline-flex items-center gap-1.5 px-4 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-xl text-sm font-semibold hover:bg-red-200 dark:hover:bg-red-800/30 transition-all duration-200"
@@ -230,7 +163,7 @@ export default function Feed() {
           </div>
         )}
 
-        {/* Create Post - Global Tab Only */}
+        {/* Create Post */}
         {tab === "global" && (
           <div className="mb-6 animate-slideDown">
             <CreatePost reload={handlePostCreated} />
@@ -239,33 +172,24 @@ export default function Feed() {
 
         {/* Browse Filters */}
         {tab === "browse" && (
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-2xl p-4 mb-6 border border-gray-200/50 dark:border-gray-700/50 shadow-xl shadow-red-500/5 animate-slideDown">
+          <div className="glass-card rounded-2xl p-4 mb-6 animate-slideDown">
             <div className="flex items-center gap-2 mb-3">
               <Search className="w-4 h-4 text-red-500" />
               <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 Browse & Search Posts
               </span>
             </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                loadPosts(1);
-              }}
-              className="flex flex-col sm:flex-row gap-2"
-            >
+            <form onSubmit={(e) => { e.preventDefault(); loadPosts(1); }} className="flex flex-col sm:flex-row gap-2">
               <div className="flex-1 relative">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   value={browseQuery}
                   onChange={(e) => setBrowseQuery(e.target.value)}
                   placeholder="Search by text..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all duration-200 text-sm"
+                  className="input-premium pl-10 pr-4 py-2.5"
                 />
               </div>
-              <button
-                type="submit"
-                className="px-5 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl text-sm font-medium hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 hover:scale-105"
-              >
+              <button type="submit" className="btn-primary px-5 py-2.5 text-sm">
                 Search
               </button>
             </form>
@@ -276,7 +200,7 @@ export default function Feed() {
                   value={browseClubId}
                   onChange={(e) => setBrowseClubId(e.target.value)}
                   placeholder="Club ID"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all duration-200 text-sm"
+                  className="input-premium pl-10 pr-4 py-2.5 text-sm"
                 />
               </div>
               <div className="flex-1 relative">
@@ -285,19 +209,14 @@ export default function Feed() {
                   value={browseUserId}
                   onChange={(e) => setBrowseUserId(e.target.value)}
                   placeholder="User ID"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all duration-200 text-sm"
+                  className="input-premium pl-10 pr-4 py-2.5 text-sm"
                 />
               </div>
               <button
-                onClick={() => {
-                  setBrowseQuery("");
-                  setBrowseClubId("");
-                  setBrowseUserId("");
-                  loadPosts(1);
-                }}
+                onClick={() => { setBrowseQuery(""); setBrowseClubId(""); setBrowseUserId(""); loadPosts(1); }}
                 className="px-5 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200"
               >
-                Clear Filters
+                Clear
               </button>
             </div>
           </div>
@@ -320,25 +239,23 @@ export default function Feed() {
               disabled={refreshing}
               className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-all duration-200 group"
             >
-              <RefreshCw
-                className={`w-4 h-4 transition-all duration-300 ${refreshing ? "animate-spin" : "group-hover:rotate-180"}`}
-              />
-              <span className="hidden sm:inline">
-                {refreshing ? "Refreshing..." : "Refresh"}
-              </span>
+              <RefreshCw className={`w-4 h-4 transition-all duration-300 ${refreshing ? "animate-spin" : "group-hover:rotate-180"}`} />
+              <span className="hidden sm:inline">{refreshing ? "Refreshing..." : "Refresh"}</span>
             </button>
           </div>
         )}
 
         {/* Posts */}
         {posts.length === 0 ? (
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-2xl shadow-red-500/10 p-12 sm:p-16 text-center border border-gray-200/50 dark:border-gray-700/50">
+          <div className="glass-card rounded-3xl p-12 sm:p-16 text-center">
             <div className="relative">
-              <div className="w-24 h-24 bg-gradient-to-br from-red-100 to-rose-100 dark:from-red-900/20 dark:to-rose-900/20 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <Sparkles className="w-12 h-12 text-red-500" />
-              </div>
-              <div className="absolute -top-2 -right-6 w-8 h-8 bg-amber-400 rounded-full flex items-center justify-center shadow-lg shadow-amber-400/50 animate-bounce-slow">
-                <Star className="w-4 h-4 text-white" />
+              <div className="empty-state">
+                <div className="icon">
+                  <Sparkles className="w-12 h-12 text-red-500" />
+                </div>
+                <div className="absolute -top-2 -right-6 w-8 h-8 bg-amber-400 rounded-full flex items-center justify-center shadow-lg shadow-amber-400/50 animate-bounce-slow">
+                  <Star className="w-4 h-4 text-white" />
+                </div>
               </div>
             </div>
             <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">
@@ -352,7 +269,7 @@ export default function Feed() {
             {tab === "global" && (
               <button
                 onClick={() => document.querySelector("textarea")?.focus()}
-                className="mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-2.5 rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 hover:scale-105"
+                className="btn-primary mt-4 px-6 py-2.5"
               >
                 <Sparkles className="w-4 h-4" />
                 Create Post
@@ -361,10 +278,8 @@ export default function Feed() {
           </div>
         ) : (
           <div className="space-y-5 animate-fadeIn">
-            {posts.map((post, index) => (
-              <div key={post.id} style={{ animationDelay: `${index * 0.05}s` }}>
-                <PostCard key={post.id} post={post} onReact={() => {}} />
-              </div>
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} onReact={() => {}} />
             ))}
           </div>
         )}
@@ -394,7 +309,7 @@ export default function Feed() {
                     onClick={() => loadPosts(pageNum)}
                     className={`w-10 h-10 rounded-xl text-sm font-medium transition-all duration-200 ${
                       page === pageNum
-                        ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25"
+                        ? "btn-primary w-10 h-10 flex items-center justify-center"
                         : "bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-500/30"
                     }`}
                   >
@@ -421,7 +336,7 @@ export default function Feed() {
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent" />
             </div>
-            <div className="relative inline-flex items-center gap-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-6 py-3 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg">
+            <div className="relative inline-flex items-center gap-2 glass-card px-6 py-3 rounded-2xl">
               <Coffee className="w-5 h-5 text-red-400 animate-bounce-slow" />
               <span className="text-gray-400 text-sm font-medium">
                 You've reached the end • {posts.length} posts
@@ -435,84 +350,12 @@ export default function Feed() {
         {showScrollTop && (
           <button
             onClick={scrollToTop}
-            className="fixed bottom-6 right-6 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-full p-3.5 shadow-2xl shadow-red-500/25 hover:shadow-3xl hover:shadow-red-500/40 transition-all duration-500 transform hover:scale-110 hover:rotate-6 z-50 group animate-bounce-subtle"
+            className="fixed bottom-6 right-6 btn-primary w-14 h-14 rounded-full flex items-center justify-center p-0 shadow-2xl shadow-red-500/30 animate-bounce-subtle"
           >
-            <ChevronUp className="w-5 h-5 group-hover:-translate-y-1 transition-transform duration-300" />
+            <ChevronUp className="w-6 h-6" />
           </button>
         )}
       </div>
-
-      {/* Global Styles for Animations */}
-      <style>{`
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-20px) scale(1.05); }
-        }
-        @keyframes spin-slow {
-          from { transform: translate(-50%, -50%) rotate(0deg); }
-          to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1.05); }
-        }
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-4px); }
-          75% { transform: translateX(4px); }
-        }
-        @keyframes bounce-slow {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
-        }
-        @keyframes bounce-subtle {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-4px) rotate(3deg); }
-        }
-        @keyframes gradient-x {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-        .animate-spin-slow {
-          animation: spin-slow 30s linear infinite;
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out;
-        }
-        .animate-shake {
-          animation: shake 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .animate-bounce-slow {
-          animation: bounce-slow 2s ease-in-out infinite;
-        }
-        .animate-bounce-subtle {
-          animation: bounce-subtle 2s ease-in-out infinite;
-        }
-        .animate-gradient-x {
-          animation: gradient-x 3s ease infinite;
-          background-size: 200% 100%;
-        }
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-      `}</style>
     </div>
   );
 }

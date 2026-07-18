@@ -25,7 +25,20 @@ import Footer from "./components/Footer";
 export default function App() {
   return (
     <>
-      <Toaster position="top-right" />
+      <Toaster 
+        position="top-right" 
+        toastOptions={{
+          className: 'glass-card rounded-2xl',
+          duration: 4000,
+          style: {
+            background: 'rgba(255,255,255,0.9)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            borderRadius: '16px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.1)',
+          },
+        }}
+      />
       <Navbar />
       <Routes>
         <Route path="/login" element={<Login />} />

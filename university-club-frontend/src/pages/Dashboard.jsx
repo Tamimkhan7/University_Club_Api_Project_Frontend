@@ -6,22 +6,9 @@ import {
   Sparkles, Users, MessageCircle, Heart, TrendingUp, AlertCircle,
   Rocket, UserCircle, ChevronRight, Gem, Lightbulb,
   Activity, BarChart3, Clock, Zap, Flame, Award,
-  Calendar, Compass, Coffee, Star, Crown, Shield
+  Calendar, Compass, Coffee, Star, Crown, Shield,
+  Eye, BookOpen, Target, Trophy, Gift, PartyPopper
 } from "lucide-react";
-
-/**
- * ============================================================
- *  📊 Dashboard — Premium Analytics & Activity Dashboard
- *  Designed with Glassmorphism + Animated Visuals
- *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
- * ============================================================
- * 
- *  ┌─────────────────────────────────────────────────────────────┐
- *  │  🎯 Purpose: Display community stats and insights        │
- *  │  🔥 Features: Stats, Trending, AI Insights, Quick Actions│
- *  │  📱 Responsive: Optimized for all screen sizes          │
- *  └─────────────────────────────────────────────────────────────┘
- */
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -111,7 +98,7 @@ export default function Dashboard() {
         <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">{error}</p>
         <button
           onClick={loadDashboard}
-          className="group inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-8 py-3.5 rounded-2xl hover:shadow-2xl hover:shadow-red-500/25 transition-all duration-300 hover:scale-105 font-semibold shadow-lg shadow-red-500/20"
+          className="btn-primary group"
         >
           <Rocket className="w-4 h-4 transition-transform duration-300 group-hover:rotate-12" />
           Try Again
@@ -156,10 +143,9 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 pb-10 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-10">
       
-      {/* Premium Background Decorations */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
@@ -168,10 +154,9 @@ export default function Dashboard() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
         
         {/* Hero Header */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-3xl p-6 sm:p-8 md:p-10 text-white shadow-2xl shadow-red-500/20">
+        <div className="page-hero p-6 sm:p-8 md:p-10">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-slow" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10" />
           
           <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -232,8 +217,8 @@ export default function Dashboard() {
             return (
               <div
                 key={card.title}
-                className={`group bg-gradient-to-br ${card.gradient} backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-2 border border-gray-200/50 dark:border-gray-700/50 ${card.border} p-5`}
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className={`glass-card rounded-2xl hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-2 border ${card.border} p-5 animate-fadeIn`}
+                style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-start justify-between">
                   <div>
@@ -260,7 +245,7 @@ export default function Dashboard() {
         {/* Activity Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
           {/* Your Activity */}
-          <div className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-1 overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
+          <div className="glass-card rounded-2xl hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-1 overflow-hidden">
             <div className="bg-gradient-to-r from-red-500 to-rose-600 p-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl" />
               <h3 className="relative font-bold text-white flex items-center gap-2 text-sm sm:text-base">
@@ -291,7 +276,7 @@ export default function Dashboard() {
           </div>
 
           {/* This Week */}
-          <div className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-1 overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
+          <div className="glass-card rounded-2xl hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-1 overflow-hidden">
             <div className="bg-gradient-to-r from-rose-500 to-red-600 p-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl" />
               <h3 className="relative font-bold text-white flex items-center gap-2 text-sm sm:text-base">
@@ -323,7 +308,7 @@ export default function Dashboard() {
         </div>
 
         {/* Trending Posts */}
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
+        <div className="glass-card rounded-2xl hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 overflow-hidden">
           <div className="bg-gradient-to-r from-rose-500 to-red-600 px-5 sm:px-6 py-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl" />
             <h3 className="relative font-bold text-white flex items-center gap-2 text-sm sm:text-base">
@@ -430,54 +415,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-
-      {/* Global Styles for Animations */}
-      <style>{`
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-20px) scale(1.05); }
-        }
-        @keyframes spin-slow {
-          from { transform: translate(-50%, -50%) rotate(0deg); }
-          to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes bounce-dot {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-        .animate-spin-slow {
-          animation: spin-slow 30s linear infinite;
-        }
-        .animate-bounce-dot {
-          animation: bounce-dot 0.8s ease-in-out infinite;
-        }
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-        .animate-pulse {
-          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `}</style>
     </div>
   );
 }

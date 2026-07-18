@@ -6,20 +6,42 @@ import {
   Share2, Bookmark, MoreHorizontal, Clock, Sparkles, Award,
   User, Zap, Flame, Crown, Star
 } from "lucide-react";
+import toast from "react-hot-toast";
 
-/**
- * ============================================================
- *  📱 PostCard — Premium Post Experience
- *  Designed with Glassmorphism + Animated Interactions
- *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
- * ============================================================
- * 
- *  ┌─────────────────────────────────────────────────────────────┐
- *  │  🎯 Purpose: Display post with reactions & interactions  │
- *  │  🔥 Features: Reactions, Comments, Save, Share           │
- *  │  📱 Responsive: Optimized for all screen sizes           │
- *  └─────────────────────────────────────────────────────────────┘
- */
+// Helper functions
+const formatDate = (date) => {
+  if (!date) return "Recently";
+  const now = new Date();
+  const postDate = new Date(date);
+  const diffMs = now - postDate;
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+  return postDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
+
+const getReactionEmoji = (type) => {
+  const emojis = {
+    Like: "👍",
+    Love: "❤️",
+    Haha: "😂",
+    Wow: "😮",
+    Sad: "😢",
+    Angry: "😡"
+  };
+  return emojis[type] || "👍";
+};
+
+const getUserInitials = (name) => {
+  if (!name) return "U";
+  return name.charAt(0).toUpperCase();
+};
 
 // Must match Enums/ReactionType.cs exactly: Like=0, Love=1, Haha=2, Wow=3, Sad=4, Angry=5
 const REACTIONS = [
@@ -95,8 +117,6 @@ export default function PostCard({ post, onReact }) {
     loadSummary();
   }, [post.id]);
 
-  const getReactionEmoji = (type) => REACTIONS.find((r) => r.type === type)?.emoji || "👍";
-
   const react = async (typeLabel) => {
     if (isReacting) return;
     const reactionMeta = REACTIONS.find((r) => r.type === typeLabel);
@@ -118,7 +138,7 @@ export default function PostCard({ post, onReact }) {
       if (onReact) onReact();
     } catch (error) {
       console.error(error);
-      alert("Failed to add reaction. Please try again.");
+      toast.error("Failed to add reaction. Please try again.");
     } finally {
       setIsReacting(false);
       setShowReactions(false);
@@ -136,7 +156,7 @@ export default function PostCard({ post, onReact }) {
       if (onReact) onReact();
     } catch (error) {
       console.error(error);
-      alert("Failed to remove reaction");
+      toast.error("Failed to remove reaction");
     } finally {
       setIsReacting(false);
     }
@@ -153,32 +173,17 @@ export default function PostCard({ post, onReact }) {
       }
     } catch (error) {
       console.error(error);
+      toast.error("Failed to save post");
     }
-  };
-
-  const formatDate = (date) => {
-    if (!date) return "Recently";
-    const now = new Date();
-    const postDate = new Date(date);
-    const diffMs = now - postDate;
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-    return postDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
   const handleShare = async () => {
     try {
       await navigator.clipboard.writeText(window.location.origin + `/post/${post.id}`);
-      alert("📋 Post link copied!");
+      toast.success("📋 Post link copied!");
     } catch (err) {
       console.error("Failed to copy:", err);
+      toast.error("Failed to copy link");
     }
   };
 
@@ -189,13 +194,12 @@ export default function PostCard({ post, onReact }) {
   };
 
   const shouldTruncate = post.content?.length > 300;
-  const getUserInitials = (name) => name?.charAt(0)?.toUpperCase() || "U";
 
   return (
     <div className="group relative bg-white dark:bg-gray-800 rounded-3xl shadow-xl hover:shadow-3xl hover:shadow-red-500/15 transition-all duration-500 overflow-hidden border border-gray-100/80 dark:border-gray-700/80 hover:border-red-200/50 dark:hover:border-red-800/30">
       
       {/* Premium Decorative Elements */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-gradient-x opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl bg-gradient-to-br from-red-500/3 via-rose-500/3 to-red-500/3 pointer-events-none" />
       
       {/* Animated Glow Orbs */}
@@ -302,12 +306,7 @@ export default function PostCard({ post, onReact }) {
           <div className="mt-4 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-700 group/image relative">
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-rose-500/5 opacity-0 group-hover/image:opacity-100 transition-opacity duration-500" />
             <img
-              src={
-  post.imageUrl &&
-  post.imageUrl.startsWith("http")
-    ? post.imageUrl
-    : "/placeholder.png"
-}
+              src={post.imageUrl && post.imageUrl.startsWith("http") ? post.imageUrl : "/placeholder.png"}
               alt="Post content"
               className="w-full max-h-96 object-contain transition-transform duration-700 group-hover/image:scale-105"
               onError={(e) => { e.target.src = "https://placehold.co/600x400/e5e7eb/9ca3af?text=Image+not+found"; }}
@@ -512,9 +511,9 @@ export default function PostCard({ post, onReact }) {
 
       {/* Global Styles for Animations */}
       <style>{`
-        @keyframes gradient-x {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
+        @keyframes shimmer {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 200% 50%; }
         }
         @keyframes slideDown {
           from { opacity: 0; transform: translateY(-8px) scale(0.98); }
@@ -532,13 +531,13 @@ export default function PostCard({ post, onReact }) {
           from { opacity: 0; transform: scale(0.95) translateY(10px); }
           to { opacity: 1; transform: scale(1) translateY(0); }
         }
-        @keyframes bounceSubtle {
+        @keyframes bounce-subtle {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-2px); }
         }
-        .animate-gradient-x {
-          animation: gradient-x 3s ease infinite;
+        .animate-shimmer {
           background-size: 200% 100%;
+          animation: shimmer 3s ease infinite;
         }
         .animate-slideDown {
           animation: slideDown 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -553,7 +552,7 @@ export default function PostCard({ post, onReact }) {
           animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .animate-bounce-subtle {
-          animation: bounceSubtle 1s ease-in-out infinite;
+          animation: bounce-subtle 1s ease-in-out infinite;
         }
         .scrollbar-hide::-webkit-scrollbar {
           display: none;

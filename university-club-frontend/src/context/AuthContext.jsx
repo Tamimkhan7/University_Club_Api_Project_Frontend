@@ -2,7 +2,6 @@ import { createContext, useState, useEffect } from "react";
 import { Sparkles, Shield, Lock, User, CheckCircle, Zap, Heart, Star } from "lucide-react";
 import api from "../api/axios";
 
-
 export const AuthContext = createContext();
 
 export default function AuthProvider({ children }) {
@@ -10,60 +9,61 @@ export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const initializeAuth = async () => {
-    try {
-      const storedUser = localStorage.getItem("user");
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const storedUser = localStorage.getItem("user");
 
-      if (storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch {
-          localStorage.removeItem("user");
+        if (storedUser) {
+          try {
+            setUser(JSON.parse(storedUser));
+          } catch {
+            localStorage.removeItem("user");
+          }
         }
-      }
 
-      const storedToken = localStorage.getItem("accessToken");
+        const storedToken = localStorage.getItem("accessToken");
 
-      if (!storedToken) {
+        if (!storedToken) {
+          setLoading(false);
+          return;
+        }
+
+        const res = await api.get("/auth/me");
+
+        if (res.data) {
+          setUser(res.data);
+          localStorage.setItem("user", JSON.stringify(res.data));
+        }
+      } catch (error) {
+        console.error("Auth initialization failed:", error);
+
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("user");
+
+        setToken(null);
+        setUser(null);
+      } finally {
         setLoading(false);
-        return;
       }
+    };
 
-      const res = await api.get("/auth/me");
+    initializeAuth();
+  }, []);
 
-      if (res.data) {
-        setUser(res.data);
-        localStorage.setItem("user", JSON.stringify(res.data));
-      }
-    } catch (error) {
-      console.error("Auth initialization failed:", error);
-
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
-
-      setToken(null);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  initializeAuth();
-}, []);
   const login = (accessToken, refreshToken, userData) => {
-  localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("accessToken", accessToken);
 
-  if (refreshToken) {
-    localStorage.setItem("refreshToken", refreshToken);
-  }
+    if (refreshToken) {
+      localStorage.setItem("refreshToken", refreshToken);
+    }
 
-  localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("user", JSON.stringify(userData));
 
-  setToken(accessToken);
-  setUser(userData);
-};
+    setToken(accessToken);
+    setUser(userData);
+  };
 
   const updateUser = (partial) => {
     setUser((prev) => {
@@ -74,15 +74,15 @@ useEffect(() => {
   };
 
   const logout = () => {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("user");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
 
-  setToken(null);
-  setUser(null);
+    setToken(null);
+    setUser(null);
 
-  window.location.href = "/login";
-};
+    window.location.href = "/login";
+  };
 
   if (loading) {
     return (

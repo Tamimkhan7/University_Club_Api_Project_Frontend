@@ -8,23 +8,9 @@ import {
   Globe, Hash, Award, TrendingUp, UserCheck, UserX, Crown,
   Search, Heart, Star, Zap, Shield, Rocket, Flame,
   Compass, MapPin, Calendar, Clock, Filter,
-  ChevronRight, ChevronDown
+  ChevronRight, ChevronDown, Building2, BookOpen, Target
 } from "lucide-react";
 import toast from "react-hot-toast";
-
-/**
- * ============================================================
- *  🏛️ Clubs — Premium Clubs Discovery Page
- *  Designed with Glassmorphism + Animated Visuals
- *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
- * ============================================================
- * 
- *  ┌─────────────────────────────────────────────────────────────┐
- *  │  🎯 Purpose: Browse, search, and manage clubs           │
- *  │  🔥 Features: Create, Join, Edit, Delete, Search        │
- *  │  📱 Responsive: Optimized for all screen sizes          │
- *  └─────────────────────────────────────────────────────────────┘
- */
 
 export default function Clubs() {
   const { user } = useContext(AuthContext);
@@ -150,33 +136,34 @@ export default function Clubs() {
       "from-red-600 to-rose-500",
       "from-rose-600 to-red-500",
       "from-purple-500 to-pink-600",
-      "from-pink-500 to-purple-600"
+      "from-pink-500 to-purple-600",
+      "from-orange-500 to-red-600",
+      "from-indigo-500 to-purple-600"
     ];
     return gradients[id % gradients.length];
   };
 
   const getEmoji = (id) => {
-    const emojis = ["🚀", "💡", "🎯", "⚡", "🌟", "🔥", "💎", "🌈"];
+    const emojis = ["🚀", "💡", "🎯", "⚡", "🌟", "🔥", "💎", "🌈", "🦄", "🎨", "📚", "🎮"];
     return emojis[id % emojis.length];
   };
 
   if (loading) return <Loader />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 pb-12 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
       
-      {/* Premium Background Decorations */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        
         {/* Hero Header */}
         <div className="relative mb-8 sm:mb-12">
-          <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-3xl blur-3xl opacity-20 animate-pulse-slow" />
-          <div className="relative bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-3xl p-6 sm:p-10 md:p-12 text-white overflow-hidden shadow-2xl shadow-red-500/20">
+          <div className="page-hero p-6 sm:p-10 md:p-12">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-slow" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10" />
@@ -184,12 +171,18 @@ export default function Clubs() {
             <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg">
-                    <Compass className="w-8 h-8 sm:w-10 sm:h-10" />
+                  <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/10">
+                    <Building2 className="w-8 h-8 sm:w-10 sm:h-10" />
                   </div>
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
-                    Clubs
-                  </h1>
+                  <div>
+                    <span className="hero-pill mb-2">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                      Find Your People
+                    </span>
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mt-2">
+                      Clubs
+                    </h1>
+                  </div>
                 </div>
                 <p className="text-white/90 text-sm sm:text-base max-w-2xl leading-relaxed">
                   Join communities that match your interests and participate in exciting activities and discussions.
@@ -211,10 +204,14 @@ export default function Clubs() {
               </div>
               <div className="flex flex-wrap gap-2 flex-shrink-0">
                 <div className="flex -space-x-2">
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-400 to-rose-400 rounded-full ring-2 ring-white/20" />
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full ring-2 ring-white/20" />
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-400 rounded-full ring-2 ring-white/20" />
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full ring-2 ring-white/20" />
+                  {[1,2,3,4].map((i) => (
+                    <div key={i} className={`w-10 h-10 bg-gradient-to-br ${
+                      i === 1 ? "from-red-400 to-rose-400" :
+                      i === 2 ? "from-blue-400 to-indigo-400" :
+                      i === 3 ? "from-green-400 to-emerald-400" :
+                      "from-purple-400 to-pink-400"
+                    } rounded-full ring-2 ring-white/20`} />
+                  ))}
                 </div>
               </div>
             </div>
@@ -225,10 +222,8 @@ export default function Clubs() {
         <div className="mb-6">
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className={`group inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold transition-all duration-300 ${
-              showCreateForm 
-                ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25 hover:shadow-2xl hover:shadow-red-500/35 hover:scale-105" 
-                : "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25 hover:shadow-2xl hover:shadow-red-500/35 hover:scale-105"
+            className={`btn-primary inline-flex items-center gap-2 group ${
+              showCreateForm ? "bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700" : ""
             }`}
           >
             {showCreateForm ? (
@@ -244,7 +239,7 @@ export default function Clubs() {
         {/* Create Form */}
         {showCreateForm && (
           <div className="mb-8 animate-slideDown">
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
+            <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden">
               <div className="bg-gradient-to-r from-red-500 via-rose-500 to-red-600 px-6 py-4 relative">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10" />
                 <h2 className="relative text-xl font-bold text-white flex items-center gap-2">
@@ -260,7 +255,7 @@ export default function Clubs() {
                     placeholder="e.g., Tech Enthusiasts, Book Lovers Club..."
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-4 focus:ring-red-400/20 focus:border-red-400 transition-all duration-200 outline-none"
+                    className="input-premium"
                   />
                 </div>
                 <div>
@@ -270,12 +265,12 @@ export default function Clubs() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows="3"
-                    className="w-full px-4 py-3 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-4 focus:ring-red-400/20 focus:border-red-400 resize-none transition-all duration-200 outline-none"
+                    className="input-premium resize-none"
                   />
                 </div>
                 <button
                   onClick={createClub}
-                  className="w-full bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-3.5 rounded-2xl hover:shadow-2xl hover:shadow-red-500/25 transition-all duration-300 font-semibold flex items-center justify-center gap-2 hover:scale-[1.02]"
+                  className="btn-primary w-full py-3.5 group"
                 >
                   <Rocket className="w-4 h-4" /> Create Club
                 </button>
@@ -293,7 +288,7 @@ export default function Clubs() {
               placeholder="Search clubs by name or description..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-5 py-3.5 pl-12 pr-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-4 focus:ring-red-400/20 focus:border-red-400 transition-all duration-300 outline-none"
+              className="input-premium pl-12 pr-4 py-3.5"
             />
             {searchTerm && (
               <button
@@ -319,7 +314,7 @@ export default function Clubs() {
             </span>
           </h2>
           <div className="flex items-center gap-2">
-            <button className="p-2.5 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 hover:border-red-300 transition-colors">
+            <button className="p-2.5 glass-card rounded-xl border border-gray-200/50 dark:border-gray-700/50 hover:border-red-300 transition-colors">
               <Filter className="w-4 h-4 text-gray-500" />
             </button>
           </div>
@@ -327,29 +322,32 @@ export default function Clubs() {
 
         {/* Clubs Grid */}
         {clubs.length === 0 ? (
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-xl shadow-red-500/10 p-12 text-center border border-gray-200/50 dark:border-gray-700/50">
-            <div className="w-24 h-24 bg-gradient-to-br from-red-100 to-rose-100 dark:from-gray-700 dark:to-gray-600 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <Users className="w-12 h-12 text-red-500" />
+          <div className="glass-card rounded-3xl shadow-xl shadow-red-500/10 p-12 text-center">
+            <div className="empty-state">
+              <div className="icon">
+                <Users className="w-12 h-12 text-red-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">No clubs found</h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                {searchTerm ? "Try a different search term" : "Be the first to create a club!"}
+              </p>
+              {!searchTerm && (
+                <button
+                  onClick={() => setShowCreateForm(true)}
+                  className="btn-primary mt-4 px-6 py-2.5"
+                >
+                  Create Club
+                </button>
+              )}
             </div>
-            <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">No clubs found</h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              {searchTerm ? "Try a different search term" : "Be the first to create a club!"}
-            </p>
-            {!searchTerm && (
-              <button
-                onClick={() => setShowCreateForm(true)}
-                className="mt-4 bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-2.5 rounded-xl hover:shadow-lg transition-all"
-              >
-                Create Club
-              </button>
-            )}
           </div>
         ) : (
           <div className="grid gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {clubs.map((club, index) => (
               <div
                 key={club.id}
-                className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-lg hover:shadow-3xl hover:shadow-red-500/15 transition-all duration-500 overflow-hidden hover:-translate-y-2 border border-gray-100 dark:border-gray-700 hover:border-red-200/50 dark:hover:border-red-800/30"
+                className="glass-card rounded-3xl hover:shadow-3xl hover:shadow-red-500/15 transition-all duration-500 overflow-hidden hover:-translate-y-2 border border-gray-100/80 dark:border-gray-700/80 hover:border-red-200/50 dark:hover:border-red-800/30 animate-fadeIn"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 {editingClub === club.id ? (
                   <div className="p-5">
@@ -359,7 +357,7 @@ export default function Clubs() {
                         <input
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
-                          className="w-full px-3 py-2 bg-white/50 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all"
+                          className="input-premium py-2 text-sm"
                         />
                       </div>
                       <div>
@@ -368,7 +366,7 @@ export default function Clubs() {
                           value={editDescription}
                           onChange={(e) => setEditDescription(e.target.value)}
                           rows="3"
-                          className="w-full px-3 py-2 bg-white/50 dark:bg-gray-700/50 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 resize-none outline-none transition-all"
+                          className="input-premium py-2 text-sm resize-none"
                         />
                       </div>
                       <div className="flex gap-2 pt-2">
@@ -389,7 +387,6 @@ export default function Clubs() {
                   </div>
                 ) : (
                   <>
-                    {/* Card Header */}
                     <div className={`bg-gradient-to-r ${getRandomGradient(index)} p-5 relative overflow-hidden min-h-[140px]`}>
                       <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
                       <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
@@ -418,7 +415,6 @@ export default function Clubs() {
                       </div>
                     </div>
 
-                    {/* Card Body */}
                     <div className="p-5">
                       <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed min-h-[60px] line-clamp-3">
                         {club.description || "No description provided yet."}
@@ -443,7 +439,6 @@ export default function Clubs() {
                       </div>
                     </div>
 
-                    {/* Owner Actions */}
                     {user && club.createdBy === user.id && (
                       <div className="border-t border-gray-100 dark:border-gray-700 px-5 py-3 bg-gradient-to-r from-gray-50/50 to-gray-100/50 dark:from-gray-900/50 dark:to-gray-800/50 flex items-center gap-3">
                         <button
@@ -497,7 +492,7 @@ export default function Clubs() {
                     onClick={() => loadClubs(pageNum, searchTerm)}
                     className={`w-10 h-10 rounded-xl text-sm font-medium transition-all duration-200 ${
                       page === pageNum
-                        ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25"
+                        ? "btn-primary w-10 h-10 flex items-center justify-center"
                         : "bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-500/30"
                     }`}
                   >
@@ -518,47 +513,6 @@ export default function Clubs() {
           </div>
         )}
       </div>
-
-      {/* Global Styles for Animations */}
-      <style>{`
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-20px) scale(1.05); }
-        }
-        @keyframes spin-slow {
-          from { transform: translate(-50%, -50%) rotate(0deg); }
-          to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1.05); }
-        }
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-        .animate-spin-slow {
-          animation: spin-slow 30s linear infinite;
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-        .line-clamp-3 {
-          display: -webkit-box;
-          -webkit-line-clamp: 3;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `}</style>
     </div>
   );
 }

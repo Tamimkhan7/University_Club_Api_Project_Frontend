@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useContext } from "react";
+import { Link } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import toast from "react-hot-toast";
@@ -8,22 +9,10 @@ import {
   UserPlus, UserMinus, Crown, Loader2, Search,
   MessageCircle, Heart, Sparkles, Zap, Star, Award,
   Clock, Shield, User, Hash, Globe, Compass,
-  ChevronRight, MoreHorizontal, Bell, Settings
+  ChevronRight, MoreHorizontal, Bell, Settings,
+  Building2, BookOpen, Target, Eye, ThumbsUp,
+  Mail, UserCircle, Link2, AtSign
 } from "lucide-react";
-
-/**
- * ============================================================
- *  💬 Groups — Premium Group Chat Experience
- *  Designed with Glassmorphism + Animated Visuals
- *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
- * ============================================================
- * 
- *  ┌─────────────────────────────────────────────────────────────┐
- *  │  🎯 Purpose: Group chat with member management          │
- *  │  🔥 Features: CRUD, Messages, Member Management         │
- *  │  📱 Responsive: Optimized for all screen sizes          │
- *  └─────────────────────────────────────────────────────────────┘
- */
 
 export default function Groups() {
   const { user: me } = useContext(AuthContext);
@@ -43,6 +32,8 @@ export default function Groups() {
   const [addMemberId, setAddMemberId] = useState("");
   const [searchUsers, setSearchUsers] = useState("");
   const [userResults, setUserResults] = useState([]);
+  const [showUserSearch, setShowUserSearch] = useState(false);
+  const [isSearchingUsers, setIsSearchingUsers] = useState(false);
   const messagesEndRef = useRef(null);
   const pollRef = useRef(null);
 
@@ -168,11 +159,16 @@ export default function Groups() {
   const doSearchUsers = async (e) => {
     e.preventDefault();
     if (!searchUsers.trim()) return;
+    setIsSearchingUsers(true);
     try {
-      const res = await api.get("/user/search", { params: { query: searchUsers.trim(), page: 1, pageSize: 10 } });
+      const res = await api.get("/user/search", { 
+        params: { query: searchUsers.trim(), page: 1, pageSize: 10 } 
+      });
       setUserResults(res.data?.items || []);
     } catch (error) {
       toast.error(getErrorMessage(error));
+    } finally {
+      setIsSearchingUsers(false);
     }
   };
 
@@ -180,6 +176,8 @@ export default function Groups() {
     try {
       await api.post(`/group/${activeGroup.id}/members`, { userId });
       toast.success("Member added");
+      setUserResults([]);
+      setSearchUsers("");
       loadGroupData(activeGroup.id);
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to add member"));
@@ -213,40 +211,54 @@ export default function Groups() {
     }
   };
 
-  const formatTime = (date) => new Date(date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  const formatTime = (date) => new Date(date).toLocaleTimeString("en-US", { 
+    hour: "2-digit", 
+    minute: "2-digit" 
+  });
 
   if (loading) return <Loader />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 pb-12 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
       
-      {/* Premium Background Decorations */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 py-6 sm:py-8">
+        
         {/* Header */}
         <div className="relative mb-6">
-          <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-2xl blur-3xl opacity-20 animate-pulse-slow" />
-          <div className="relative bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-2xl p-5 text-white overflow-hidden shadow-2xl shadow-red-500/20">
+          <div className="page-hero rounded-2xl p-5">
             <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl animate-float-slow" />
             <div className="relative flex items-center gap-3">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
-                <MessageCircle className="w-6 h-6" />
+                <Users className="w-6 h-6" />
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold">Group Chats</h1>
                 <p className="text-white/80 text-xs sm:text-sm">Connect and collaborate with your community</p>
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  onClick={() => setShowCreateForm(!showCreateForm)}
+                  className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 text-xs font-medium hover:bg-white/30 transition-all flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  New Group
+                </button>
+                <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
+                  {groups.length} groups
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Main Layout */}
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 h-[75vh] grid grid-cols-1 md:grid-cols-3">
+        <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden h-[75vh] grid grid-cols-1 md:grid-cols-3">
           
           {/* Group List */}
           <div className={`border-r border-gray-200/50 dark:border-gray-700/50 overflow-y-auto ${activeGroup ? "hidden md:block" : ""}`}>
@@ -269,17 +281,23 @@ export default function Groups() {
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
                   placeholder="Group name"
-                  className="w-full px-3 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all"
+                  className="input-premium py-2.5 text-sm"
                 />
                 <input
                   value={memberIdsInput}
                   onChange={(e) => setMemberIdsInput(e.target.value)}
                   placeholder="Member user IDs, comma separated (optional)"
-                  className="w-full px-3 py-2.5 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all"
+                  className="input-premium py-2.5 text-sm"
                 />
+                <div className="text-xs text-gray-400 dark:text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <UserPlus className="w-3 h-3" />
+                    You can add members after creating the group
+                  </span>
+                </div>
                 <button 
                   onClick={createGroup} 
-                  className="w-full bg-gradient-to-r from-red-500 to-rose-600 text-white px-3 py-2.5 rounded-xl text-sm font-medium hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 hover:scale-[1.02]"
+                  className="btn-primary w-full py-2.5 text-sm"
                 >
                   <Sparkles className="w-4 h-4 inline mr-2" />
                   Create Group
@@ -288,12 +306,19 @@ export default function Groups() {
             )}
 
             {groups.length === 0 ? (
-              <div className="text-center py-16 px-4">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Users className="w-8 h-8 text-gray-300 dark:text-gray-500" />
+              <div className="empty-state py-16">
+                <div className="icon w-16 h-16">
+                  <Users className="w-8 h-8 text-gray-400" />
                 </div>
                 <p className="text-gray-500 dark:text-gray-400 font-medium">No groups yet</p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Create your first group</p>
+                <button
+                  onClick={() => setShowCreateForm(true)}
+                  className="btn-primary mt-4 px-6 py-2.5 text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Group
+                </button>
               </div>
             ) : (
               groups.map((g) => (
@@ -340,11 +365,20 @@ export default function Groups() {
             {!activeGroup ? (
               <div className="flex-1 flex items-center justify-center text-gray-400">
                 <div className="text-center">
-                  <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <MessageCircle className="w-10 h-10 text-gray-300 dark:text-gray-500" />
+                  <div className="empty-state">
+                    <div className="icon w-20 h-20">
+                      <Users className="w-10 h-10 text-gray-400" />
+                    </div>
+                    <p className="font-medium text-gray-500 dark:text-gray-400">Select a group</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Choose a group to start chatting</p>
+                    <button
+                      onClick={() => setShowCreateForm(true)}
+                      className="btn-primary mt-4 px-6 py-2.5 text-sm"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Create Group
+                    </button>
                   </div>
-                  <p className="font-medium text-gray-500 dark:text-gray-400">Select a group</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Choose a group to start chatting</p>
                 </div>
               </div>
             ) : (
@@ -404,33 +438,53 @@ export default function Groups() {
                 {/* Members Panel */}
                 {showMembers && details && (
                   <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50 max-h-64 overflow-y-auto bg-gray-50/50 dark:bg-gray-800/50 animate-slideDown">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-6 h-6 bg-gradient-to-r from-red-500 to-rose-600 rounded-lg flex items-center justify-center">
+                        <UserPlus className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Add Members</span>
+                    </div>
+
                     <form onSubmit={doSearchUsers} className="flex gap-2 mb-3">
                       <div className="flex-1 relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input 
                           value={searchUsers} 
                           onChange={(e) => setSearchUsers(e.target.value)} 
-                          placeholder="Search users to add" 
-                          className="w-full pl-9 pr-3 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all"
+                          placeholder="Search users to add..." 
+                          className="input-premium pl-9 pr-3 py-2 text-sm"
                         />
                       </div>
-                      <button type="submit" className="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-all">
+                      <button type="submit" className="btn-primary px-4 py-2 text-sm">
                         <Search className="w-4 h-4" />
                       </button>
                     </form>
                     
+                    {isSearchingUsers && (
+                      <div className="flex justify-center py-2">
+                        <Loader2 className="w-5 h-5 text-red-500 animate-spin" />
+                      </div>
+                    )}
+
                     {userResults.length > 0 && (
-                      <div className="space-y-1.5 mb-3 bg-white dark:bg-gray-900 rounded-xl p-2 border border-gray-200 dark:border-gray-700">
+                      <div className="space-y-1.5 mb-3 bg-white dark:bg-gray-900 rounded-xl p-2 border border-gray-200 dark:border-gray-700 max-h-40 overflow-y-auto">
                         {userResults.map((u) => (
                           <div key={u.id} className="flex items-center justify-between text-sm px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-all">
-                            <span className="font-medium text-gray-700 dark:text-gray-300">
-                              {u.name} <span className="text-xs text-gray-400">#{u.id}</span>
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <img
+                                src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=dc2626&color=fff&bold=true`}
+                                alt={u.name}
+                                className="w-6 h-6 rounded-full object-cover"
+                              />
+                              <span className="font-medium text-gray-700 dark:text-gray-300">
+                                {u.name} <span className="text-xs text-gray-400">#{u.id}</span>
+                              </span>
+                            </div>
                             <button 
                               onClick={() => addMember(u.id)} 
-                              className="p-1.5 bg-green-500/10 text-green-600 hover:bg-green-500 hover:text-white rounded-lg transition-all"
+                              className="p-1.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/25 transition-all hover:scale-105"
                             >
-                              <UserPlus className="w-4 h-4" />
+                              <UserPlus className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         ))}
@@ -443,23 +497,27 @@ export default function Groups() {
                         <input 
                           value={addMemberId} 
                           onChange={(e) => setAddMemberId(e.target.value)} 
-                          placeholder="Add by user ID" 
-                          className="w-full pl-9 pr-3 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all"
+                          placeholder="Add by user ID..." 
+                          className="input-premium pl-9 pr-3 py-2 text-sm"
                         />
                       </div>
                       <button 
                         onClick={addMemberManual} 
-                        className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-sm font-medium hover:shadow-lg hover:shadow-green-500/25 transition-all hover:scale-[1.02]"
+                        className="btn-primary px-4 py-2 text-sm"
                       >
                         Add
                       </button>
                     </div>
                     
                     <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 px-2 py-1">
+                        <Users className="w-3.5 h-3.5" />
+                        Members ({details.members.length})
+                      </div>
                       {details.members.map((m) => (
                         <div key={m.userId} className="flex items-center justify-between text-sm px-2 py-1.5 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-lg transition-all">
                           <span className="flex items-center gap-2 font-medium text-gray-700 dark:text-gray-300">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-gray-400 to-gray-500 flex items-center justify-center text-white text-[10px] font-bold">
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-red-500 to-rose-500 flex items-center justify-center text-white text-[10px] font-bold">
                               {m.name?.charAt(0)?.toUpperCase()}
                             </div>
                             {m.name}
@@ -548,12 +606,12 @@ export default function Groups() {
                     onChange={(e) => setText(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                     placeholder="Type a message..."
-                    className="flex-1 px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none transition-all text-sm"
+                    className="flex-1 input-premium py-2.5 text-sm"
                   />
                   <button 
                     onClick={sendMessage} 
                     disabled={sending || !text.trim()} 
-                    className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-5 py-2.5 rounded-xl disabled:opacity-50 hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 hover:scale-[1.05] disabled:hover:scale-100 flex items-center gap-2"
+                    className="btn-primary px-5 py-2.5 disabled:opacity-50 hover:scale-[1.05] disabled:hover:scale-100 flex items-center gap-2"
                   >
                     {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </button>
@@ -563,48 +621,6 @@ export default function Groups() {
           </div>
         </div>
       </div>
-
-      {/* Global Styles for Animations */}
-      <style>{`
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-20px) scale(1.05); }
-        }
-        @keyframes spin-slow {
-          from { transform: translate(-50%, -50%) rotate(0deg); }
-          to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1.05); }
-        }
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(5px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-        .animate-spin-slow {
-          animation: spin-slow 30s linear infinite;
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-      `}</style>
     </div>
   );
 }

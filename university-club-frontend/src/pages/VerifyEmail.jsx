@@ -2,23 +2,14 @@ import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import { 
-  CheckCircle, 
-  XCircle, 
-  Loader2, 
-  Sparkles, 
-  MailCheck, 
-  MailX, 
-  MailQuestion,
-  ArrowRight,
-  Home,
-  RefreshCw,
-  Shield
+  CheckCircle, XCircle, Loader2, Sparkles, MailCheck, 
+  MailX, MailQuestion, ArrowRight, Home, RefreshCw, Shield
 } from "lucide-react";
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-  const [status, setStatus] = useState("verifying"); // verifying | success | error
+  const [status, setStatus] = useState("verifying");
   const [message, setMessage] = useState("");
   const [retryCount, setRetryCount] = useState(0);
 
@@ -48,9 +39,8 @@ export default function VerifyEmail() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-gradient-to-br from-red-50 via-rose-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-gradient-to-br from-red-50 via-rose-50 to-pink-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       
-      {/* Background Decorative Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 left-10 w-72 h-72 bg-red-200/20 dark:bg-red-500/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-10 right-10 w-96 h-96 bg-rose-200/20 dark:bg-rose-500/5 rounded-full blur-3xl"></div>
@@ -58,13 +48,11 @@ export default function VerifyEmail() {
       </div>
 
       <div className="w-full max-w-md relative z-10">
-        <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl shadow-red-500/10 dark:shadow-red-500/5 p-8 sm:p-10 border border-white/30 dark:border-gray-700/30 text-center transition-all duration-500">
+        <div className="relative glass-card rounded-3xl p-8 sm:p-10 text-center transition-all duration-500">
           
-          {/* Animated Background Glow */}
           <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 via-rose-500/5 to-transparent rounded-3xl"></div>
           
           <div className="relative z-10">
-            {/* Icon Section */}
             <div className="mb-6">
               {status === "verifying" && (
                 <div className="relative inline-block">
@@ -102,7 +90,6 @@ export default function VerifyEmail() {
               )}
             </div>
 
-            {/* Title & Message */}
             <div className="space-y-2 mb-6">
               {status === "verifying" && (
                 <>
@@ -148,13 +135,12 @@ export default function VerifyEmail() {
               )}
             </div>
 
-            {/* Action Buttons */}
             <div className="space-y-3">
               {status === "success" && (
                 <>
                   <Link
                     to="/login"
-                    className="inline-flex items-center justify-center gap-2 w-full bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-3.5 rounded-2xl font-semibold shadow-lg shadow-red-500/25 dark:shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/35 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                    className="inline-flex items-center justify-center gap-2 btn-primary w-full group"
                   >
                     <Sparkles className="w-4 h-4" />
                     Go to Sign In
@@ -174,7 +160,7 @@ export default function VerifyEmail() {
                 <>
                   <button
                     onClick={handleRetry}
-                    className="inline-flex items-center justify-center gap-2 w-full bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-3.5 rounded-2xl font-semibold shadow-lg shadow-red-500/25 dark:shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/35 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+                    className="inline-flex items-center justify-center gap-2 btn-primary w-full group"
                   >
                     <RefreshCw className="w-4 h-4" />
                     Try Again
@@ -197,7 +183,6 @@ export default function VerifyEmail() {
               )}
             </div>
 
-            {/* Footer Note */}
             <div className="mt-6 pt-6 border-t border-gray-200/50 dark:border-gray-700/50">
               <p className="text-xs text-gray-400 dark:text-gray-500">
                 <span className="inline-flex items-center gap-1">
@@ -213,7 +198,6 @@ export default function VerifyEmail() {
           </div>
         </div>
 
-        {/* Decorative Bottom Card */}
         <div className="mt-4 text-center">
           <p className="text-xs text-gray-400 dark:text-gray-500">
             Having trouble? <Link to="/contact" className="text-red-500 hover:text-red-600 font-medium transition-colors">Contact Support</Link>

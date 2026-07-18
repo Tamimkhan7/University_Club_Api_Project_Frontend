@@ -10,22 +10,9 @@ import {
   Clock, Flag, Share2, Bookmark,
   ChevronDown, ChevronUp, ThumbsUp, Quote,
   Sparkles, Shield, Award, Crown, Star,
-  Zap, Rocket, Coffee, HeartHandshake
+  Zap, Rocket, Coffee, HeartHandshake,
+  Building2, BookOpen, Target, Eye
 } from "lucide-react";
-
-/**
- * ============================================================
- *  📄 PostDetails — Premium Post Details Experience
- *  Designed with Glassmorphism + Animated Visuals
- *  Fully Responsive | Dark Mode Ready | Zero Logic Changes
- * ============================================================
- * 
- *  ┌─────────────────────────────────────────────────────────────┐
- *  │  🎯 Purpose: Display post with comments & interactions  │
- *  │  🔥 Features: Comments, Replies, Editing, Reporting     │
- *  │  📱 Responsive: Optimized for all screen sizes          │
- *  └─────────────────────────────────────────────────────────────┘
- */
 
 export default function PostDetails() {
   const { id } = useParams();
@@ -65,6 +52,23 @@ export default function PostDetails() {
       return null;
     }
   })();
+
+  const formatDate = (date) => {
+    if (!date) return "Recently";
+    const now = new Date();
+    const postDate = new Date(date);
+    const diffMs = now - postDate;
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+    return postDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -144,61 +148,20 @@ export default function PostDetails() {
       });
   }, [searchParams]);
 
-  const updatePost = async () => {
-    if (!editPostContent.trim() && !editPostImage) {
-      toast.error("Please add some content or image");
-      return;
-    }
-    setUpdatingPost(true);
-    try {
-      const formData = new FormData();
-      formData.append("Content", editPostContent);
-      if (editPostImage) formData.append("Image", editPostImage);
-
-      await api.put(`/post/update/${id}`, formData);
-      setIsEditingPost(false);
-      await loadData();
-      toast.success("Post updated successfully!");
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to update post"));
-    } finally {
-      setUpdatingPost(false);
-    }
-  };
-
-  const updateComment = async (commentId) => {
-    if (!editCommentText.trim()) return toast.error("Please write something");
-    setUpdating(true);
-    try {
-      await api.put(`/comment/update/${commentId}`, {
-        postId: Number(id),
-        content: editCommentText,
-      });
-      setEditingComment(null);
-      setEditCommentText("");
-      await loadComments();
-      toast.success("Comment updated successfully!");
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to update comment"));
-    } finally {
-      setUpdating(false);
-    }
-  };
-
   const sendComment = async () => {
-    if (!text.trim()) return toast.error("Please write a comment");
+    if (!text.trim()) return;
     setSending(true);
     try {
       await api.post("/comment/create", {
         postId: Number(id),
-        content: text,
-        parentCommentId: replyTo,
+        content: text.trim(),
+        parentCommentId: replyTo || undefined,
       });
       setText("");
       setReplyTo(null);
       setReplyToName("");
-      await loadComments();
-      toast.success("Comment posted!");
+      loadComments();
+      loadData();
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to post comment"));
     } finally {
@@ -207,12 +170,12 @@ export default function PostDetails() {
   };
 
   const deleteComment = async (commentId) => {
-    if (!confirm("Delete this comment?")) return;
     setDeleting(true);
     try {
-      await api.delete(`/comment/delete/${commentId}`);
-      await loadComments();
-      toast.success("Comment deleted successfully");
+      await api.delete(`/comment/${commentId}`);
+      toast.success("Comment deleted");
+      loadComments();
+      loadData();
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to delete comment"));
     } finally {
@@ -220,48 +183,27 @@ export default function PostDetails() {
     }
   };
 
-  const deletePost = async () => {
-    if (!confirm("Are you sure you want to delete this post? This action cannot be undone!")) return;
+  const updateComment = async (commentId) => {
+    if (!editCommentText.trim()) return;
+    setUpdating(true);
     try {
-      await api.delete(`/post/delete/${id}`);
-      toast.success("Post deleted successfully");
-      navigate("/");
+      await api.put(`/comment/${commentId}`, { content: editCommentText.trim() });
+      toast.success("Comment updated");
+      setEditingComment(null);
+      loadComments();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to delete post"));
-    }
-  };
-
-  const toggleSave = async () => {
-    try {
-      if (post.isSaved) {
-        await api.delete(`/post/unsave/${id}`);
-      } else {
-        await api.post(`/post/save/${id}`);
-      }
-      setPost((p) => ({ ...p, isSaved: !p.isSaved }));
-    } catch (error) {
-      toast.error(getErrorMessage(error));
-    }
-  };
-
-  const submitReport = async () => {
-    try {
-      await api.post("/post/report", { postId: Number(id), reason: reportReason.trim() || undefined });
-      toast.success("Post reported successfully");
-      setShowReportBox(false);
-      setReportReason("");
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to report post"));
+      toast.error(getErrorMessage(error, "Failed to update comment"));
+    } finally {
+      setUpdating(false);
     }
   };
 
   const toggleCommentLike = async (commentId) => {
     try {
-      await api.post(`/comment/${commentId}/toggle-like`);
-      const likeRes = await api.get(`/comment/${commentId}/likes`);
-      setCommentLikes((prev) => ({ ...prev, [commentId]: likeRes.data?.likeCount || 0 }));
+      const res = await api.post(`/comment/${commentId}/like`);
+      setCommentLikes((prev) => ({ ...prev, [commentId]: res.data?.likeCount || 0 }));
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(getErrorMessage(error, "Failed to like comment"));
     }
   };
 
@@ -271,36 +213,12 @@ export default function PostDetails() {
     document.getElementById("comment-input")?.focus();
   };
 
-  const startEditingPost = () => {
-    setIsEditingPost(true);
-    setEditPostContent(post?.content || "");
-    setEditPostImage(null);
-    setEditPostImagePreview(post?.imageUrl || "");
-  };
-
-  const startEditingComment = (comment) => {
-    setEditingComment(comment.id);
-    setEditCommentText(comment.content);
-  };
-
-  const cancelEditingPost = () => {
-    setIsEditingPost(false);
-    setEditPostImage(null);
-    setEditPostImagePreview("");
-  };
-
-  const cancelEditingComment = () => {
-    setEditingComment(null);
-    setEditCommentText("");
-  };
-
   const toggleReplies = async (commentId) => {
     const isOpen = !!showReplies[commentId];
     if (!isOpen && !replies[commentId]) {
       try {
         const res = await api.get(`/comment/${commentId}/replies`);
-        setReplies((prev) => ({ ...prev, [commentId]: res.data || [] }));
-        setReplyCounts((prev) => ({ ...prev, [commentId]: (res.data || []).length }));
+        setReplies((prev) => ({ ...prev, [commentId]: res.data?.items || [] }));
       } catch (error) {
         console.error(error);
       }
@@ -308,30 +226,92 @@ export default function PostDetails() {
     setShowReplies((prev) => ({ ...prev, [commentId]: !isOpen }));
   };
 
-  const formatDate = (date) => {
-    const now = new Date();
-    const commentDate = new Date(date);
-    const diffMs = now - commentDate;
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const startEditingComment = (comment) => {
+    setEditingComment(comment.id);
+    setEditCommentText(comment.content);
+  };
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+  const cancelEditingComment = () => {
+    setEditingComment(null);
+    setEditCommentText("");
+  };
 
-    return new Date(date).toLocaleString("en-US", {
-      month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit",
-    });
+  const startEditingPost = () => {
+    setIsEditingPost(true);
+    setEditPostContent(post.content);
+    setEditPostImagePreview(post.imageUrl || "");
+  };
+
+  const cancelEditingPost = () => {
+    setIsEditingPost(false);
+    setEditPostContent("");
+    setEditPostImage(null);
+    setEditPostImagePreview("");
+  };
+
+  const updatePost = async () => {
+    if (!editPostContent.trim()) return;
+    setUpdatingPost(true);
+    try {
+      const formData = new FormData();
+      formData.append("Content", editPostContent.trim());
+      if (editPostImage) formData.append("Image", editPostImage);
+
+      await api.put(`/post/${id}`, formData);
+      toast.success("Post updated");
+      setIsEditingPost(false);
+      loadData();
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to update post"));
+    } finally {
+      setUpdatingPost(false);
+    }
+  };
+
+  const deletePost = async () => {
+    if (!confirm("Delete this post?")) return;
+    try {
+      await api.delete(`/post/${id}`);
+      toast.success("Post deleted");
+      navigate("/");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to delete post"));
+    }
+  };
+
+  const toggleSave = async () => {
+    try {
+      if (post.isSaved) {
+        await api.delete(`/post/unsave/${post.id}`);
+        setPost((p) => ({ ...p, isSaved: false }));
+        toast.success("Post unsaved");
+      } else {
+        await api.post(`/post/save/${post.id}`);
+        setPost((p) => ({ ...p, isSaved: true }));
+        toast.success("Post saved");
+      }
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to save post"));
+    }
   };
 
   const handleShare = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      toast.success("Post link copied to clipboard!");
+      await navigator.clipboard.writeText(window.location.origin + `/post/${post.id}`);
+      toast.success("📋 Post link copied!");
     } catch (err) {
       toast.error("Failed to copy link");
+    }
+  };
+
+  const submitReport = async () => {
+    try {
+      await api.post(`/post/${id}/report`, { reason: reportReason });
+      toast.success("Report submitted");
+      setShowReportBox(false);
+      setReportReason("");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to submit report"));
     }
   };
 
@@ -340,16 +320,18 @@ export default function PostDetails() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <MessageCircle className="w-12 h-12 text-gray-400" />
+          <div className="empty-state">
+            <div className="icon">
+              <MessageCircle className="w-12 h-12 text-gray-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">Post not found</h3>
+            <button
+              onClick={() => navigate("/")}
+              className="btn-primary px-6 py-2.5"
+            >
+              Go back to feed
+            </button>
           </div>
-          <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">Post not found</h3>
-          <button
-            onClick={() => navigate("/")}
-            className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-2.5 rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300 hover:scale-105"
-          >
-            Go back to feed
-          </button>
         </div>
       </div>
     );
@@ -358,10 +340,9 @@ export default function PostDetails() {
   const canManage = post.userId === currentUserId;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50/30 to-orange-50/30 dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 pb-12 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
       
-      {/* Premium Background Decorations */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
@@ -379,7 +360,7 @@ export default function PostDetails() {
         </button>
 
         {/* Post Card */}
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
+        <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
           <div className="p-5 sm:p-6 pb-4">
             
             {/* Post Header */}
@@ -425,7 +406,7 @@ export default function PostDetails() {
                   <MoreVertical className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 </button>
                 {showDeleteMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 z-20 overflow-hidden animate-slideDown">
+                  <div className="absolute right-0 mt-2 w-48 glass-card rounded-2xl shadow-2xl z-20 overflow-hidden animate-slideDown">
                     <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-red-500 to-rose-500" />
                     {canManage && !isEditingPost && (
                       <button
@@ -472,7 +453,7 @@ export default function PostDetails() {
                   onChange={(e) => setReportReason(e.target.value)}
                   placeholder="Reason (optional)"
                   rows="2"
-                  className="w-full p-3 border-2 border-amber-200 dark:border-amber-700 rounded-xl text-sm bg-white dark:bg-gray-900 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all"
+                  className="input-premium"
                 />
                 <div className="flex gap-2 mt-2">
                   <button
@@ -498,7 +479,7 @@ export default function PostDetails() {
                   value={editPostContent}
                   onChange={(e) => setEditPostContent(e.target.value)}
                   rows="6"
-                  className="w-full resize-none p-4 border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/20 bg-gray-50 dark:bg-gray-900 transition-all duration-200 outline-none"
+                  className="input-premium resize-none"
                   placeholder="Write your post content..."
                   autoFocus
                 />
@@ -583,7 +564,7 @@ export default function PostDetails() {
         </div>
 
         {/* Comments Section */}
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
+        <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
           <div className="p-5 sm:p-6">
             <h3 className="font-bold text-xl text-gray-800 dark:text-white mb-5 flex items-center gap-3">
               <div className="w-9 h-9 bg-gradient-to-r from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/25">
@@ -625,7 +606,7 @@ export default function PostDetails() {
                   onChange={(e) => setText(e.target.value)}
                   placeholder={replyTo ? `Reply to @${replyToName}...` : "Write a comment..."}
                   rows="3"
-                  className="w-full resize-none p-3 border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:border-red-400 focus:ring-4 focus:ring-red-400/20 bg-gray-50 dark:bg-gray-900 transition-all duration-200 outline-none"
+                  className="input-premium resize-none"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -637,7 +618,7 @@ export default function PostDetails() {
                   <button
                     onClick={sendComment}
                     disabled={sending || !text.trim()}
-                    className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-2 rounded-xl font-medium hover:shadow-xl hover:shadow-red-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2 text-sm"
+                    className="btn-primary px-6 py-2 text-sm disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2"
                   >
                     {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     Post Comment
@@ -649,11 +630,13 @@ export default function PostDetails() {
             {/* Comments List */}
             {comments.length === 0 ? (
               <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
-                <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <MessageCircle className="w-10 h-10 text-gray-400" />
+                <div className="empty-state">
+                  <div className="icon w-20 h-20">
+                    <MessageCircle className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500 dark:text-gray-400 font-medium">No comments yet</p>
+                  <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Be the first to start the conversation!</p>
                 </div>
-                <p className="text-gray-500 dark:text-gray-400 font-medium">No comments yet</p>
-                <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Be the first to start the conversation!</p>
               </div>
             ) : (
               <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
@@ -671,7 +654,7 @@ export default function PostDetails() {
                           value={editCommentText}
                           onChange={(e) => setEditCommentText(e.target.value)}
                           rows="3"
-                          className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-red-400 focus:ring-2 focus:ring-red-400/20 bg-white dark:bg-gray-800 resize-none outline-none transition-all"
+                          className="input-premium resize-none"
                           autoFocus
                         />
                         <div className="flex gap-2">
@@ -795,48 +778,6 @@ export default function PostDetails() {
           </div>
         </div>
       </div>
-
-      {/* Global Styles for Animations */}
-      <style>{`
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-20px) scale(1.05); }
-        }
-        @keyframes spin-slow {
-          from { transform: translate(-50%, -50%) rotate(0deg); }
-          to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1.05); }
-        }
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-        .animate-spin-slow {
-          animation: spin-slow 30s linear infinite;
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .animate-pulse {
-          animation: pulse 1s ease-in-out infinite;
-        }
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-      `}</style>
     </div>
   );
 }
