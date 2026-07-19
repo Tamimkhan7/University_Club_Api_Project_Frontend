@@ -177,61 +177,76 @@ export default function Users() {
             return (
               <div
                 key={u.id}
-                className="glass-card rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/20 transition-all duration-500 hover:-translate-y-2 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 hover:border-red-300/50 animate-fadeIn"
+                className="group relative glass-card rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-red-500/15 transition-all duration-500 hover:-translate-y-2 overflow-hidden animate-fadeIn"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-rose-500 to-amber-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
+
                 <Link to={`/profile/${u.id}`} className="block">
                   <div className="relative">
-                    <div className={`h-32 sm:h-36 bg-gradient-to-r ${gradient}`}>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                      <div className="absolute top-3 right-3 flex gap-1.5">
-                        <div className="bg-white/20 backdrop-blur-sm rounded-full p-1.5">
-                          <Star className="w-3 h-3 text-yellow-300" />
+                    <div className={`relative h-24 sm:h-28 bg-gradient-to-br ${gradient} overflow-hidden`}>
+                      <div
+                        className="absolute inset-0 opacity-25"
+                        style={{
+                          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.7) 1px, transparent 1px)",
+                          backgroundSize: "16px 16px",
+                        }}
+                      />
+                      <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+
+                      {u.isOnline && (
+                        <div className="absolute top-3 left-3 bg-black/25 backdrop-blur-md rounded-full pl-1.5 pr-2.5 py-1 text-[11px] text-white font-medium flex items-center gap-1.5 border border-white/10">
+                          <span className="relative flex h-1.5 w-1.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400" />
+                          </span>
+                          Online
                         </div>
-                        {u.isOnline && (
-                          <div className="bg-green-500/80 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs text-white font-medium flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
-                            Online
-                          </div>
-                        )}
-                      </div>
+                      )}
                     </div>
-                    <div className="absolute -bottom-14 left-1/2 transform -translate-x-1/2">
+
+                    <div className="absolute -bottom-11 left-1/2 -translate-x-1/2">
                       <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-amber-500 rounded-full blur-md opacity-0 group-hover:opacity-40 transition-opacity duration-500" />
                         <img
                           src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=dc2626&color=fff&size=120`}
                           alt={u.name}
-                          className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl border-4 border-white dark:border-gray-800 shadow-xl object-cover"
+                          className="relative w-[88px] h-[88px] sm:w-24 sm:h-24 rounded-full ring-4 ring-white dark:ring-ink-900 shadow-xl object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         {isMe && (
-                          <div className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-rose-600 rounded-full p-1 shadow-lg">
-                            <Crown className="w-4 h-4 text-white" />
+                          <div className="absolute -top-1 -right-1 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full p-1.5 shadow-lg shadow-amber-500/30 ring-2 ring-white dark:ring-ink-900">
+                            <Crown className="w-3.5 h-3.5 text-white" />
                           </div>
                         )}
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-16 sm:pt-18 pb-3 px-5 text-center">
-                    <h3 className="font-bold text-gray-800 dark:text-white text-lg lg:text-xl">{u.name}</h3>
+                  <div className="pt-14 sm:pt-16 pb-3 px-5 text-center">
+                    <h3 className="font-bold text-gray-800 dark:text-white text-lg group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">
+                      {u.name}
+                    </h3>
                     {u.userName && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">@{u.userName}</p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">@{u.userName}</p>
                     )}
                     {(u.department || u.batch) && (
-                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-1.5 flex items-center justify-center gap-2">
-                        <span className="inline-flex items-center gap-1">
-                          <Building2 className="w-3.5 h-3.5" />
-                          {u.department}
-                        </span>
+                      <div className="mt-2.5 flex items-center justify-center flex-wrap gap-1.5">
+                        {u.department && (
+                          <span className="badge-premium !py-1">
+                            <Building2 className="w-3 h-3" />
+                            {u.department}
+                          </span>
+                        )}
                         {u.batch && (
-                          <span className="inline-flex items-center gap-1">
-                            <BookOpen className="w-3.5 h-3.5" />
+                          <span className="badge-premium !py-1 !from-amber-500/10 !to-orange-500/10 !text-amber-600 dark:!text-amber-400 !border-amber-200/50 dark:!border-amber-800/30">
+                            <BookOpen className="w-3 h-3" />
                             Batch {u.batch}
                           </span>
                         )}
-                      </p>
+                      </div>
                     )}
-                    <div className="mt-3 flex justify-center gap-3 text-xs text-gray-400">
+                    <div className="mt-3 flex justify-center gap-4 text-xs text-gray-400 dark:text-gray-500">
                       <span className="flex items-center gap-1">
                         <Heart className="w-3.5 h-3.5 text-red-400" />
                         {Math.floor(Math.random() * 100) + 50}
@@ -244,15 +259,15 @@ export default function Users() {
                   </div>
                 </Link>
 
-                <div className="px-5 pb-5 space-y-2">
+                <div className="px-5 pb-5 pt-1 space-y-2.5">
                   {!isMe ? (
                     <button
                       onClick={() => toggleFollow(u)}
                       disabled={followBusy[u.id]}
-                      className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+                      className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
                         u.isFollowing
-                          ? "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
-                          : "btn-primary"
+                          ? "bg-gray-100 dark:bg-ink-800 text-gray-700 dark:text-gray-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+                          : "btn-primary !py-2.5"
                       }`}
                     >
                       {u.isFollowing ? (
@@ -268,15 +283,15 @@ export default function Users() {
                       )}
                     </button>
                   ) : (
-                    <div className="w-full py-2.5 px-4 bg-gradient-to-r from-red-500/10 to-rose-500/10 rounded-xl text-center text-sm font-medium text-red-600 dark:text-red-400 border border-red-200/50 dark:border-red-800/50">
+                    <div className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-xl text-center text-sm font-semibold text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/30">
                       <span className="flex items-center justify-center gap-2">
                         <Crown className="w-4 h-4" />
                         This is you
                       </span>
                     </div>
                   )}
-                  <Link to={`/profile/${u.id}`} className="group/link flex items-center justify-center gap-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors">
-                    View Profile 
+                  <Link to={`/profile/${u.id}`} className="group/link flex items-center justify-center gap-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+                    View Profile
                     <ChevronRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
                   </Link>
                 </div>

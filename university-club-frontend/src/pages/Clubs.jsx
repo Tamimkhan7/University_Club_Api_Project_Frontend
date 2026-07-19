@@ -346,9 +346,10 @@ export default function Clubs() {
             {clubs.map((club, index) => (
               <div
                 key={club.id}
-                className="glass-card rounded-3xl hover:shadow-3xl hover:shadow-red-500/15 transition-all duration-500 overflow-hidden hover:-translate-y-2 border border-gray-100/80 dark:border-gray-700/80 hover:border-red-200/50 dark:hover:border-red-800/30 animate-fadeIn"
+                className="group relative glass-card rounded-3xl hover:shadow-2xl hover:shadow-red-500/15 transition-all duration-500 overflow-hidden hover:-translate-y-2 animate-fadeIn"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-rose-500 to-amber-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
                 {editingClub === club.id ? (
                   <div className="p-5">
                     <div className="space-y-3">
@@ -387,16 +388,23 @@ export default function Clubs() {
                   </div>
                 ) : (
                   <>
-                    <div className={`bg-gradient-to-r ${getRandomGradient(index)} p-5 relative overflow-hidden min-h-[140px]`}>
+                    <div className={`relative bg-gradient-to-br ${getRandomGradient(index)} p-5 overflow-hidden min-h-[150px]`}>
+                      <div
+                        className="absolute inset-0 opacity-20"
+                        style={{
+                          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.7) 1px, transparent 1px)",
+                          backgroundSize: "18px 18px",
+                        }}
+                      />
                       <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-                      <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
+                      <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-amber-300/20 rounded-full blur-2xl" />
                       <div className="relative">
                         <div className="flex items-start justify-between">
-                          <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg border border-white/10">
+                          <div className="w-14 h-14 bg-white/15 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg border border-white/20 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500">
                             <span className="text-3xl">{getEmoji(index)}</span>
                           </div>
-                          <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-xl border border-white/10">
-                            <Users className="w-3 h-3 text-white/80" />
+                          <div className="flex items-center gap-1 bg-white/15 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20">
+                            <Users className="w-3 h-3 text-white/90" />
                             <span className="text-xs font-semibold text-white">{club.memberCount || 0}</span>
                           </div>
                         </div>
@@ -407,7 +415,7 @@ export default function Clubs() {
                         </div>
                         <Link
                           to={`/clubs/${club.id}`}
-                          className="inline-flex items-center gap-1 mt-2 text-sm text-white/80 hover:text-white transition-colors group/link"
+                          className="inline-flex items-center gap-1 mt-2 text-sm text-white/85 hover:text-white transition-colors group/link"
                         >
                           View Details
                           <ChevronRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/link:translate-x-1" />
@@ -424,14 +432,14 @@ export default function Clubs() {
                         {joinedClubs.has(club.id) ? (
                           <button
                             onClick={() => leaveClub(club.id)}
-                            className="flex-1 bg-gradient-to-r from-red-500 to-rose-600 text-white px-3 py-2.5 rounded-xl hover:shadow-xl hover:shadow-red-500/25 transition-all duration-300 text-sm font-medium flex items-center justify-center gap-1.5 hover:scale-[1.02]"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200/60 dark:border-red-800/40 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-300 hover:scale-[1.02]"
                           >
                             <UserX className="w-3.5 h-3.5" /> Leave
                           </button>
                         ) : (
                           <button
                             onClick={() => joinClub(club.id)}
-                            className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-2.5 rounded-xl hover:shadow-xl hover:shadow-green-500/25 transition-all duration-300 text-sm font-medium flex items-center justify-center gap-1.5 hover:scale-[1.02]"
+                            className="flex-1 btn-primary !py-2.5 text-sm"
                           >
                             <UserCheck className="w-3.5 h-3.5" /> Join
                           </button>
@@ -440,7 +448,7 @@ export default function Clubs() {
                     </div>
 
                     {user && club.createdBy === user.id && (
-                      <div className="border-t border-gray-100 dark:border-gray-700 px-5 py-3 bg-gradient-to-r from-gray-50/50 to-gray-100/50 dark:from-gray-900/50 dark:to-gray-800/50 flex items-center gap-3">
+                      <div className="border-t border-gray-100 dark:border-ink-800 px-5 py-3 bg-gray-50/60 dark:bg-ink-800/40 flex items-center gap-3">
                         <button
                           onClick={() => startEditing(club)}
                           className="flex items-center gap-1.5 text-red-600 hover:text-red-700 dark:hover:text-red-400 transition-all text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-xl transition-all"
@@ -454,8 +462,8 @@ export default function Clubs() {
                           <Trash2 className="w-3.5 h-3.5" /> Delete
                         </button>
                         <div className="flex-1" />
-                        <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 bg-white/50 dark:bg-gray-700/50 px-2.5 py-1 rounded-xl">
-                          <Crown className="w-3 h-3 text-amber-500" />
+                        <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-full border border-amber-200/50 dark:border-amber-800/30">
+                          <Crown className="w-3 h-3" />
                           <span>Owner</span>
                         </div>
                       </div>
