@@ -11,12 +11,21 @@ import {
 } from "lucide-react";
 
 const TABS = [
-  { id: "upcoming", label: "Upcoming", icon: Calendar },
-  { id: "all", label: "All Events", icon: Globe },
-  { id: "my", label: "Created by Me", icon: Star },
-  { id: "joined", label: "Joined", icon: UserCheck },
-  { id: "my-clubs", label: "My Clubs Upcoming", icon: Users },
+  { id: "upcoming", label: "Upcoming", icon: Calendar, endpoint: "/event/upcoming" },
+  { id: "all", label: "All Events", icon: Globe, endpoint: "/event" },
+  { id: "my", label: "Created by Me", icon: Star, endpoint: "/event/my" },
+  { id: "joined", label: "Joined", icon: UserCheck, endpoint: "/event/joined" },
+  { id: "my-clubs", label: "My Clubs Upcoming", icon: Users, endpoint: "/event/my-clubs-upcoming" },
 ];
+
+// Backend now consistently returns a single-level ApiResponse: { success, message, data }.
+// This helper pulls the real payload out and lets callers check success/message honestly
+// instead of assuming every 2xx response means the operation actually succeeded.
+const unwrap = (res) => {
+  const body = res?.data ?? {};
+  const success = body.success !== false; // treat missing flag as success (defensive)
+  return { success, message: body.message, data: body.data ?? body };
+};
 
 export default function Events() {
   const [tab, setTab] = useState("upcoming");
@@ -36,14 +45,39 @@ export default function Events() {
 
   const currentEndpoint = TABS.find((t) => t.id === tab)?.endpoint || "/event/upcoming";
 
+  // The backend returns different DTO shapes per endpoint:
+  //  - /event, /event/upcoming, /event/my, /event/search  -> EventSummaryDto   (id, title, description, totalAttendees)
+  //  - /event/joined                                      -> MyJoinedEventDto (eventId, eventTitle, eventDescription)
+  //  - /event/my-clubs-upcoming                            -> ClubUpcomingEventDto (eventId, clubName, totalAttendees)
+  // Normalize them all to a single consistent shape the UI relies on.
+  const normalizeEvent = (item) => ({
+    ...item,
+    id: item.id ?? item.eventId,
+    title: item.title ?? item.eventTitle,
+    description: item.description ?? item.eventDescription ?? "",
+    eventDate: item.eventDate,
+    clubId: item.clubId,
+    totalAttendees: item.totalAttendees ?? 0,
+    club: item.club ?? (item.clubName ? { name: item.clubName } : undefined),
+  });
+
   const loadEvents = async (targetPage = 1, query = "") => {
     setLoading(true);
     try {
       const endpoint = query ? "/event/search" : currentEndpoint;
       const params = query ? { keyword: query, page: targetPage, pageSize: 12 } : { page: targetPage, pageSize: 12 };
       const res = await api.get(endpoint, { params });
-      const data = res.data || {};
-      const items = data.items || data || [];
+      const { success, message, data } = unwrap(res);
+
+      if (!success) {
+        toast.error(message || "Failed to load events");
+        setEvents([]);
+        setTotalPages(1);
+        return;
+      }
+
+      const rawItems = data.items || (Array.isArray(data) ? data : []);
+      const items = rawItems.map(normalizeEvent);
       setEvents(items);
       setPage(data.page || 1);
       setTotalPages(data.totalPages || 1);
@@ -51,7 +85,8 @@ export default function Events() {
       items.forEach(async (ev) => {
         try {
           const statusRes = await api.get(`/event/${ev.id}/join-status`);
-          setJoinStatus((prev) => ({ ...prev, [ev.id]: statusRes.data?.hasJoined || false }));
+          const statusResult = unwrap(statusRes);
+          setJoinStatus((prev) => ({ ...prev, [ev.id]: statusResult.data?.hasJoined || false }));
         } catch {
           /* ignore */
         }
@@ -66,8 +101,10 @@ export default function Events() {
   const loadMyClubs = async () => {
     try {
       const res = await api.get("/club/my");
-      setClubs(res.data || []);
-      if ((res.data || []).length > 0) setForm((f) => ({ ...f, clubId: res.data[0].clubId.toString() }));
+      const { data } = unwrap(res);
+      const list = Array.isArray(data) ? data : [];
+      setClubs(list);
+      if (list.length > 0) setForm((f) => ({ ...f, clubId: list[0].clubId.toString() }));
     } catch (error) {
       console.error(error);
     }
@@ -94,13 +131,23 @@ export default function Events() {
         eventDate: new Date(form.eventDate).toISOString(),
         clubId: Number(form.clubId),
       };
-      if (editingEvent) {
-        await api.put(`/event/${editingEvent}`, payload);
-        toast.success("Event updated!");
-      } else {
-        await api.post("/event", payload);
-        toast.success("Event created!");
+
+      const res = editingEvent
+        ? await api.put(`/event/${editingEvent}`, payload)
+        : await api.post("/event", payload);
+
+      const { success, message } = unwrap(res);
+
+      // This is the actual fix: previously we assumed a 2xx HTTP status meant
+      // the event was created/updated. The backend can return 2xx with
+      // success:false (e.g. "Only admin or moderator can create events."),
+      // so we must check the body before celebrating.
+      if (!success) {
+        toast.error(message || "Failed to save event");
+        return;
       }
+
+      toast.success(message || (editingEvent ? "Event updated!" : "Event created!"));
       setForm({ title: "", description: "", eventDate: "", clubId: clubs[0]?.clubId?.toString() || "" });
       setShowCreateForm(false);
       setEditingEvent(null);
@@ -124,8 +171,13 @@ export default function Events() {
   const deleteEvent = async (id) => {
     if (!confirm("Delete this event?")) return;
     try {
-      await api.delete(`/event/${id}`);
-      toast.success("Event deleted");
+      const res = await api.delete(`/event/${id}`);
+      const { success, message } = unwrap(res);
+      if (!success) {
+        toast.error(message || "Failed to delete event");
+        return;
+      }
+      toast.success(message || "Event deleted");
       loadEvents(page, searchTerm);
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to delete event"));
@@ -134,9 +186,14 @@ export default function Events() {
 
   const joinEvent = async (id) => {
     try {
-      await api.post(`/event/join/${id}`);
+      const res = await api.post(`/event/join/${id}`);
+      const { success, message } = unwrap(res);
+      if (!success) {
+        toast.error(message || "Failed to join event");
+        return;
+      }
       setJoinStatus((prev) => ({ ...prev, [id]: true }));
-      toast.success("Joined event!");
+      toast.success(message || "Joined event!");
       loadEvents(page, searchTerm);
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to join event"));
@@ -145,9 +202,14 @@ export default function Events() {
 
   const leaveEvent = async (id) => {
     try {
-      await api.delete(`/event/leave/${id}`);
+      const res = await api.delete(`/event/leave/${id}`);
+      const { success, message } = unwrap(res);
+      if (!success) {
+        toast.error(message || "Failed to leave event");
+        return;
+      }
       setJoinStatus((prev) => ({ ...prev, [id]: false }));
-      toast.success("Left event");
+      toast.success(message || "Left event");
       loadEvents(page, searchTerm);
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to leave event"));
@@ -159,13 +221,15 @@ export default function Events() {
     if (!isOpen && !attendees[id]) {
       try {
         const res = await api.get(`/event/${id}/attendees`);
-        setAttendees((prev) => ({ ...prev, [id]: res.data || [] }));
+        const { data } = unwrap(res);
+        setAttendees((prev) => ({ ...prev, [id]: data || [] }));
       } catch (error) {
         console.error(error);
       }
       try {
         const statsRes = await api.get(`/event/${id}/stats`);
-        setEventStats((prev) => ({ ...prev, [id]: statsRes.data }));
+        const { data } = unwrap(statsRes);
+        setEventStats((prev) => ({ ...prev, [id]: data }));
       } catch (error) {
         console.error(error);
       }

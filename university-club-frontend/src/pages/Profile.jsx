@@ -10,7 +10,7 @@ import {
   LogOut, Shield, Award, Crown, Star, Zap, Rocket, Calendar, Clock,
   Compass, Gift, Gem, BadgeCheck, ChevronRight, Settings, Bell,
   Share2, Link2, User, Building2, BookOpen, Target, Globe,
-  Phone, MessageCircle
+  Phone, MessageCircle, ShieldOff, ShieldAlert
 } from "lucide-react";
 
 export default function Profile() {
@@ -28,6 +28,7 @@ export default function Profile() {
   const [stats, setStats] = useState({ followers: 0, following: 0, posts: 0, profileViews: 0 });
   const [isOwnProfile, setIsOwnProfile] = useState(true);
   const [followBusy, setFollowBusy] = useState(false);
+  const [blockBusy, setBlockBusy] = useState(false);
 
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -72,10 +73,16 @@ export default function Profile() {
       if (own) {
         setIsPrivateState(!!profileRes.data.isPrivate);
       } else {
-        try {
-          const mutualRes = await api.get(`/user/mutual/${id}`, { params: { page: 1, pageSize: 10 } });
-          setMutualList(mutualRes.data?.items || []);
-        } catch {
+        // Skip mutual-followers lookup if the relationship is blocked either way —
+        // avoids an extra failed call and keeps the UI clean for blocked users.
+        if (!profileRes.data.isBlocked) {
+          try {
+            const mutualRes = await api.get(`/user/mutual/${id}`, { params: { page: 1, pageSize: 10 } });
+            setMutualList(mutualRes.data?.items || []);
+          } catch {
+            setMutualList([]);
+          }
+        } else {
           setMutualList([]);
         }
       }
@@ -205,6 +212,41 @@ export default function Profile() {
     }
   };
 
+  // BLOCK / UNBLOCK — this was completely missing before, which is why
+  // "blocked" users still showed up in search and could still be messaged:
+  // no block relationship was ever created in the database.
+  const toggleBlock = async () => {
+    if (!profile) return;
+
+    if (!profile.isBlocked) {
+      if (!confirm(`Block ${profile.name}? They won't be able to find or message you, and you won't see them either.`)) {
+        return;
+      }
+    }
+
+    setBlockBusy(true);
+    try {
+      if (profile.isBlocked) {
+        await api.delete(`/user/unblock/${profile.id}`);
+        toast.success(`${profile.name} unblocked`);
+      } else {
+        await api.post(`/user/block/${profile.id}`);
+        toast.success(`${profile.name} blocked`);
+      }
+      // Blocking also removes any follow relationship server-side (both directions),
+      // so reflect that immediately in local state instead of waiting for a refetch.
+      setProfile((p) => ({
+        ...p,
+        isBlocked: !p.isBlocked,
+        isFollowing: p.isBlocked ? p.isFollowing : false,
+      }));
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Action failed"));
+    } finally {
+      setBlockBusy(false);
+    }
+  };
+
   const cancelEditing = () => {
     setIsEditing(false);
     setProfileImageFile(null);
@@ -293,7 +335,7 @@ export default function Profile() {
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-2 justify-center">
+              <div className="flex items-center gap-2 justify-center flex-wrap">
                 {isOwnProfile && !isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
@@ -303,18 +345,43 @@ export default function Profile() {
                   </button>
                 )}
                 {!isOwnProfile && (
-                  <button
-                    onClick={toggleFollow}
-                    disabled={followBusy}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-all duration-300 ${
-                      profile.isFollowing
-                        ? "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                        : "btn-primary"
-                    }`}
-                  >
-                    {profile.isFollowing ? <UserMinus className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
-                    {profile.isFollowing ? "Unfollow" : "Follow"}
-                  </button>
+                  <>
+                    {/* Follow button hidden once blocked in either direction — following
+                        a blocked user isn't a valid state and the backend rejects it. */}
+                    {!profile.isBlocked && (
+                      <button
+                        onClick={toggleFollow}
+                        disabled={followBusy}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-all duration-300 ${
+                          profile.isFollowing
+                            ? "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                            : "btn-primary"
+                        }`}
+                      >
+                        {profile.isFollowing ? <UserMinus className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                        {profile.isFollowing ? "Unfollow" : "Follow"}
+                      </button>
+                    )}
+
+                    <button
+                      onClick={toggleBlock}
+                      disabled={blockBusy}
+                      className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-300 ${
+                        profile.isBlocked
+                          ? "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                          : "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-900/40"
+                      }`}
+                    >
+                      {blockBusy ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : profile.isBlocked ? (
+                        <ShieldOff className="w-4 h-4" />
+                      ) : (
+                        <ShieldAlert className="w-4 h-4" />
+                      )}
+                      {profile.isBlocked ? "Unblock" : "Block"}
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -323,6 +390,13 @@ export default function Profile() {
               <div className="flex items-center justify-center gap-2 mt-3 text-gray-500 dark:text-gray-400 text-sm">
                 <Mail className="w-4 h-4" />
                 <span>{profile.email}</span>
+              </div>
+            )}
+
+            {!isOwnProfile && profile.isBlocked && (
+              <div className="mt-3 inline-flex items-center gap-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-1.5 rounded-full">
+                <ShieldAlert className="w-3.5 h-3.5" />
+                You and this user are blocked from interacting.
               </div>
             )}
           </div>

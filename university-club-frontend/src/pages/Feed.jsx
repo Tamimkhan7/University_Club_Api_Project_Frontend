@@ -54,9 +54,31 @@ export default function Feed() {
           res = await api.get(currentEndpoint, { params: { page: targetPage, pageSize: 10 } });
         }
         const data = res.data || {};
-        setPosts(data.items || []);
+        const items = data.items || [];
+        setPosts(items);
         setPage(data.page || 1);
         setTotalPages(data.totalPages || 1);
+
+        // The post list endpoint's `commentCount` field is not kept in sync when a
+        // new comment is added elsewhere (e.g. on the PostDetails page), so it can
+        // show stale/zero counts here. Fetch the real, current count per post from
+        // the comments API and patch it into state once it resolves.
+        if (items.length > 0) {
+          Promise.all(
+            items.map((p) =>
+              api
+                .get(`/comment/post/${p.id}`, { params: { page: 1, pageSize: 50 } })
+                .then((cRes) => ({
+                  id: p.id,
+                  count: cRes.data?.total ?? cRes.data?.totalItems ?? cRes.data?.items?.length ?? p.commentCount ?? 0,
+                }))
+                .catch(() => ({ id: p.id, count: p.commentCount ?? 0 }))
+            )
+          ).then((counts) => {
+            const countMap = Object.fromEntries(counts.map((c) => [c.id, c.count]));
+            setPosts((prev) => prev.map((p) => ({ ...p, commentCount: countMap[p.id] ?? p.commentCount ?? 0 })));
+          });
+        }
       } catch (err) {
         console.error("Error loading posts:", err);
         setError(getErrorMessage(err, "Failed to load posts. Please refresh the page."));
