@@ -17,7 +17,6 @@ const TABS = [
   { id: "followers", label: "My Followers", icon: Users },
   { id: "following", label: "My Following", icon: UserPlus },
   { id: "blocked", label: "Blocked Users", icon: Ban },
-  { id: "search", label: "Search", icon: Search },
 ];
 
 export default function Connections() {
@@ -28,51 +27,90 @@ export default function Connections() {
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [busyId, setBusyId] = useState(null);
+  const [isSearchMode, setIsSearchMode] = useState(false);
 
   const load = async (targetPage = 1) => {
     setLoading(true);
     try {
+      const query = searchTerm.trim().toLowerCase();
+      setIsSearchMode(!!query);
       let res;
+      const matches = (u) => u.name?.toLowerCase().includes(query);
+
+      // Fetches every page of a paginated endpoint (using the API's normal
+      // pageSize of 20) so search can look across the whole list, not just
+      // the currently visible page. Requesting one huge pageSize instead
+      // gets rejected by the API with a 400, so we page through it.
+      const fetchAllItems = async (endpoint) => {
+        const first = await api.get(endpoint, { params: { page: 1, pageSize: 20 } });
+        let items = first.data?.items || [];
+        const totalPages = first.data?.totalPages || 1;
+        if (totalPages > 1) {
+          const rest = await Promise.all(
+            Array.from({ length: totalPages - 1 }, (_, i) =>
+              api.get(endpoint, { params: { page: i + 2, pageSize: 20 } })
+            )
+          );
+          rest.forEach((r) => { items = items.concat(r.data?.items || []); });
+        }
+        return items;
+      };
+
       switch (tab) {
-        case "suggestions":
+        case "suggestions": {
           res = await api.get("/follow/suggestions");
-          setList(res.data || []);
+          const data = res.data || [];
+          setList(query ? data.filter(matches) : data);
           setTotalPages(1);
           break;
-        case "common":
+        }
+        case "common": {
           res = await api.get("/follow/suggestions/common");
-          setList(res.data || []);
+          const data = res.data || [];
+          setList(query ? data.filter(matches) : data);
           setTotalPages(1);
           break;
-        case "followers":
-          res = await api.get("/follow/followers", { params: { page: targetPage, pageSize: 20 } });
-          setList(res.data?.items || []);
-          setTotalPages(res.data?.totalPages || 1);
-          break;
-        case "following":
-          res = await api.get("/follow/following", { params: { page: targetPage, pageSize: 20 } });
-          setList(res.data?.items || []);
-          setTotalPages(res.data?.totalPages || 1);
-          break;
-        case "blocked":
-          res = await api.get("/follow/blocked", { params: { page: targetPage, pageSize: 20 } });
-          setList(res.data?.items || []);
-          setTotalPages(res.data?.totalPages || 1);
-          break;
-        case "search":
-          if (!searchTerm.trim()) {
-            setList([]);
+        }
+        case "followers": {
+          if (query) {
+            const items = await fetchAllItems("/follow/followers");
+            setList(items.filter(matches));
             setTotalPages(1);
-            break;
+          } else {
+            res = await api.get("/follow/followers", { params: { page: targetPage, pageSize: 20 } });
+            setList(res.data?.items || []);
+            setTotalPages(res.data?.totalPages || 1);
           }
-          res = await api.get("/follow/search", { params: { query: searchTerm.trim(), page: targetPage, pageSize: 20 } });
-          setList(res.data?.items || []);
-          setTotalPages(res.data?.totalPages || 1);
           break;
+        }
+        case "following": {
+          if (query) {
+            const items = await fetchAllItems("/follow/following");
+            setList(items.filter(matches));
+            setTotalPages(1);
+          } else {
+            res = await api.get("/follow/following", { params: { page: targetPage, pageSize: 20 } });
+            setList(res.data?.items || []);
+            setTotalPages(res.data?.totalPages || 1);
+          }
+          break;
+        }
+        case "blocked": {
+          if (query) {
+            const items = await fetchAllItems("/follow/blocked");
+            setList(items.filter(matches));
+            setTotalPages(1);
+          } else {
+            res = await api.get("/follow/blocked", { params: { page: targetPage, pageSize: 20 } });
+            setList(res.data?.items || []);
+            setTotalPages(res.data?.totalPages || 1);
+          }
+          break;
+        }
         default:
           break;
       }
-      setPage(targetPage);
+      setPage(query ? 1 : targetPage);
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to load"));
     } finally {
@@ -87,6 +125,14 @@ export default function Connections() {
   const handleSearch = (e) => {
     e.preventDefault();
     load(1);
+  };
+
+  const selectTab = (id) => {
+    // Switching tabs always exits search mode and clears the search box,
+    // so tab navigation is predictable regardless of any previous search.
+    setSearchTerm("");
+    setIsSearchMode(false);
+    setTab(id);
   };
 
   const follow = async (id) => {
@@ -186,6 +232,28 @@ export default function Connections() {
           </div>
         </div>
 
+        {/* Search */}
+        <form onSubmit={handleSearch} className="mb-6 w-full relative group">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-red-500 transition-colors duration-300" />
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search people..."
+              className="input-premium w-full pl-12 pr-4 py-3.5"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => { setSearchTerm(""); load(1); }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <XCircle className="w-4 h-4 text-gray-400" />
+              </button>
+            )}
+          </div>
+        </form>
+
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-6 p-1.5 glass-card rounded-2xl shadow-lg">
           {TABS.map((t) => {
@@ -193,7 +261,7 @@ export default function Connections() {
             return (
               <button
                 key={t.id}
-                onClick={() => setTab(t.id)}
+                onClick={() => selectTab(t.id)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
                   tab === t.id 
                     ? "btn-primary"
@@ -207,52 +275,38 @@ export default function Connections() {
           })}
         </div>
 
-        {/* Search */}
-        {tab === "search" && (
-          <form onSubmit={handleSearch} className="mb-6 relative group">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-red-500 transition-colors duration-300" />
-              <input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search people..."
-                className="input-premium pl-12 pr-4 py-3.5"
-              />
-              {searchTerm && (
-                <button
-                  type="button"
-                  onClick={() => { setSearchTerm(""); load(1); }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                >
-                  <XCircle className="w-4 h-4 text-gray-400" />
-                </button>
-              )}
-            </div>
-          </form>
-        )}
-
         {/* Empty State */}
         {list.length === 0 ? (
           <div className="glass-card rounded-3xl shadow-xl shadow-red-500/10 p-12 sm:p-16 text-center">
             <div className="empty-state">
               <div className="icon">
-                {tab === "suggestions" && <Sparkles className="w-12 h-12 text-red-500" />}
-                {tab === "common" && <Star className="w-12 h-12 text-red-500" />}
-                {tab === "followers" && <Users className="w-12 h-12 text-red-500" />}
-                {tab === "following" && <UserPlus className="w-12 h-12 text-red-500" />}
-                {tab === "blocked" && <Ban className="w-12 h-12 text-red-500" />}
-                {tab === "search" && <Search className="w-12 h-12 text-red-500" />}
+                {isSearchMode ? (
+                  <Search className="w-12 h-12 text-red-500" />
+                ) : (
+                  <>
+                    {tab === "suggestions" && <Sparkles className="w-12 h-12 text-red-500" />}
+                    {tab === "common" && <Star className="w-12 h-12 text-red-500" />}
+                    {tab === "followers" && <Users className="w-12 h-12 text-red-500" />}
+                    {tab === "following" && <UserPlus className="w-12 h-12 text-red-500" />}
+                    {tab === "blocked" && <Ban className="w-12 h-12 text-red-500" />}
+                  </>
+                )}
               </div>
               <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">
-                {tab === "suggestions" && "No suggestions"}
-                {tab === "common" && "No common interests"}
-                {tab === "followers" && "No followers yet"}
-                {tab === "following" && "Not following anyone"}
-                {tab === "blocked" && "No blocked users"}
-                {tab === "search" && searchTerm ? "No results found" : "Search for people"}
+                {isSearchMode ? (
+                  "No results found"
+                ) : (
+                  <>
+                    {tab === "suggestions" && "No suggestions"}
+                    {tab === "common" && "No common interests"}
+                    {tab === "followers" && "No followers yet"}
+                    {tab === "following" && "Not following anyone"}
+                    {tab === "blocked" && "No blocked users"}
+                  </>
+                )}
               </h3>
               <p className="text-gray-500 dark:text-gray-400">
-                {tab === "search" && searchTerm ? "Try a different search term" : "Connect with others to build your network"}
+                {isSearchMode ? "Try a different search term" : "Connect with others to build your network"}
               </p>
             </div>
           </div>

@@ -8,10 +8,10 @@ import {
   Users, Plus, X, Send, Trash2, Edit2, Check, ArrowLeft, LogOut,
   UserPlus, UserMinus, Crown, Loader2, Search,
   MessageCircle, Heart, Sparkles, Zap, Star, Award,
-  Clock, Shield, User, Hash, Globe, Compass,
-  ChevronRight, MoreHorizontal, Bell, Settings,
+  Clock, Shield, ShieldCheck, User, Hash, Globe, Compass,
+  ChevronRight, MoreHorizontal, Bell, Settings, Settings2,
   Building2, BookOpen, Target, Eye, ThumbsUp,
-  Mail, UserCircle, Link2, AtSign
+  Mail, UserCircle, Link2, AtSign, ChevronDown,
 } from "lucide-react";
 
 export default function Groups() {
@@ -26,15 +26,24 @@ export default function Groups() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [memberIdsInput, setMemberIdsInput] = useState("");
-  const [showMembers, setShowMembers] = useState(false);
-  const [editingName, setEditingName] = useState(false);
+
+  // Info drawer (members / settings)
+  const [showInfoDrawer, setShowInfoDrawer] = useState(false);
+  const [infoTab, setInfoTab] = useState("members"); // members | settings
+
   const [editNameValue, setEditNameValue] = useState("");
+  const [savingSettings, setSavingSettings] = useState(false);
+
   const [addMemberId, setAddMemberId] = useState("");
   const [searchUsers, setSearchUsers] = useState("");
   const [userResults, setUserResults] = useState([]);
-  const [showUserSearch, setShowUserSearch] = useState(false);
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
+
+  const [openRoleMenuFor, setOpenRoleMenuFor] = useState(null);
+
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const shouldAutoScroll = useRef(true);
   const pollRef = useRef(null);
 
   const loadGroups = async () => {
@@ -60,9 +69,22 @@ export default function Groups() {
     };
   }, []);
 
+  // Only auto-scroll to the newest message if the user was already near the
+  // bottom (or a fresh group / a message they just sent forces it). This is
+  // what stops the view from yanking someone back down while they're
+  // scrolled up reading older messages during a background poll.
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (shouldAutoScroll.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
+
+  const handleMessagesScroll = () => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    shouldAutoScroll.current = distanceFromBottom < 120;
+  };
 
   const loadGroupData = async (groupId) => {
     try {
@@ -79,6 +101,8 @@ export default function Groups() {
 
   const openGroup = (group) => {
     setActiveGroup(group);
+    setShowInfoDrawer(false);
+    shouldAutoScroll.current = true;
     loadGroupData(group.id);
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = setInterval(() => loadGroupData(group.id), 4000);
@@ -108,6 +132,7 @@ export default function Groups() {
     try {
       await api.post("/group/message", { groupId: activeGroup.id, text: text.trim() });
       setText("");
+      shouldAutoScroll.current = true;
       loadGroupData(activeGroup.id);
       loadGroups();
     } catch (error) {
@@ -117,26 +142,35 @@ export default function Groups() {
     }
   };
 
-  const saveGroupName = async () => {
-    if (!editNameValue.trim()) return;
+  const openInfoDrawer = (tab = "members") => {
+    setEditNameValue(details?.name || activeGroup?.name || "");
+    setInfoTab(tab);
+    setShowInfoDrawer(true);
+  };
+
+  const saveGroupSettings = async () => {
+    if (!editNameValue.trim()) return toast.error("Group name required");
+    setSavingSettings(true);
     try {
       await api.put(`/group/${activeGroup.id}`, { name: editNameValue.trim() });
       toast.success("Group updated");
-      setEditingName(false);
       loadGroupData(activeGroup.id);
       loadGroups();
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to update group"));
+    } finally {
+      setSavingSettings(false);
     }
   };
 
   const deleteGroup = async () => {
-    if (!confirm("Delete this group for everyone?")) return;
+    if (!confirm("Delete this group for everyone? This cannot be undone.")) return;
     try {
       await api.delete(`/group/${activeGroup.id}`);
       toast.success("Group deleted");
       setActiveGroup(null);
       setDetails(null);
+      setShowInfoDrawer(false);
       loadGroups();
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to delete group"));
@@ -150,6 +184,7 @@ export default function Groups() {
       toast.success("Left group");
       setActiveGroup(null);
       setDetails(null);
+      setShowInfoDrawer(false);
       loadGroups();
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to leave group"));
@@ -161,8 +196,8 @@ export default function Groups() {
     if (!searchUsers.trim()) return;
     setIsSearchingUsers(true);
     try {
-      const res = await api.get("/user/search", { 
-        params: { query: searchUsers.trim(), page: 1, pageSize: 10 } 
+      const res = await api.get("/user/search", {
+        params: { query: searchUsers.trim(), page: 1, pageSize: 10 },
       });
       setUserResults(res.data?.items || []);
     } catch (error) {
@@ -192,12 +227,15 @@ export default function Groups() {
   };
 
   const removeMember = async (memberId) => {
+    if (!confirm("Remove this member from the group?")) return;
     try {
       await api.delete(`/group/${activeGroup.id}/members/${memberId}`);
       toast.success("Member removed");
       loadGroupData(activeGroup.id);
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to remove member"));
+    } finally {
+      setOpenRoleMenuFor(null);
     }
   };
 
@@ -208,19 +246,26 @@ export default function Groups() {
       loadGroupData(activeGroup.id);
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to update admin status"));
+    } finally {
+      setOpenRoleMenuFor(null);
     }
   };
 
-  const formatTime = (date) => new Date(date).toLocaleTimeString("en-US", { 
-    hour: "2-digit", 
-    minute: "2-digit" 
-  });
+  const formatTime = (date) =>
+    new Date(date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+
+  const myMembership = details?.members?.find((m) => m.userId === me?.id);
+  const myIsAdmin = !!myMembership?.isAdmin;
+  const isCreator = !!details && me?.id === details.createdBy;
+
+  const roleLabel = (m) =>
+    m.userId === details?.createdBy ? "Owner" : m.isAdmin ? "Admin" : "Member";
 
   if (loading) return <Loader />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
-      
+
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
@@ -228,12 +273,12 @@ export default function Groups() {
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 py-6 sm:py-8">
-        
+
         {/* Header */}
         <div className="relative mb-6">
           <div className="page-hero rounded-2xl p-5">
             <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl animate-float-slow" />
-            <div className="relative flex items-center gap-3">
+            <div className="relative flex items-center gap-3 flex-wrap">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
                 <Users className="w-6 h-6" />
               </div>
@@ -259,7 +304,7 @@ export default function Groups() {
 
         {/* Main Layout */}
         <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden h-[75vh] grid grid-cols-1 md:grid-cols-3">
-          
+
           {/* Group List */}
           <div className={`border-r border-gray-200/50 dark:border-gray-700/50 overflow-y-auto ${activeGroup ? "hidden md:block" : ""}`}>
             <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex items-center justify-between sticky top-0 z-10">
@@ -267,8 +312,8 @@ export default function Groups() {
                 <Users className="w-5 h-5" /> Groups
                 <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">{groups.length}</span>
               </h2>
-              <button 
-                onClick={() => setShowCreateForm(!showCreateForm)} 
+              <button
+                onClick={() => setShowCreateForm(!showCreateForm)}
                 className="p-1.5 hover:bg-white/20 rounded-xl transition-all duration-200"
               >
                 {showCreateForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
@@ -295,10 +340,7 @@ export default function Groups() {
                     You can add members after creating the group
                   </span>
                 </div>
-                <button 
-                  onClick={createGroup} 
-                  className="btn-primary w-full py-2.5 text-sm"
-                >
+                <button onClick={createGroup} className="btn-primary w-full py-2.5 text-sm">
                   <Sparkles className="w-4 h-4 inline mr-2" />
                   Create Group
                 </button>
@@ -312,10 +354,7 @@ export default function Groups() {
                 </div>
                 <p className="text-gray-500 dark:text-gray-400 font-medium">No groups yet</p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Create your first group</p>
-                <button
-                  onClick={() => setShowCreateForm(true)}
-                  className="btn-primary mt-4 px-6 py-2.5 text-sm"
-                >
+                <button onClick={() => setShowCreateForm(true)} className="btn-primary mt-4 px-6 py-2.5 text-sm">
                   <Plus className="w-4 h-4" />
                   Create Group
                 </button>
@@ -361,7 +400,7 @@ export default function Groups() {
           </div>
 
           {/* Chat Panel */}
-          <div className={`md:col-span-2 flex flex-col ${!activeGroup ? "hidden md:flex" : ""}`}>
+          <div className={`md:col-span-2 flex flex-col relative ${!activeGroup ? "hidden md:flex" : ""}`}>
             {!activeGroup ? (
               <div className="flex-1 flex items-center justify-center text-gray-400">
                 <div className="text-center">
@@ -371,10 +410,7 @@ export default function Groups() {
                     </div>
                     <p className="font-medium text-gray-500 dark:text-gray-400">Select a group</p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Choose a group to start chatting</p>
-                    <button
-                      onClick={() => setShowCreateForm(true)}
-                      className="btn-primary mt-4 px-6 py-2.5 text-sm"
-                    >
+                    <button onClick={() => setShowCreateForm(true)} className="btn-primary mt-4 px-6 py-2.5 text-sm">
                       <Plus className="w-4 h-4" />
                       Create Group
                     </button>
@@ -385,46 +421,30 @@ export default function Groups() {
               <>
                 {/* Chat Header */}
                 <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex items-center gap-3 sticky top-0 z-10">
-                  <button 
-                    onClick={() => setActiveGroup(null)} 
+                  <button
+                    onClick={() => setActiveGroup(null)}
                     className="md:hidden text-white hover:bg-white/20 p-1.5 rounded-xl transition-all"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
-                  
-                  {editingName ? (
-                    <div className="flex items-center gap-2 flex-1">
-                      <input 
-                        value={editNameValue} 
-                        onChange={(e) => setEditNameValue(e.target.value)} 
-                        className="flex-1 rounded-xl px-3 py-1.5 text-sm text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border-2 border-white/20 focus:border-white/50 outline-none"
-                        autoFocus
-                      />
-                      <button onClick={saveGroupName} className="text-white hover:bg-white/20 p-1.5 rounded-xl transition-all">
-                        <Check className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => setEditingName(false)} className="text-white hover:bg-white/20 p-1.5 rounded-xl transition-all">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex-1 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white font-bold">
-                        {details?.name?.charAt(0)?.toUpperCase() || activeGroup.name?.charAt(0)?.toUpperCase()}
-                      </div>
-                      <span className="font-bold text-white truncate">{details?.name || activeGroup.name}</span>
-                    </div>
-                  )}
-                  
-                  <button 
-                    onClick={() => { setEditingName(true); setEditNameValue(details?.name || activeGroup.name); }} 
-                    className="text-white/80 hover:text-white hover:bg-white/20 p-1.5 rounded-xl transition-all"
+
+                  <button
+                    onClick={() => openInfoDrawer("settings")}
+                    className="flex-1 flex items-center gap-3 text-left min-w-0"
                   >
-                    <Edit2 className="w-4 h-4" />
+                    <div className="w-10 h-10 shrink-0 rounded-xl bg-white/20 flex items-center justify-center text-white font-bold">
+                      {details?.name?.charAt(0)?.toUpperCase() || activeGroup.name?.charAt(0)?.toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <span className="font-bold text-white truncate block">{details?.name || activeGroup.name}</span>
+                      <span className="text-white/70 text-xs">{details?.members?.length || 0} members</span>
+                    </div>
                   </button>
-                  <button 
-                    onClick={() => setShowMembers(!showMembers)} 
+
+                  <button
+                    onClick={() => openInfoDrawer("members")}
                     className="text-white/80 hover:text-white hover:bg-white/20 p-1.5 rounded-xl transition-all relative"
+                    title="Members"
                   >
                     <Users className="w-4 h-4" />
                     {details?.members?.length > 0 && (
@@ -433,139 +453,21 @@ export default function Groups() {
                       </span>
                     )}
                   </button>
+                  <button
+                    onClick={() => openInfoDrawer("settings")}
+                    className="text-white/80 hover:text-white hover:bg-white/20 p-1.5 rounded-xl transition-all"
+                    title="Group settings"
+                  >
+                    <Settings2 className="w-4 h-4" />
+                  </button>
                 </div>
 
-                {/* Members Panel */}
-                {showMembers && details && (
-                  <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50 max-h-64 overflow-y-auto bg-gray-50/50 dark:bg-gray-800/50 animate-slideDown">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-6 h-6 bg-gradient-to-r from-red-500 to-rose-600 rounded-lg flex items-center justify-center">
-                        <UserPlus className="w-3 h-3 text-white" />
-                      </div>
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Add Members</span>
-                    </div>
-
-                    <form onSubmit={doSearchUsers} className="flex gap-2 mb-3">
-                      <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input 
-                          value={searchUsers} 
-                          onChange={(e) => setSearchUsers(e.target.value)} 
-                          placeholder="Search users to add..." 
-                          className="input-premium pl-9 pr-3 py-2 text-sm"
-                        />
-                      </div>
-                      <button type="submit" className="btn-primary px-4 py-2 text-sm">
-                        <Search className="w-4 h-4" />
-                      </button>
-                    </form>
-                    
-                    {isSearchingUsers && (
-                      <div className="flex justify-center py-2">
-                        <Loader2 className="w-5 h-5 text-red-500 animate-spin" />
-                      </div>
-                    )}
-
-                    {userResults.length > 0 && (
-                      <div className="space-y-1.5 mb-3 bg-white dark:bg-gray-900 rounded-xl p-2 border border-gray-200 dark:border-gray-700 max-h-40 overflow-y-auto">
-                        {userResults.map((u) => (
-                          <div key={u.id} className="flex items-center justify-between text-sm px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-all">
-                            <div className="flex items-center gap-2">
-                              <img
-                                src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=dc2626&color=fff&bold=true`}
-                                alt={u.name}
-                                className="w-6 h-6 rounded-full object-cover"
-                              />
-                              <span className="font-medium text-gray-700 dark:text-gray-300">
-                                {u.name} <span className="text-xs text-gray-400">#{u.id}</span>
-                              </span>
-                            </div>
-                            <button 
-                              onClick={() => addMember(u.id)} 
-                              className="p-1.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/25 transition-all hover:scale-105"
-                            >
-                              <UserPlus className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    <div className="flex gap-2 mb-3">
-                      <div className="flex-1 relative">
-                        <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input 
-                          value={addMemberId} 
-                          onChange={(e) => setAddMemberId(e.target.value)} 
-                          placeholder="Add by user ID..." 
-                          className="input-premium pl-9 pr-3 py-2 text-sm"
-                        />
-                      </div>
-                      <button 
-                        onClick={addMemberManual} 
-                        className="btn-primary px-4 py-2 text-sm"
-                      >
-                        Add
-                      </button>
-                    </div>
-                    
-                    <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                      <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 px-2 py-1">
-                        <Users className="w-3.5 h-3.5" />
-                        Members ({details.members.length})
-                      </div>
-                      {details.members.map((m) => (
-                        <div key={m.userId} className="flex items-center justify-between text-sm px-2 py-1.5 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-lg transition-all">
-                          <span className="flex items-center gap-2 font-medium text-gray-700 dark:text-gray-300">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-red-500 to-rose-500 flex items-center justify-center text-white text-[10px] font-bold">
-                              {m.name?.charAt(0)?.toUpperCase()}
-                            </div>
-                            {m.name}
-                            {m.isAdmin && <Crown className="w-3.5 h-3.5 text-amber-500" />}
-                          </span>
-                          <div className="flex gap-1.5">
-                            <button 
-                              onClick={() => toggleAdmin(m.userId, !m.isAdmin)} 
-                              className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
-                                m.isAdmin 
-                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" 
-                                  : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-200"
-                              }`}
-                            >
-                              {m.isAdmin ? "Admin" : "Make Admin"}
-                            </button>
-                            {m.userId !== me?.id && (
-                              <button 
-                                onClick={() => removeMember(m.userId)} 
-                                className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
-                              >
-                                <UserMinus className="w-4 h-4" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <div className="flex gap-2 pt-3 mt-3 border-t border-gray-200/50 dark:border-gray-700/50">
-                      <button 
-                        onClick={leaveGroup} 
-                        className="flex-1 flex items-center justify-center gap-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 transition-all"
-                      >
-                        <LogOut className="w-4 h-4" /> Leave
-                      </button>
-                      <button 
-                        onClick={deleteGroup} 
-                        className="flex-1 flex items-center justify-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 py-2 rounded-xl text-sm font-medium transition-all"
-                      >
-                        <Trash2 className="w-4 h-4" /> Delete
-                      </button>
-                    </div>
-                  </div>
-                )}
-
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30 dark:bg-gray-800/30">
+                <div
+                  ref={messagesContainerRef}
+                  onScroll={handleMessagesScroll}
+                  className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30 dark:bg-gray-800/30"
+                >
                   {messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-gray-400">
                       <MessageCircle className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
@@ -578,7 +480,11 @@ export default function Groups() {
                       const showSender = !isMine && (index === 0 || messages[index - 1]?.senderId !== m.senderId);
                       return (
                         <div key={m.id} className={`flex ${isMine ? "justify-end" : "justify-start"} animate-fadeIn`}>
-                          <div className={`max-w-[75%] ${isMine ? "bg-gradient-to-r from-red-500 to-rose-600 text-white" : "bg-white dark:bg-gray-700 text-gray-800 dark:text-white"} rounded-2xl px-4 py-2.5 shadow-lg ${!isMine ? "shadow-gray-200/50 dark:shadow-gray-700/30" : "shadow-red-500/20"}`}>
+                          <div
+                            className={`max-w-[75%] ${
+                              isMine ? "bg-gradient-to-r from-red-500 to-rose-600 text-white" : "bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                            } rounded-2xl px-4 py-2.5 shadow-lg ${!isMine ? "shadow-gray-200/50 dark:shadow-gray-700/30" : "shadow-red-500/20"}`}
+                          >
                             {showSender && (
                               <p className="text-xs font-semibold mb-0.5 opacity-80 flex items-center gap-1.5">
                                 <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[8px] font-bold">
@@ -599,6 +505,20 @@ export default function Groups() {
                   <div ref={messagesEndRef} />
                 </div>
 
+                {/* Jump to latest button, appears when the user has scrolled up */}
+                {!shouldAutoScroll.current && messages.length > 0 && (
+                  <button
+                    onClick={() => {
+                      shouldAutoScroll.current = true;
+                      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="absolute bottom-24 right-6 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-full p-2.5 shadow-lg shadow-red-500/30 hover:scale-105 transition-transform"
+                    title="Jump to latest"
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                )}
+
                 {/* Message Input */}
                 <div className="p-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm flex gap-2">
                   <input
@@ -608,9 +528,9 @@ export default function Groups() {
                     placeholder="Type a message..."
                     className="flex-1 input-premium py-2.5 text-sm"
                   />
-                  <button 
-                    onClick={sendMessage} 
-                    disabled={sending || !text.trim()} 
+                  <button
+                    onClick={sendMessage}
+                    disabled={sending || !text.trim()}
                     className="btn-primary px-5 py-2.5 disabled:opacity-50 hover:scale-[1.05] disabled:hover:scale-100 flex items-center gap-2"
                   >
                     {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
@@ -619,6 +539,271 @@ export default function Groups() {
               </>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* ================= Group Info Drawer ================= */}
+      <div className={`fixed inset-0 z-50 ${showInfoDrawer ? "" : "pointer-events-none"}`}>
+        <div
+          onClick={() => setShowInfoDrawer(false)}
+          className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
+            showInfoDrawer ? "opacity-100" : "opacity-0"
+          }`}
+        />
+        <div
+          className={`absolute right-0 top-0 h-full w-full sm:w-[420px] bg-white dark:bg-gray-900 shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+            showInfoDrawer ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          {details && activeGroup && (
+            <>
+              {/* Drawer Header */}
+              <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white font-bold shrink-0">
+                  {details?.name?.charAt(0)?.toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-white truncate">{details?.name}</p>
+                  <p className="text-white/70 text-xs">{details?.members?.length || 0} members</p>
+                </div>
+                <button
+                  onClick={() => setShowInfoDrawer(false)}
+                  className="text-white/80 hover:text-white hover:bg-white/20 p-1.5 rounded-xl transition-all"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Tabs */}
+              <div className="flex border-b border-gray-200/70 dark:border-gray-700/70">
+                {[
+                  { key: "members", label: "Members", icon: Users },
+                  { key: "settings", label: "Settings", icon: Settings2 },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setInfoTab(tab.key)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-semibold transition-all border-b-2 ${
+                      infoTab === tab.key
+                        ? "border-red-500 text-red-600 dark:text-red-400"
+                        : "border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    }`}
+                  >
+                    <tab.icon className="w-3.5 h-3.5" />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-4">
+                {/* ---------- Members tab ---------- */}
+                {infoTab === "members" && (
+                  <div className="space-y-4">
+                    {myIsAdmin && (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 bg-gradient-to-r from-red-500 to-rose-600 rounded-lg flex items-center justify-center">
+                            <UserPlus className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Add Members</span>
+                        </div>
+
+                        <form onSubmit={doSearchUsers} className="flex gap-2">
+                          <div className="flex-1 relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                              value={searchUsers}
+                              onChange={(e) => setSearchUsers(e.target.value)}
+                              placeholder="Search users to add..."
+                              className="input-premium pl-9 pr-3 py-2 text-sm"
+                            />
+                          </div>
+                          <button type="submit" className="btn-primary px-4 py-2 text-sm">
+                            <Search className="w-4 h-4" />
+                          </button>
+                        </form>
+
+                        {isSearchingUsers && (
+                          <div className="flex justify-center py-2">
+                            <Loader2 className="w-5 h-5 text-red-500 animate-spin" />
+                          </div>
+                        )}
+
+                        {userResults.length > 0 && (
+                          <div className="space-y-1.5 bg-gray-50 dark:bg-gray-800 rounded-xl p-2 border border-gray-200 dark:border-gray-700 max-h-40 overflow-y-auto">
+                            {userResults.map((u) => (
+                              <div
+                                key={u.id}
+                                className="flex items-center justify-between text-sm px-2 py-1.5 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-all"
+                              >
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <img
+                                    src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=dc2626&color=fff&bold=true`}
+                                    alt={u.name}
+                                    className="w-6 h-6 rounded-full object-cover shrink-0"
+                                  />
+                                  <span className="font-medium text-gray-700 dark:text-gray-300 truncate">
+                                    {u.name} <span className="text-xs text-gray-400">#{u.id}</span>
+                                  </span>
+                                </div>
+                                <button
+                                  onClick={() => addMember(u.id)}
+                                  className="p-1.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/25 transition-all hover:scale-105 shrink-0"
+                                >
+                                  <UserPlus className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="flex gap-2">
+                          <div className="flex-1 relative">
+                            <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                              value={addMemberId}
+                              onChange={(e) => setAddMemberId(e.target.value)}
+                              placeholder="Add by user ID..."
+                              className="input-premium pl-9 pr-3 py-2 text-sm"
+                            />
+                          </div>
+                          <button onClick={addMemberManual} className="btn-primary px-4 py-2 text-sm">
+                            Add
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 px-1 py-2">
+                        <Users className="w-3.5 h-3.5" />
+                        Members ({details.members.length})
+                      </div>
+                      <div className="space-y-1">
+                        {details.members.map((m) => (
+                          <div
+                            key={m.userId}
+                            className="flex items-center justify-between text-sm px-2 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/60 rounded-xl transition-all"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="w-8 h-8 shrink-0 rounded-full bg-gradient-to-r from-red-500 to-rose-500 flex items-center justify-center text-white text-xs font-bold">
+                                {m.name?.charAt(0)?.toUpperCase()}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-medium text-gray-700 dark:text-gray-300 truncate">
+                                  {m.name} {m.userId === me?.id && <span className="text-gray-400 text-xs">(you)</span>}
+                                </p>
+                                <span
+                                  className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                                    m.userId === details.createdBy
+                                      ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                      : m.isAdmin
+                                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                                      : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                                  }`}
+                                >
+                                  {m.userId === details.createdBy ? (
+                                    <Crown className="w-2.5 h-2.5" />
+                                  ) : m.isAdmin ? (
+                                    <ShieldCheck className="w-2.5 h-2.5" />
+                                  ) : null}
+                                  {roleLabel(m)}
+                                </span>
+                              </div>
+                            </div>
+
+                            {myIsAdmin && (
+                              <div className="relative shrink-0">
+                                <button
+                                  onClick={() => setOpenRoleMenuFor(openRoleMenuFor === m.userId ? null : m.userId)}
+                                  className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all"
+                                >
+                                  <MoreHorizontal className="w-4 h-4" />
+                                </button>
+                                {openRoleMenuFor === m.userId && (
+                                  <div className="absolute right-0 top-9 z-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl w-44 py-1 text-xs">
+                                    {!m.isAdmin && (
+                                      <button
+                                        onClick={() => toggleAdmin(m.userId, true)}
+                                        className="w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                      >
+                                        <ShieldCheck className="w-3.5 h-3.5 text-blue-500" /> Make Admin
+                                      </button>
+                                    )}
+                                    {m.isAdmin && (
+                                      <button
+                                        onClick={() => toggleAdmin(m.userId, false)}
+                                        className="w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                      >
+                                        <Shield className="w-3.5 h-3.5 text-gray-400" /> Remove Admin
+                                      </button>
+                                    )}
+                                    {m.userId !== me?.id && (
+                                      <>
+                                        <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+                                        <button
+                                          onClick={() => removeMember(m.userId)}
+                                          className="w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500"
+                                        >
+                                          <UserMinus className="w-3.5 h-3.5" /> Remove from Group
+                                        </button>
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ---------- Settings tab ---------- */}
+                {infoTab === "settings" && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">Group name</label>
+                      <input
+                        value={editNameValue}
+                        onChange={(e) => setEditNameValue(e.target.value)}
+                        disabled={!myIsAdmin}
+                        className="input-premium py-2.5 text-sm disabled:opacity-60"
+                      />
+                    </div>
+                    {myIsAdmin && (
+                      <button
+                        onClick={saveGroupSettings}
+                        disabled={savingSettings}
+                        className="btn-primary w-full py-2.5 text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {savingSettings ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                        Save Changes
+                      </button>
+                    )}
+
+                    <div className="flex gap-2 pt-4 mt-2 border-t border-gray-200/50 dark:border-gray-700/50">
+                      <button
+                        onClick={leaveGroup}
+                        className="flex-1 flex items-center justify-center gap-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 transition-all"
+                      >
+                        <LogOut className="w-4 h-4" /> Leave
+                      </button>
+                      {isCreator && (
+                        <button
+                          onClick={deleteGroup}
+                          className="flex-1 flex items-center justify-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" /> Delete Group
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
