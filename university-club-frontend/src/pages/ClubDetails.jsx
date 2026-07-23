@@ -4,13 +4,14 @@ import api, { getErrorMessage } from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import Loader from "../components/Loader";
 import PostCard from "../components/PostCard";
+import PollsSection from "../components/Poll/PollsSection";
 import toast from "react-hot-toast";
 import {
   ArrowLeft, Users, Search, UserCheck, UserX, Crown, Shield,
   Calendar, MessageCircle, Sparkles, Zap, Heart, Clock,
   MapPin, Award, Star, Globe, Hash, Link2, Plus, Filter,
   ChevronDown, ChevronRight, CheckCircle, XCircle,
-  Building2, BookOpen, Target, Eye, ThumbsUp
+  Building2, BookOpen, Target, Eye, ThumbsUp, BarChart3
 } from "lucide-react";
 
 const ROLES = ["Admin", "Moderator", "Member"];
@@ -196,7 +197,7 @@ export default function ClubDetails() {
 
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-6 p-1.5 glass-card rounded-2xl shadow-lg">
-          {["posts", "members", "events"].map((t) => (
+          {["posts", "members", "events", "polls"].map((t) => (
             <button
               key={t}
               onClick={() => setActiveTab(t)}
@@ -209,6 +210,7 @@ export default function ClubDetails() {
               {t === "posts" && <MessageCircle className="w-4 h-4" />}
               {t === "members" && <Users className="w-4 h-4" />}
               {t === "events" && <Calendar className="w-4 h-4" />}
+              {t === "polls" && <BarChart3 className="w-4 h-4" />}
               {t}
             </button>
           ))}
@@ -399,6 +401,10 @@ export default function ClubDetails() {
               ))
             )}
           </div>
+        )}
+
+        {activeTab === "polls" && (
+          <PollsSection clubId={id} currentUserId={me?.id} membership={membership} />
         )}
       </div>
     </div>
