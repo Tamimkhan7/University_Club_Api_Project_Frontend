@@ -8,7 +8,8 @@ import {
   Heart, MessageCircle, FileText, CalendarCheck, X,
   Sparkles, Zap, Star, Award, Crown, Gift, Rocket,
   Clock, Filter, MoreVertical, Shield, Users,
-  ChevronDown, ChevronUp, Circle, CircleCheck, CircleDot
+  ChevronDown, ChevronUp, Circle, CircleCheck, CircleDot,
+  ClipboardList, CheckCircle2, XCircle
 } from "lucide-react";
 
 const TYPE_META = {
@@ -18,6 +19,9 @@ const TYPE_META = {
   Comment: { icon: MessageCircle, color: "text-amber-500 bg-amber-50", emoji: "💭" },
   Reaction: { icon: Heart, color: "text-red-500 bg-red-50", emoji: "❤️" },
   NewPost: { icon: FileText, color: "text-indigo-500 bg-indigo-50", emoji: "📝" },
+  NewApplication: { icon: ClipboardList, color: "text-amber-500 bg-amber-50", emoji: "📋" },
+  ApplicationApproved: { icon: CheckCircle2, color: "text-green-500 bg-green-50", emoji: "🎉" },
+  ApplicationRejected: { icon: XCircle, color: "text-red-500 bg-red-50", emoji: "😔" },
 };
 
 export default function Notifications() {
@@ -180,7 +184,7 @@ export default function Notifications() {
                 <Filter className="w-3.5 h-3.5" />
                 <span>Filter:</span>
               </div>
-              {["", "Follow", "Message", "EventJoin", "Comment", "Reaction", "NewPost"].map((t) => (
+              {["", "Follow", "Message", "EventJoin", "Comment", "Reaction", "NewPost", "NewApplication", "ApplicationApproved", "ApplicationRejected"].map((t) => (
                 <button
                   key={t || "all"}
                   onClick={() => setFilterType(t)}

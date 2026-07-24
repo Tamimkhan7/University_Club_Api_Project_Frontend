@@ -3,14 +3,19 @@ import { Link } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import Loader from "../components/Loader";
 import { AuthContext } from "../context/AuthContext";
+import recruitmentApi from "../api/recruitment";
+import ApplyModal from "../components/Recruitment/ApplyModal";
 import {
   Edit3, Trash2, Users, Plus, X, Check, Sparkles,
   Globe, Hash, Award, TrendingUp, UserCheck, UserX, Crown,
   Search, Heart, Star, Zap, Shield, Rocket, Flame,
-  Compass, MapPin, Calendar, Clock, Filter,
+  Compass, MapPin, Calendar, Clock, Filter, ClipboardList,
   ChevronRight, ChevronDown, Building2, BookOpen, Target
 } from "lucide-react";
 import toast from "react-hot-toast";
+
+// Application statuses returned by the recruitment API (must match backend enum)
+const APPLICATION_STATUS = { Pending: 0, Approved: 1, Rejected: 2, Withdrawn: 3 };
 
 export default function Clubs() {
   const { user } = useContext(AuthContext);
@@ -26,6 +31,9 @@ export default function Clubs() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [joinedClubs, setJoinedClubs] = useState(new Set());
+  // clubId -> pending ClubApplication (recruitment system) for the current user
+  const [pendingApplications, setPendingApplications] = useState({});
+  const [applyTarget, setApplyTarget] = useState(null); // club currently being applied to
 
   const loadClubs = async (targetPage = 1, query = "") => {
     setLoading(true);
@@ -40,6 +48,22 @@ export default function Clubs() {
 
       const myRes = await api.get("/club/my");
       setJoinedClubs(new Set((myRes.data || []).map((c) => c.clubId)));
+
+      // Load the user's own recruitment applications so we know which clubs
+      // already have a pending application (instead of allowing a direct join).
+      try {
+        const appsRes = await recruitmentApi.getMyApplications({ page: 1, pageSize: 100 });
+        const pendingMap = {};
+        (appsRes?.items || []).forEach((a) => {
+          if (a.status === APPLICATION_STATUS.Pending) {
+            pendingMap[a.clubId] = a;
+          }
+        });
+        setPendingApplications(pendingMap);
+      } catch (err) {
+        // non-fatal: applications badge is a nice-to-have, don't block the page
+        console.error(err);
+      }
     } catch (error) {
       console.error(error);
       toast.error(getErrorMessage(error, "Failed to load clubs"));
@@ -70,14 +94,16 @@ export default function Clubs() {
     }
   };
 
-  const joinClub = async (clubId) => {
-    try {
-      await api.post("/club/join", { clubId });
-      setJoinedClubs((prev) => new Set(prev).add(clubId));
-      toast.success("🎉 Joined club successfully!");
-      loadClubs(page, searchTerm);
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Already joined or error occurred"));
+  // Clubs no longer allow instant joining — every join now goes through the
+  // recruitment/application system and must be approved by a club admin or
+  // moderator. This just opens the "Apply to Join" modal for the club.
+  const openApplyModal = (club) => setApplyTarget(club);
+
+  const handleApplied = (createdApplication) => {
+    const clubId = applyTarget?.id;
+    setApplyTarget(null);
+    if (clubId && createdApplication) {
+      setPendingApplications((prev) => ({ ...prev, [clubId]: createdApplication }));
     }
   };
 
@@ -436,12 +462,20 @@ export default function Clubs() {
                           >
                             <UserX className="w-3.5 h-3.5" /> Leave
                           </button>
+                        ) : pendingApplications[club.id] ? (
+                          <button
+                            disabled
+                            title="Waiting for a club admin or moderator to review your application"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/40 cursor-not-allowed"
+                          >
+                            <Clock className="w-3.5 h-3.5" /> Pending Review
+                          </button>
                         ) : (
                           <button
-                            onClick={() => joinClub(club.id)}
+                            onClick={() => openApplyModal(club)}
                             className="flex-1 btn-primary !py-2.5 text-sm"
                           >
-                            <UserCheck className="w-3.5 h-3.5" /> Join
+                            <ClipboardList className="w-3.5 h-3.5" /> Apply to Join
                           </button>
                         )}
                       </div>
@@ -521,6 +555,15 @@ export default function Clubs() {
           </div>
         )}
       </div>
+
+      {applyTarget && (
+        <ApplyModal
+          clubId={applyTarget.id}
+          clubName={applyTarget.name}
+          onClose={() => setApplyTarget(null)}
+          onApplied={handleApplied}
+        />
+      )}
     </div>
   );
 }

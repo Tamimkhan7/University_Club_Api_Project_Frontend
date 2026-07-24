@@ -25,6 +25,7 @@ import {
   Shield,
   Crown,
   Compass,
+  ClipboardList,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -128,6 +129,7 @@ export default function Navbar() {
     { path: "/groups", label: "Group Chats" },
     { path: "/files", label: "Files" },
     { path: "/connections", label: "Connections" },
+    { path: "/applications", label: "My Applications" },
     { path: "/notifications", label: "Notifications" },
   ];
 
@@ -344,6 +346,16 @@ export default function Navbar() {
                               <Link2 className="w-4 h-4 text-slate-300 group-hover:text-red-400 transition-colors" />
                             </div>
                             <span className="font-medium">Connections</span>
+                          </Link>
+                          <Link
+                            to="/applications"
+                            className="flex items-center space-x-3 px-5 py-2.5 text-slate-200 hover:bg-white/5 hover:text-white transition-all duration-200 group"
+                            onClick={() => setShowUserMenu(false)}
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-red-500/20 transition-all">
+                              <ClipboardList className="w-4 h-4 text-slate-300 group-hover:text-red-400 transition-colors" />
+                            </div>
+                            <span className="font-medium">My Applications</span>
                           </Link>
                           <div className="border-t border-white/10 my-1.5" />
                           <button

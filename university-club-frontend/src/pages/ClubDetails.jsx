@@ -5,13 +5,14 @@ import { AuthContext } from "../context/AuthContext";
 import Loader from "../components/Loader";
 import PostCard from "../components/PostCard";
 import PollsSection from "../components/Poll/PollsSection";
+import RecruitmentSection from "../components/Recruitment/RecruitmentSection";
 import toast from "react-hot-toast";
 import {
   ArrowLeft, Users, Search, UserCheck, UserX, Crown, Shield,
   Calendar, MessageCircle, Sparkles, Zap, Heart, Clock,
   MapPin, Award, Star, Globe, Hash, Link2, Plus, Filter,
   ChevronDown, ChevronRight, CheckCircle, XCircle,
-  Building2, BookOpen, Target, Eye, ThumbsUp, BarChart3
+  Building2, BookOpen, Target, Eye, ThumbsUp, BarChart3, ClipboardList
 } from "lucide-react";
 
 const ROLES = ["Admin", "Moderator", "Member"];
@@ -197,11 +198,11 @@ export default function ClubDetails() {
 
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-6 p-1.5 glass-card rounded-2xl shadow-lg">
-          {["posts", "members", "events", "polls"].map((t) => (
+          {["posts", "members", "events", "polls", "recruitment"].map((t) => (
             <button
               key={t}
               onClick={() => setActiveTab(t)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium capitalize transition-all duration-300 ${
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
                 activeTab === t 
                   ? "btn-primary"
                   : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50"
@@ -211,7 +212,8 @@ export default function ClubDetails() {
               {t === "members" && <Users className="w-4 h-4" />}
               {t === "events" && <Calendar className="w-4 h-4" />}
               {t === "polls" && <BarChart3 className="w-4 h-4" />}
-              {t}
+              {t === "recruitment" && <ClipboardList className="w-4 h-4" />}
+              <span className="capitalize">{t === "recruitment" ? "Recruitment" : t}</span>
             </button>
           ))}
         </div>
@@ -405,6 +407,10 @@ export default function ClubDetails() {
 
         {activeTab === "polls" && (
           <PollsSection clubId={id} currentUserId={me?.id} membership={membership} />
+        )}
+
+        {activeTab === "recruitment" && (
+          <RecruitmentSection clubId={id} club={club} membership={membership} />
         )}
       </div>
     </div>

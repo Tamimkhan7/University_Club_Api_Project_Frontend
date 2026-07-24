@@ -19,6 +19,7 @@ import Notifications from "./pages/Notifications";
 import Groups from "./pages/Groups";
 import Files from "./pages/Files";
 import Connections from "./pages/Connections";
+import MyApplications from "./pages/MyApplications";
 import { Toaster } from "react-hot-toast";
 import Footer from "./components/Footer";
 
@@ -57,6 +58,7 @@ export default function App() {
         <Route path="/groups" element={<ProtectedRoute><Groups /></ProtectedRoute>} />
         <Route path="/files" element={<ProtectedRoute><Files /></ProtectedRoute>} />
         <Route path="/connections" element={<ProtectedRoute><Connections /></ProtectedRoute>} />
+        <Route path="/applications" element={<ProtectedRoute><MyApplications /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/profile/:id" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
