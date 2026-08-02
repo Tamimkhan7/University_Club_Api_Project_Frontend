@@ -1,6 +1,8 @@
 import { useEffect, useState, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
+import storyApi from "../api/story";
+import StoryViewerModal from "../components/Story/StoryViewerModal";
 import Loader from "../components/Loader";
 import toast from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
@@ -39,6 +41,9 @@ export default function Profile() {
   const [mutualList, setMutualList] = useState([]);
   const [listModal, setListModal] = useState(null);
   const [listItems, setListItems] = useState([]);
+
+  const [profileStories, setProfileStories] = useState([]); // StoryResponseDto[]
+  const [showStoryViewer, setShowStoryViewer] = useState(false);
 
   const loadProfile = async () => {
     setLoading(true);
@@ -105,6 +110,27 @@ export default function Profile() {
   useEffect(() => {
     loadProfile();
   }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setProfileStories([]);
+    if (!profile?.id) return;
+
+    storyApi
+      .getUserStories(profile.id)
+      .then((res) => {
+        if (!cancelled) setProfileStories(res || []);
+      })
+      .catch(() => {
+        // A blocked relationship (reported as "not found") or a private profile
+        // simply means no stories to show here - fail silently.
+        if (!cancelled) setProfileStories([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.id]);
 
   const updateProfile = async () => {
     if (!edit.name.trim()) return toast.error("Name is required");
@@ -301,11 +327,25 @@ export default function Profile() {
           {/* Avatar */}
           <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 sm:left-8 sm:translate-x-0">
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-600 rounded-full blur-md opacity-30 group-hover:opacity-50 transition-opacity duration-300" />
+              {profileStories.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setShowStoryViewer(true)}
+                  className="absolute -inset-1.5 rounded-full bg-gradient-to-tr from-red-500 via-rose-500 to-amber-400 p-[3px] animate-pulse-slow"
+                  title="View story"
+                >
+                  <span className="block w-full h-full rounded-full border-4 border-white dark:border-gray-800" />
+                </button>
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-600 rounded-full blur-md opacity-30 group-hover:opacity-50 transition-opacity duration-300" />
+              )}
               <img
                 src={displayImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(edit.name)}&background=dc2626&color=fff&size=120&bold=true&length=2`}
                 alt={edit.name}
-                className="relative w-28 h-28 rounded-full border-4 border-white dark:border-gray-800 shadow-2xl object-cover transition-transform duration-300 group-hover:scale-105"
+                onClick={() => profileStories.length > 0 && setShowStoryViewer(true)}
+                className={`relative w-28 h-28 rounded-full border-4 border-white dark:border-gray-800 shadow-2xl object-cover transition-transform duration-300 group-hover:scale-105 ${
+                  profileStories.length > 0 ? "cursor-pointer" : ""
+                }`}
               />
               {isEditing && (
                 <label className="absolute inset-0 rounded-full bg-black/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
@@ -694,6 +734,22 @@ export default function Profile() {
             </div>
           </div>
         </div>
+      )}
+
+      {showStoryViewer && profileStories.length > 0 && (
+        <StoryViewerModal
+          group={{
+            userId: profile.id,
+            userName: profile.name,
+            userProfileImage: profile.profileImage,
+            stories: profileStories,
+          }}
+          isOwner={isOwnProfile}
+          onClose={() => setShowStoryViewer(false)}
+          onDeleted={(storyId) =>
+            setProfileStories((prev) => prev.filter((s) => s.id !== storyId))
+          }
+        />
       )}
     </div>
   );

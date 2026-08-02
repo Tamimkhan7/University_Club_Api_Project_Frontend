@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef, useContext, useCallback } from "react";
 import { Link } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
+import storyApi from "../api/story";
+import StoryViewerModal from "../components/Story/StoryViewerModal";
 import { AuthContext } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import Loader from "../components/Loader";
@@ -32,6 +34,31 @@ export default function Messages() {
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [userSearchResults, setUserSearchResults] = useState([]);
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
+
+  // userId -> StoryResponseDto[] (only populated for users with active stories)
+  const [storyMap, setStoryMap] = useState({});
+  const [storyViewerUser, setStoryViewerUser] = useState(null); // { userId, userName, profileImage }
+
+  const loadStoriesFor = useCallback((userIds) => {
+    const idsToFetch = [...new Set(userIds)].filter((id) => id != null);
+    idsToFetch.forEach(async (uid) => {
+      try {
+        const res = await storyApi.getUserStories(uid);
+        setStoryMap((prev) => {
+          if (res && res.length > 0) return { ...prev, [uid]: res };
+          if (prev[uid]) {
+            const { [uid]: _drop, ...rest } = prev;
+            return rest;
+          }
+          return prev;
+        });
+      } catch {
+        // Blocked/private/no-story cases are all silent here - the ring just won't show.
+      }
+    });
+  }, []);
+
+  const storyAttemptedRef = useRef(new Set());
 
   const loadUsers = async (query = "") => {
     setIsSearchingUsers(true);
@@ -113,6 +140,25 @@ export default function Messages() {
     const interval = setInterval(loadConversations, 8000);
     return () => clearInterval(interval);
   }, []);
+
+  // Check which conversation partners currently have an active story. New
+  // partners (not yet attempted) are checked as soon as they appear; the
+  // full set is periodically re-checked so expired/new stories stay in sync,
+  // without re-fetching on every 8s message poll.
+  useEffect(() => {
+    const ids = conversations.map((c) => c.userId).filter(Boolean);
+    const newIds = ids.filter((id) => !storyAttemptedRef.current.has(id));
+    newIds.forEach((id) => storyAttemptedRef.current.add(id));
+    if (newIds.length > 0) loadStoriesFor(newIds);
+  }, [conversations, loadStoriesFor]);
+
+  useEffect(() => {
+    const refresh = setInterval(() => {
+      const ids = conversations.map((c) => c.userId).filter(Boolean);
+      if (ids.length > 0) loadStoriesFor(ids);
+    }, 60000);
+    return () => clearInterval(refresh);
+  }, [conversations, loadStoriesFor]);
 
   const loadChat = useCallback(async (userId) => {
     try {
@@ -431,11 +477,33 @@ export default function Messages() {
                   }`}
                 >
                   <div className="relative">
-                    <img
-                      src={c.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.userName)}&background=dc2626&color=fff&bold=true`}
-                      alt={c.userName}
-                      className="w-12 h-12 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600 group-hover:ring-red-500/30 transition-all duration-300"
-                    />
+                    {storyMap[c.userId] ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setStoryViewerUser({
+                            userId: c.userId,
+                            userName: c.userName,
+                            profileImage: c.profileImage,
+                          });
+                        }}
+                        className="block rounded-full bg-gradient-to-tr from-red-500 via-rose-500 to-amber-400 p-[2.5px]"
+                        title="View story"
+                      >
+                        <img
+                          src={c.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.userName)}&background=dc2626&color=fff&bold=true`}
+                          alt={c.userName}
+                          className="w-11 h-11 rounded-full object-cover border-2 border-white dark:border-gray-800"
+                        />
+                      </button>
+                    ) : (
+                      <img
+                        src={c.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.userName)}&background=dc2626&color=fff&bold=true`}
+                        alt={c.userName}
+                        className="w-12 h-12 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600 group-hover:ring-red-500/30 transition-all duration-300"
+                      />
+                    )}
                     <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -493,11 +561,32 @@ export default function Messages() {
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </button>
-                  <img
-                    src={activeUser.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUser.userName)}&background=fff&color=dc2626&bold=true`}
-                    alt={activeUser.userName}
-                    className="w-10 h-10 rounded-full object-cover ring-2 ring-white/30"
-                  />
+                  {storyMap[activeUser.userId] ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setStoryViewerUser({
+                          userId: activeUser.userId,
+                          userName: activeUser.userName,
+                          profileImage: activeUser.profileImage,
+                        })
+                      }
+                      className="rounded-full bg-gradient-to-tr from-white via-amber-200 to-white/70 p-[2.5px]"
+                      title="View story"
+                    >
+                      <img
+                        src={activeUser.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUser.userName)}&background=fff&color=dc2626&bold=true`}
+                        alt={activeUser.userName}
+                        className="w-9 h-9 rounded-full object-cover"
+                      />
+                    </button>
+                  ) : (
+                    <img
+                      src={activeUser.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(activeUser.userName)}&background=fff&color=dc2626&bold=true`}
+                      alt={activeUser.userName}
+                      className="w-10 h-10 rounded-full object-cover ring-2 ring-white/30"
+                    />
+                  )}
                   <div>
                     <span className="font-bold text-white">{activeUser.userName}</span>
                     <p className="text-white/70 text-[10px] flex items-center gap-1">
@@ -620,6 +709,29 @@ export default function Messages() {
           </div>
         </div>
       </div>
+
+      {storyViewerUser && storyMap[storyViewerUser.userId] && (
+        <StoryViewerModal
+          group={{
+            userId: storyViewerUser.userId,
+            userName: storyViewerUser.userName,
+            userProfileImage: storyViewerUser.profileImage,
+            stories: storyMap[storyViewerUser.userId],
+          }}
+          isOwner={storyViewerUser.userId === me?.id}
+          onClose={() => setStoryViewerUser(null)}
+          onDeleted={(storyId) =>
+            setStoryMap((prev) => {
+              const remaining = (prev[storyViewerUser.userId] || []).filter((s) => s.id !== storyId);
+              if (remaining.length === 0) {
+                const { [storyViewerUser.userId]: _drop, ...rest } = prev;
+                return rest;
+              }
+              return { ...prev, [storyViewerUser.userId]: remaining };
+            })
+          }
+        />
+      )}
     </div>
   );
 }

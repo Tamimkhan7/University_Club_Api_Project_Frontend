@@ -3,6 +3,7 @@ import api, { getErrorMessage } from "../api/axios";
 import PostCard from "../components/PostCard";
 import CreatePost from "../components/CreatePost";
 import Loader from "../components/Loader";
+import StoriesBar from "../components/Story/StoriesBar";
 import {
   Sparkles, RefreshCw, AlertCircle, ChevronUp, Coffee,
   Flame, Users2, Bookmark, Compass, Search, Home,
@@ -163,6 +164,9 @@ export default function Feed() {
             </div>
           </div>
         </div>
+
+        {/* Stories */}
+        <StoriesBar />
 
         {/* Error */}
         {error && (
