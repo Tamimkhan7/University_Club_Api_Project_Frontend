@@ -20,6 +20,7 @@ import Groups from "./pages/Groups";
 import Files from "./pages/Files";
 import Connections from "./pages/Connections";
 import MyApplications from "./pages/MyApplications";
+import Recommendations from "./pages/Recommendations";
 import { Toaster } from "react-hot-toast";
 import Footer from "./components/Footer";
 
@@ -50,6 +51,7 @@ export default function App() {
 
         <Route path="/" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/recommendations" element={<ProtectedRoute><Recommendations /></ProtectedRoute>} />
         <Route path="/clubs" element={<ProtectedRoute><Clubs /></ProtectedRoute>} />
         <Route path="/clubs/:id" element={<ProtectedRoute><ClubDetails /></ProtectedRoute>} />
         <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />

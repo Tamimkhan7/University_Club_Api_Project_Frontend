@@ -120,6 +120,7 @@ export default function Navbar() {
     { path: "/dashboard", label: "Dashboard" },
     { path: "/clubs", label: "Clubs" },
     { path: "/events", label: "Events" },
+    { path: "/recommendations", label: "AI Recommended" },
     { path: "/users", label: "Users" },
   ];
 
