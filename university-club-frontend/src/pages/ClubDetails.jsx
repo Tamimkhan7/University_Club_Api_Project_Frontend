@@ -12,7 +12,7 @@ import {
   Calendar, MessageCircle, Sparkles, Zap, Heart, Clock,
   MapPin, Award, Star, Globe, Hash, Link2, Plus, Filter,
   ChevronDown, ChevronRight, CheckCircle, XCircle,
-  Building2, BookOpen, Target, Eye, ThumbsUp, BarChart3, ClipboardList
+  Building2, BookOpen, Target, Eye, ThumbsUp, BarChart3, ClipboardList, Radio
 } from "lucide-react";
 
 const ROLES = ["Admin", "Moderator", "Member"];
@@ -29,6 +29,7 @@ export default function ClubDetails() {
   const [memberSearch, setMemberSearch] = useState("");
   const [posts, setPosts] = useState([]);
   const [events, setEvents] = useState([]);
+  const [liveStatus, setLiveStatus] = useState({}); // eventId -> { status, viewerCount }
   const [activeTab, setActiveTab] = useState("posts");
   const [loading, setLoading] = useState(true);
 
@@ -73,10 +74,32 @@ export default function ClubDetails() {
     }
   };
 
+  const normalizeLiveStatus = (status) => {
+    if (status === 0 || status === "NotStarted") return "NotStarted";
+    if (status === 1 || status === "Live") return "Live";
+    if (status === 2 || status === "Ended") return "Ended";
+    return "NotStarted";
+  };
+
   const loadEvents = async () => {
     try {
       const res = await api.get(`/event/club/${id}`, { params: { page: 1, pageSize: 20 } });
-      setEvents(res.data?.items || []);
+      const items = res.data?.items || [];
+      setEvents(items);
+      items.forEach(async (ev) => {
+        try {
+          const liveRes = await api.get(`/live-events/${ev.id}/status`);
+          const body = liveRes.data?.success === false ? null : (liveRes.data?.data ?? liveRes.data);
+          if (body) {
+            setLiveStatus((prev) => ({
+              ...prev,
+              [ev.id]: { status: normalizeLiveStatus(body.status), viewerCount: body.currentViewerCount || 0 },
+            }));
+          }
+        } catch {
+          /* ignore */
+        }
+      });
     } catch (error) {
       console.error(error);
     }
@@ -373,9 +396,16 @@ export default function ClubDetails() {
                       <Calendar className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-gray-800 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200">
-                        {ev.title}
-                      </h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-gray-800 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200 truncate">
+                          {ev.title}
+                        </h4>
+                        {liveStatus[ev.id]?.status === "Live" && (
+                          <span className="flex items-center gap-1 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0">
+                            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> LIVE
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 mt-1">
                         <Clock className="w-3.5 h-3.5" />
                         <span>{new Date(ev.eventDate).toLocaleString()}</span>
@@ -387,17 +417,30 @@ export default function ClubDetails() {
                       {ev.description}
                     </p>
                   )}
-                  <div className="mt-3 pl-[60px] flex items-center gap-2">
-                    <div className="flex -space-x-2">
-                      {[1,2,3].map((i) => (
-                        <div key={i} className={`w-6 h-6 rounded-full ring-2 ring-white dark:ring-gray-800 ${
-                          i === 1 ? "bg-gradient-to-br from-red-500 to-rose-500" :
-                          i === 2 ? "bg-gradient-to-br from-blue-500 to-indigo-500" :
-                          "bg-gradient-to-br from-green-500 to-emerald-500"
-                        }`} />
-                      ))}
+                  <div className="mt-3 pl-[60px] flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex -space-x-2">
+                        {[1,2,3].map((i) => (
+                          <div key={i} className={`w-6 h-6 rounded-full ring-2 ring-white dark:ring-gray-800 ${
+                            i === 1 ? "bg-gradient-to-br from-red-500 to-rose-500" :
+                            i === 2 ? "bg-gradient-to-br from-blue-500 to-indigo-500" :
+                            "bg-gradient-to-br from-green-500 to-emerald-500"
+                          }`} />
+                        ))}
+                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">+ attending</span>
                     </div>
-                    <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">+ attending</span>
+                    <button
+                      onClick={() => navigate(`/events/${ev.id}/live`)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-300 flex-shrink-0 ${
+                        liveStatus[ev.id]?.status === "Live"
+                          ? "bg-gradient-to-r from-red-600 to-rose-700 text-white shadow-md shadow-red-600/25 hover:scale-105"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600"
+                      }`}
+                    >
+                      <Radio className="w-3.5 h-3.5" />
+                      {liveStatus[ev.id]?.status === "Live" ? "Join Live" : "Live Room"}
+                    </button>
                   </div>
                 </div>
               ))

@@ -28,22 +28,45 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => {
-    let body = response.data;
-    let unwrapped = false;
+    const body = response.data;
 
-    while (
+    const isApiResponseEnvelope =
       body &&
       typeof body === "object" &&
       !Array.isArray(body) &&
       Object.prototype.hasOwnProperty.call(body, "success") &&
-      Object.prototype.hasOwnProperty.call(body, "data")
-    ) {
-      body = body.data;
-      unwrapped = true;
+      Object.prototype.hasOwnProperty.call(body, "data");
+
+    if (isApiResponseEnvelope && body.success === false) {
+      // The backend's controllers always `return Ok(result)`, even when the
+      // service layer returned ApiResponse.Fail(...) (wrong permissions,
+      // "not found", validation errors, etc). That means a business-logic
+      // failure arrives as a normal 2xx HTTP response with { success:false,
+      // message, data:null } in the body.
+      //
+      // Previously this branch didn't exist, so the code below unwrapped
+      // straight to `data` (null) and every caller saw a "successful" 2xx
+      // response with empty data — actions like starting/ending a live
+      // session, muting/kicking a user, joining an event, etc. would look
+      // like they worked even when the backend rejected them, and the real
+      // error message was silently lost.
+      //
+      // Rejecting here — with the message attached the same way a real HTTP
+      // error would be — means every existing `catch (error) { toast.error(
+      // getErrorMessage(error, ...)) }` block across the app now handles
+      // soft failures exactly like hard ones, with no other file needing to
+      // change.
+      const err = new Error(body.message || "Request failed");
+      err.response = response;
+      err.isApiError = true;
+      return Promise.reject(err);
     }
 
-    if (unwrapped) {
-      response.data = body;
+    // Success: unwrap ApiResponse<T> -> T. Only one level is unwrapped
+    // (rather than looping) so a legitimate DTO that happens to contain its
+    // own "data" field isn't mistaken for another envelope.
+    if (isApiResponseEnvelope) {
+      response.data = body.data;
     }
 
     return response;

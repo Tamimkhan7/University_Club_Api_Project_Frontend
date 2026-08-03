@@ -14,6 +14,7 @@ import PostDetails from "./pages/PostDetails";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Events from "./pages/Events";
+import LiveEvent from "./pages/LiveEvent";
 import Messages from "./pages/Messages";
 import Notifications from "./pages/Notifications";
 import Groups from "./pages/Groups";
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="/clubs" element={<ProtectedRoute><Clubs /></ProtectedRoute>} />
         <Route path="/clubs/:id" element={<ProtectedRoute><ClubDetails /></ProtectedRoute>} />
         <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+        <Route path="/events/:eventId/live" element={<ProtectedRoute><LiveEvent /></ProtectedRoute>} />
         <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
         <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="/groups" element={<ProtectedRoute><Groups /></ProtectedRoute>} />

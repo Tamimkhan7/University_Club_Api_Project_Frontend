@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import Loader from "../components/Loader";
 import toast from "react-hot-toast";
@@ -7,7 +8,7 @@ import {
   UserCheck, UserX, Search, Sparkles, ChevronDown, ChevronUp,
   Star, Award, Flame, Rocket, Heart, Zap, Globe,
   Filter, Grid3x3, List, ChevronRight, Ticket, PartyPopper,
-  Building2, BookOpen, Target, Eye, ThumbsUp
+  Building2, BookOpen, Target, Eye, ThumbsUp, Radio
 } from "lucide-react";
 
 const TABS = [
@@ -28,6 +29,7 @@ const unwrap = (res) => {
 };
 
 export default function Events() {
+  const navigate = useNavigate();
   const [tab, setTab] = useState("upcoming");
   const [events, setEvents] = useState([]);
   const [page, setPage] = useState(1);
@@ -42,6 +44,14 @@ export default function Events() {
   const [eventStats, setEventStats] = useState({});
   const [joinStatus, setJoinStatus] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [liveStatus, setLiveStatus] = useState({}); // eventId -> { status: "NotStarted"|"Live"|"Ended", viewerCount }
+
+  const normalizeLiveStatus = (status) => {
+    if (status === 0 || status === "NotStarted") return "NotStarted";
+    if (status === 1 || status === "Live") return "Live";
+    if (status === 2 || status === "Ended") return "Ended";
+    return "NotStarted";
+  };
 
   const currentEndpoint = TABS.find((t) => t.id === tab)?.endpoint || "/event/upcoming";
 
@@ -87,6 +97,19 @@ export default function Events() {
           const statusRes = await api.get(`/event/${ev.id}/join-status`);
           const statusResult = unwrap(statusRes);
           setJoinStatus((prev) => ({ ...prev, [ev.id]: statusResult.data?.hasJoined || false }));
+        } catch {
+          /* ignore */
+        }
+        try {
+          const liveRes = await api.get(`/live-events/${ev.id}/status`);
+          const liveResult = unwrap(liveRes);
+          setLiveStatus((prev) => ({
+            ...prev,
+            [ev.id]: {
+              status: normalizeLiveStatus(liveResult.data?.status),
+              viewerCount: liveResult.data?.currentViewerCount || 0,
+            },
+          }));
         } catch {
           /* ignore */
         }
@@ -433,12 +456,17 @@ export default function Events() {
                           })}
                         </div>
                       </div>
-                      {new Date(ev.eventDate) > new Date() && (
+                      {liveStatus[ev.id]?.status === "Live" ? (
+                        <div className="flex items-center gap-1 bg-red-600/90 backdrop-blur-sm px-2 py-1 rounded-xl border border-white/10">
+                          <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                          <span className="text-[10px] font-bold text-white">LIVE · {liveStatus[ev.id].viewerCount}</span>
+                        </div>
+                      ) : new Date(ev.eventDate) > new Date() ? (
                         <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-xl border border-white/10">
                           <Zap className="w-3 h-3 text-amber-300" />
                           <span className="text-[10px] font-semibold text-white">Upcoming</span>
                         </div>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -487,6 +515,22 @@ export default function Events() {
                       )}
                     </button>
                   </div>
+
+                  <button
+                    onClick={() => navigate(`/events/${ev.id}/live`)}
+                    className={`w-full mt-2 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+                      liveStatus[ev.id]?.status === "Live"
+                        ? "bg-gradient-to-r from-red-600 to-rose-700 text-white shadow-lg shadow-red-600/25 hover:shadow-xl hover:scale-[1.02]"
+                        : "bg-gray-50 dark:bg-gray-700/40 text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600"
+                    }`}
+                  >
+                    <Radio className="w-3.5 h-3.5" />
+                    {liveStatus[ev.id]?.status === "Live"
+                      ? "Join Live Now"
+                      : liveStatus[ev.id]?.status === "Ended"
+                      ? "View Live Recap"
+                      : "Live Room"}
+                  </button>
 
                   {expanded[ev.id] && (
                     <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 space-y-2 max-h-48 overflow-y-auto">
