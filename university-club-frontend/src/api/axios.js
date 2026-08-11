@@ -129,4 +129,18 @@ export const getErrorMessage = (error, fallback = "Something went wrong") => {
   return error?.message || fallback;
 };
 
+// Normalizes an endpoint's payload down to a plain array, regardless of
+// whether it came back as a bare array (e.g. `Ok(list)`) or as a paginated
+// wrapper (e.g. `Ok(new PagedResultDto { Items = list, ... })` /
+// ApiResponse<PagedResult<T>>). Several pages (Groups, Connections, ...)
+// were written assuming a bare array and broke with
+// "<var>.map is not a function" once an endpoint started returning the
+// paginated shape instead — this keeps both shapes working everywhere.
+export const toArray = (data) => {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.items)) return data.items;
+  if (data && Array.isArray(data.data)) return data.data;
+  return [];
+};
+
 export default api;

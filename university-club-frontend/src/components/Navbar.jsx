@@ -2,6 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useContext, useState, useEffect, useRef } from "react";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
+import searchApi, { SearchEntityType } from "../api/search";
 import Logo from "./Logo";
 import {
   Menu,
@@ -35,6 +36,9 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestTimerRef = useRef(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -95,12 +99,65 @@ export default function Navbar() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/users?search=${encodeURIComponent(searchQuery)}`);
+      navigate(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
       setShowSearch(false);
+      setShowSuggestions(false);
       setSearchQuery("");
       setIsOpen(false);
     }
   };
+
+  // NEW: typeahead — powers the navbar search dropdown via
+  // GET /api/search/suggestions, called on keystroke as documented on the
+  // backend controller (GlobalSearch stays reserved for on-submit search).
+  const handleSearchInput = (val) => {
+    setSearchQuery(val);
+    setShowSuggestions(true);
+    clearTimeout(suggestTimerRef.current);
+    if (!val.trim()) {
+      setSearchSuggestions([]);
+      return;
+    }
+    suggestTimerRef.current = setTimeout(async () => {
+      try {
+        const data = await searchApi.getSuggestions(val.trim(), 6);
+        setSearchSuggestions(data || []);
+      } catch {
+        setSearchSuggestions([]);
+      }
+    }, 250);
+  };
+
+  const handleSuggestionClick = (s) => {
+    setShowSuggestions(false);
+    setShowSearch(false);
+    setSearchQuery("");
+    setIsOpen(false);
+    if (s.type === SearchEntityType.Users) navigate(`/profile/${s.id}`);
+    else if (s.type === SearchEntityType.Clubs) navigate(`/clubs/${s.id}`);
+    else navigate(`/search?query=${encodeURIComponent(s.label)}`);
+  };
+
+  const renderSuggestionsDropdown = () =>
+    showSuggestions && searchSuggestions.length > 0 && (
+      <div className="absolute z-50 mt-2 w-full bg-slate-900/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden animate-slideDown">
+        {searchSuggestions.map((s) => {
+          const Icon = s.type === SearchEntityType.Users ? UserCircle : Users;
+          return (
+            <button
+              type="button"
+              key={`${s.type}-${s.id}`}
+              onMouseDown={() => handleSuggestionClick(s)}
+              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 text-left transition-colors"
+            >
+              <Icon className="w-4 h-4 text-red-400 flex-shrink-0" />
+              <span className="text-sm text-slate-200 truncate">{s.label}</span>
+              <span className="text-[10px] text-slate-500 ml-auto uppercase tracking-wide">{s.type}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -171,16 +228,18 @@ export default function Navbar() {
 
             {/* Desktop Search */}
             <div className="hidden md:flex flex-1 max-w-md mx-6">
-              <form onSubmit={handleSearch} className="w-full">
+              <form onSubmit={handleSearch} className="w-full relative">
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <Search className="w-4 h-4 text-slate-400 group-focus-within:text-red-400 transition-colors duration-300" />
                   </div>
                   <input
                     type="text"
-                    placeholder="Search users..."
+                    placeholder="Search users, clubs, posts..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => handleSearchInput(e.target.value)}
+                    onFocus={() => setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                     className="w-full px-4 py-2.5 pl-11 bg-white/5 border-2 border-white/5 rounded-2xl focus:outline-none focus:ring-4 focus:ring-red-400/10 focus:border-red-400/40 focus:bg-white/10 transition-all duration-300 text-sm backdrop-blur-sm placeholder-slate-400 text-white"
                   />
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -189,6 +248,7 @@ export default function Navbar() {
                     </kbd>
                   </div>
                 </div>
+                {renderSuggestionsDropdown()}
               </form>
             </div>
 
@@ -415,18 +475,21 @@ export default function Navbar() {
           {/* Mobile Search */}
           {showSearch && (
             <div className="lg:hidden py-3 border-t border-white/5 animate-slideDown">
-              <form onSubmit={handleSearch}>
+              <form onSubmit={handleSearch} className="relative">
                 <div className="relative">
                   <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Search users..."
+                    placeholder="Search users, clubs, posts..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => handleSearchInput(e.target.value)}
+                    onFocus={() => setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                     className="w-full px-4 py-3 pl-11 bg-white/5 text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-400/30 focus:bg-white/10 transition-all duration-200 placeholder-slate-400"
                     autoFocus
                   />
                 </div>
+                {renderSuggestionsDropdown()}
               </form>
             </div>
           )}

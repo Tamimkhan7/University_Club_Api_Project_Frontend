@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useContext } from "react";
 import { Link } from "react-router-dom";
-import api, { getErrorMessage } from "../api/axios";
+import api, { getErrorMessage, toArray } from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import Loader from "../components/Loader";
@@ -49,7 +49,11 @@ export default function Groups() {
   const loadGroups = async () => {
     try {
       const res = await api.get("/group");
-      setGroups(res.data || []);
+      // /group can come back either as a bare array or as a paginated
+      // { items: [...] } wrapper depending on the backend version —
+      // toArray() handles both so this doesn't crash with
+      // "groups.map is not a function" either way.
+      setGroups(toArray(res.data));
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to load groups"));
     } finally {
@@ -92,7 +96,13 @@ export default function Groups() {
         api.get(`/group/${groupId}`),
         api.get(`/group/${groupId}/messages`, { params: { page: 1, pageSize: 50 } }),
       ]);
-      setDetails(detailsRes.data);
+      // Some backend responses omit/rename the members array (or send it
+      // as null) depending on the endpoint version. Normalizing it here
+      // keeps every `details.members.length` / `.map()` below safe instead
+      // of crashing with "Cannot read properties of undefined (reading
+      // 'length')".
+      const d = detailsRes.data;
+      setDetails(d ? { ...d, members: toArray(d.members) } : null);
       setMessages(msgRes.data?.items || []);
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to load group"));
@@ -640,6 +650,10 @@ export default function Groups() {
                                   <img
                                     src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=dc2626&color=fff&bold=true`}
                                     alt={u.name}
+                                    onError={(e) => {
+                                      e.currentTarget.onerror = null;
+                                      e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=dc2626&color=fff&bold=true`;
+                                    }}
                                     className="w-6 h-6 rounded-full object-cover shrink-0"
                                   />
                                   <span className="font-medium text-gray-700 dark:text-gray-300 truncate">

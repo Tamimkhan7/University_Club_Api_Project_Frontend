@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import api, { getErrorMessage } from "../api/axios";
+import api, { getErrorMessage, toArray } from "../api/axios";
 import Loader from "../components/Loader";
 import toast from "react-hot-toast";
 import {
@@ -18,6 +18,13 @@ const TABS = [
   { id: "following", label: "My Following", icon: UserPlus },
   { id: "blocked", label: "Blocked Users", icon: Ban },
 ];
+
+// Generates a letter-avatar fallback, and is also used to recover from a
+// broken/invalid `profileImage` URL (e.g. malformed seed/test data) via the
+// <img onError> handler below, instead of leaving the browser stuck on a
+// failed request (ERR_UNKNOWN_URL_SCHEME, 404, etc).
+const avatarFor = (name) =>
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "U")}&background=dc2626&color=fff&bold=true`;
 
 export default function Connections() {
   const [tab, setTab] = useState("suggestions");
@@ -59,14 +66,17 @@ export default function Connections() {
       switch (tab) {
         case "suggestions": {
           res = await api.get("/follow/suggestions");
-          const data = res.data || [];
+          // /follow/suggestions can come back either as a bare array or as
+          // a paginated { items: [...] } wrapper — toArray() handles both
+          // so this doesn't crash with "list.map is not a function".
+          const data = toArray(res.data);
           setList(query ? data.filter(matches) : data);
           setTotalPages(1);
           break;
         }
         case "common": {
           res = await api.get("/follow/suggestions/common");
-          const data = res.data || [];
+          const data = toArray(res.data);
           setList(query ? data.filter(matches) : data);
           setTotalPages(1);
           break;
@@ -323,8 +333,12 @@ export default function Connections() {
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-amber-500 rounded-full blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-500" />
                   <img
-                    src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || "U")}&background=dc2626&color=fff&bold=true`}
+                    src={u.profileImage || avatarFor(u.name)}
                     alt={u.name}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = avatarFor(u.name);
+                    }}
                     className="relative w-20 h-20 rounded-full object-cover ring-4 ring-white dark:ring-slate-800 shadow-xl group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute bottom-0.5 right-0.5 w-4 h-4 bg-green-500 rounded-full ring-[3px] ring-white dark:ring-slate-900" />
