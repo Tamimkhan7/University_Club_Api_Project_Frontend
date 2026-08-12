@@ -1,8 +1,9 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useContext, useState, useEffect, useRef } from "react";
 import { AuthContext } from "../context/AuthContext";
-import api from "../api/axios";
+import api, { toArray } from "../api/axios";
 import searchApi, { SearchEntityType } from "../api/search";
+import clubPrivacyApi from "../api/clubPrivacy";
 import Logo from "./Logo";
 import {
   Menu,
@@ -27,6 +28,7 @@ import {
   Crown,
   Compass,
   ClipboardList,
+  Mail,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -44,6 +46,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [pendingInvites, setPendingInvites] = useState(0);
   const userMenuRef = useRef(null);
 
   useEffect(() => {
@@ -73,16 +76,15 @@ export default function Navbar() {
   useEffect(() => {
     if (!user) return;
     const loadCounts = async () => {
-      try {
-        const [notifRes, msgRes] = await Promise.all([
-          api.get("/notification/count"),
-          api.get("/message/unread-count"),
-        ]);
-        setUnreadNotifs(notifRes.data?.unreadCount ?? 0);
-        setUnreadMessages(msgRes.data?.unreadCount ?? 0);
-      } catch {
-        /* ignore */
-      }
+      // allSettled so a hiccup in one endpoint doesn't blank out the others
+      const [notifRes, msgRes, invitesRes] = await Promise.allSettled([
+        api.get("/notification/count"),
+        api.get("/message/unread-count"),
+        clubPrivacyApi.getMyInvites(),
+      ]);
+      if (notifRes.status === "fulfilled") setUnreadNotifs(notifRes.value.data?.unreadCount ?? 0);
+      if (msgRes.status === "fulfilled") setUnreadMessages(msgRes.value.data?.unreadCount ?? 0);
+      if (invitesRes.status === "fulfilled") setPendingInvites(toArray(invitesRes.value).length);
     };
     loadCounts();
     const interval = setInterval(loadCounts, 15000);
@@ -188,6 +190,7 @@ export default function Navbar() {
     { path: "/files", label: "Files" },
     { path: "/connections", label: "Connections" },
     { path: "/applications", label: "My Applications" },
+    { path: "/invites", label: "My Invites" },
     { path: "/notifications", label: "Notifications" },
   ];
 
@@ -418,6 +421,21 @@ export default function Navbar() {
                             </div>
                             <span className="font-medium">My Applications</span>
                           </Link>
+                          <Link
+                            to="/invites"
+                            className="flex items-center space-x-3 px-5 py-2.5 text-slate-200 hover:bg-white/5 hover:text-white transition-all duration-200 group"
+                            onClick={() => setShowUserMenu(false)}
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-red-500/20 transition-all">
+                              <Mail className="w-4 h-4 text-slate-300 group-hover:text-red-400 transition-colors" />
+                            </div>
+                            <span className="font-medium">My Invites</span>
+                            {pendingInvites > 0 && (
+                              <span className="ml-auto bg-gradient-to-r from-red-500 to-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                {pendingInvites > 9 ? "9+" : pendingInvites}
+                              </span>
+                            )}
+                          </Link>
                           <div className="border-t border-white/10 my-1.5" />
                           <button
                             onClick={handleLogout}
@@ -548,6 +566,11 @@ export default function Navbar() {
                         {link.path === "/notifications" && unreadNotifs > 0 && (
                           <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                             {unreadNotifs}
+                          </span>
+                        )}
+                        {link.path === "/invites" && pendingInvites > 0 && (
+                          <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            {pendingInvites}
                           </span>
                         )}
                       </Link>

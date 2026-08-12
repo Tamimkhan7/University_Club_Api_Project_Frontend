@@ -21,6 +21,8 @@ import Groups from "./pages/Groups";
 import Files from "./pages/Files";
 import Connections from "./pages/Connections";
 import MyApplications from "./pages/MyApplications";
+import MyInvites from "./pages/MyInvites";
+import InviteDetails from "./pages/InviteDetails";
 import Recommendations from "./pages/Recommendations";
 import Search from "./pages/Search";
 import { Toaster } from "react-hot-toast";
@@ -65,6 +67,8 @@ export default function App() {
         <Route path="/files" element={<ProtectedRoute><Files /></ProtectedRoute>} />
         <Route path="/connections" element={<ProtectedRoute><Connections /></ProtectedRoute>} />
         <Route path="/applications" element={<ProtectedRoute><MyApplications /></ProtectedRoute>} />
+        <Route path="/invites" element={<ProtectedRoute><MyInvites /></ProtectedRoute>} />
+        <Route path="/invites/:inviteId" element={<ProtectedRoute><InviteDetails /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/profile/:id" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

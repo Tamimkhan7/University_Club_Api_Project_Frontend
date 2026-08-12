@@ -9,7 +9,7 @@ import {
   Sparkles, Zap, Star, Award, Crown, Gift, Rocket,
   Clock, Filter, MoreVertical, Shield, Users,
   ChevronDown, ChevronUp, Circle, CircleCheck, CircleDot,
-  ClipboardList, CheckCircle2, XCircle
+  ClipboardList, CheckCircle2, XCircle, Mail
 } from "lucide-react";
 
 const TYPE_META = {
@@ -22,6 +22,12 @@ const TYPE_META = {
   NewApplication: { icon: ClipboardList, color: "text-amber-500 bg-amber-50", emoji: "📋" },
   ApplicationApproved: { icon: CheckCircle2, color: "text-green-500 bg-green-50", emoji: "🎉" },
   ApplicationRejected: { icon: XCircle, color: "text-red-500 bg-red-50", emoji: "😔" },
+  ClubInvite: { icon: Mail, color: "text-rose-500 bg-rose-50", emoji: "✉️" },
+};
+
+// Notification types that should route the user to a specific page when tapped.
+const TYPE_LINKS = {
+  ClubInvite: "/invites",
 };
 
 export default function Notifications() {
@@ -184,7 +190,7 @@ export default function Notifications() {
                 <Filter className="w-3.5 h-3.5" />
                 <span>Filter:</span>
               </div>
-              {["", "Follow", "Message", "EventJoin", "Comment", "Reaction", "NewPost", "NewApplication", "ApplicationApproved", "ApplicationRejected"].map((t) => (
+              {["", "Follow", "Message", "EventJoin", "Comment", "Reaction", "NewPost", "NewApplication", "ApplicationApproved", "ApplicationRejected", "ClubInvite"].map((t) => (
                 <button
                   key={t || "all"}
                   onClick={() => setFilterType(t)}
@@ -258,10 +264,21 @@ export default function Notifications() {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <p className={`text-sm ${isUnread ? "font-semibold text-gray-800 dark:text-white" : "text-gray-600 dark:text-gray-400"} leading-relaxed`}>
-                          <span className="mr-1">{meta.emoji}</span>
-                          {n.message || n.typeLabel}
-                        </p>
+                        {TYPE_LINKS[n.typeLabel] ? (
+                          <Link
+                            to={TYPE_LINKS[n.typeLabel]}
+                            onClick={() => !n.isRead && markAsRead(n.id)}
+                            className={`text-sm hover:text-red-600 dark:hover:text-red-400 ${isUnread ? "font-semibold text-gray-800 dark:text-white" : "text-gray-600 dark:text-gray-400"} leading-relaxed`}
+                          >
+                            <span className="mr-1">{meta.emoji}</span>
+                            {n.message || n.typeLabel}
+                          </Link>
+                        ) : (
+                          <p className={`text-sm ${isUnread ? "font-semibold text-gray-800 dark:text-white" : "text-gray-600 dark:text-gray-400"} leading-relaxed`}>
+                            <span className="mr-1">{meta.emoji}</span>
+                            {n.message || n.typeLabel}
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-3 mt-1">
                         <span className="text-xs text-gray-400 flex items-center gap-1">

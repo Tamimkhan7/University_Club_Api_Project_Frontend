@@ -6,13 +6,15 @@ import Loader from "../components/Loader";
 import PostCard from "../components/PostCard";
 import PollsSection from "../components/Poll/PollsSection";
 import RecruitmentSection from "../components/Recruitment/RecruitmentSection";
+import PrivacySection from "../components/ClubPrivacy/PrivacySection";
+import { ClubVisibility, ClubVisibilityLabels } from "../api/clubPrivacy";
 import toast from "react-hot-toast";
 import {
   ArrowLeft, Users, Search, UserCheck, UserX, Crown, Shield,
   Calendar, MessageCircle, Sparkles, Zap, Heart, Clock,
   MapPin, Award, Star, Globe, Hash, Link2, Plus, Filter,
-  ChevronDown, ChevronRight, CheckCircle, XCircle,
-  Building2, BookOpen, Target, Eye, ThumbsUp, BarChart3, ClipboardList, Radio
+  ChevronDown, ChevronRight, CheckCircle, XCircle, Lock, Mail,
+  Building2, BookOpen, Target, Eye, ThumbsUp, BarChart3, ClipboardList, Radio, ShieldCheck
 } from "lucide-react";
 
 const ROLES = ["Admin", "Moderator", "Member"];
@@ -148,6 +150,16 @@ export default function ClubDetails() {
 
   const canManage = membership?.role === "Admin" || membership?.role === "Moderator";
 
+  const visibilityMeta = {
+    [ClubVisibility.Public]: { icon: Globe, classes: "" },
+    [ClubVisibility.Private]: { icon: Lock, classes: "" },
+    [ClubVisibility.InviteOnly]: { icon: Mail, classes: "" },
+  };
+  const currentVisibility = club?.visibility ?? ClubVisibility.Public;
+  const VisibilityIcon = visibilityMeta[currentVisibility]?.icon || Globe;
+
+  const tabs = ["posts", "members", "events", "polls", "recruitment", ...(canManage ? ["privacy"] : [])];
+
   if (loading) return <Loader />;
   if (!club) return null;
 
@@ -201,6 +213,12 @@ export default function ClubDetails() {
                 <span className="font-semibold">{club.memberCount}</span>
                 <span className="text-white/70 text-sm">members</span>
               </div>
+              {currentVisibility !== ClubVisibility.Public && (
+                <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-white/10">
+                  <VisibilityIcon className="w-4 h-4 text-amber-300" />
+                  <span className="font-medium text-sm">{ClubVisibilityLabels[currentVisibility]}</span>
+                </div>
+              )}
               {membership?.isMember && (
                 <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-white/10">
                   <Shield className="w-4 h-4 text-amber-300" />
@@ -221,7 +239,7 @@ export default function ClubDetails() {
 
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-6 p-1.5 glass-card rounded-2xl shadow-lg">
-          {["posts", "members", "events", "polls", "recruitment"].map((t) => (
+          {tabs.map((t) => (
             <button
               key={t}
               onClick={() => setActiveTab(t)}
@@ -236,7 +254,8 @@ export default function ClubDetails() {
               {t === "events" && <Calendar className="w-4 h-4" />}
               {t === "polls" && <BarChart3 className="w-4 h-4" />}
               {t === "recruitment" && <ClipboardList className="w-4 h-4" />}
-              <span className="capitalize">{t === "recruitment" ? "Recruitment" : t}</span>
+              {t === "privacy" && <ShieldCheck className="w-4 h-4" />}
+              <span className="capitalize">{t === "recruitment" ? "Recruitment" : t === "privacy" ? "Privacy" : t}</span>
             </button>
           ))}
         </div>
@@ -454,6 +473,15 @@ export default function ClubDetails() {
 
         {activeTab === "recruitment" && (
           <RecruitmentSection clubId={id} club={club} membership={membership} />
+        )}
+
+        {activeTab === "privacy" && canManage && (
+          <PrivacySection
+            clubId={id}
+            club={club}
+            membership={membership}
+            onClubUpdated={(updated) => setClub((prev) => ({ ...prev, ...updated }))}
+          />
         )}
       </div>
     </div>
