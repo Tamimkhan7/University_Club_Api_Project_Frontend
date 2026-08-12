@@ -2,6 +2,10 @@ import { useEffect, useState, useRef, useContext, useCallback } from "react";
 import { Link } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import storyApi from "../api/story";
+import voiceMessageApi, { resolveMediaUrl, MessageMediaType } from "../api/voiceMessage";
+import useVoiceRecorder from "../hooks/useVoiceRecorder";
+import VoiceRecorderBar from "../components/VoiceRecorderBar";
+import VoiceMessageBubble from "../components/VoiceMessageBubble";
 import StoryViewerModal from "../components/Story/StoryViewerModal";
 import { AuthContext } from "../context/AuthContext";
 import toast from "react-hot-toast";
@@ -34,6 +38,7 @@ export default function Messages() {
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [userSearchResults, setUserSearchResults] = useState([]);
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
+  const [sendingVoice, setSendingVoice] = useState(false);
 
   // userId -> StoryResponseDto[] (only populated for users with active stories)
   const [storyMap, setStoryMap] = useState({});
@@ -173,6 +178,7 @@ export default function Messages() {
   }, []);
 
   const openChat = (conv) => {
+    if (isRecording) cancelRecording();
     setActiveUser(conv);
     loadChat(conv.userId);
     if (pollRef.current) clearInterval(pollRef.current);
@@ -204,6 +210,58 @@ export default function Messages() {
       toast.error(getErrorMessage(error, "Failed to send message"));
     } finally {
       setSending(false);
+    }
+  };
+
+  const sendVoiceBlob = async (blob, durationSeconds, extension) => {
+    if (!activeUser || !blob || blob.size === 0) return;
+    setSendingVoice(true);
+    try {
+      await voiceMessageApi.sendDirect(activeUser.userId, blob, durationSeconds, `voice-message.${extension}`);
+      loadChat(activeUser.userId);
+      loadConversations();
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to send voice message"));
+    } finally {
+      setSendingVoice(false);
+    }
+  };
+
+  const {
+    isRecording,
+    seconds: recordingSeconds,
+    error: recordingError,
+    startRecording,
+    stopRecording,
+    cancelRecording,
+  } = useVoiceRecorder({
+    onAutoStop: (blob, extension) => sendVoiceBlob(blob, 600, extension),
+  });
+
+  useEffect(() => {
+    if (recordingError) toast.error(recordingError);
+  }, [recordingError]);
+
+  const handleMicClick = () => {
+    if (!activeUser) return;
+    startRecording();
+  };
+
+  const handleCancelRecording = () => cancelRecording();
+
+  const handleSendRecording = async () => {
+    const result = await stopRecording();
+    if (!result) return;
+    await sendVoiceBlob(result.blob, result.durationSeconds, result.extension);
+  };
+
+  const deleteVoiceMessage = async (id) => {
+    if (!confirm("Delete this voice message for everyone?")) return;
+    try {
+      await voiceMessageApi.deleteDirect(id);
+      loadChat(activeUser.userId);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to delete voice message"));
     }
   };
 
@@ -645,7 +703,15 @@ export default function Messages() {
                               </div>
                             ) : (
                               <>
-                                <p className="text-sm whitespace-pre-wrap leading-relaxed">{m.text}</p>
+                                {m.mediaType === MessageMediaType.Voice ? (
+                                  <VoiceMessageBubble
+                                    src={resolveMediaUrl(m.mediaUrl)}
+                                    durationSeconds={m.durationSeconds}
+                                    isMine={isMine}
+                                  />
+                                ) : (
+                                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{m.text}</p>
+                                )}
                                 <div className="flex items-center gap-1 mt-1">
                                   <span className={`text-[10px] ${isMine ? "text-white/60" : "text-gray-400"}`}>
                                     {formatTime(m.createdAt)}
@@ -657,14 +723,20 @@ export default function Messages() {
                                 </div>
                                 {isMine && (
                                   <div className="absolute -top-2 right-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden">
+                                    {m.mediaType !== MessageMediaType.Voice && (
+                                      <button 
+                                        onClick={() => { setEditingId(m.id); setEditText(m.text); }} 
+                                        className="p-1.5 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                                      >
+                                        <Edit2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
                                     <button 
-                                      onClick={() => { setEditingId(m.id); setEditText(m.text); }} 
-                                      className="p-1.5 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
-                                    >
-                                      <Edit2 className="w-3.5 h-3.5" />
-                                    </button>
-                                    <button 
-                                      onClick={() => deleteForEveryone(m.id)} 
+                                      onClick={() =>
+                                        m.mediaType === MessageMediaType.Voice
+                                          ? deleteVoiceMessage(m.id)
+                                          : deleteForEveryone(m.id)
+                                      } 
                                       className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
@@ -683,26 +755,48 @@ export default function Messages() {
 
                 {/* Message Input */}
                 <div className="p-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm flex gap-2">
-                  <button className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all">
-                    <Paperclip className="w-5 h-5" />
-                  </button>
-                  <button className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all">
-                    <Smile className="w-5 h-5" />
-                  </button>
-                  <input
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                    placeholder="Type a message..."
-                    className="flex-1 input-premium py-2.5 text-sm"
-                  />
-                  <button 
-                    onClick={sendMessage} 
-                    disabled={sending || !text.trim()} 
-                    className="btn-primary px-5 py-2.5 disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2"
-                  >
-                    {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  </button>
+                  {isRecording ? (
+                    <VoiceRecorderBar
+                      seconds={recordingSeconds}
+                      onCancel={handleCancelRecording}
+                      onSend={handleSendRecording}
+                      sending={sendingVoice}
+                    />
+                  ) : (
+                    <>
+                      <button className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all">
+                        <Paperclip className="w-5 h-5" />
+                      </button>
+                      <button className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all">
+                        <Smile className="w-5 h-5" />
+                      </button>
+                      <input
+                        value={text}
+                        onChange={(e) => setText(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                        placeholder="Type a message..."
+                        className="flex-1 input-premium py-2.5 text-sm"
+                      />
+                      {text.trim() ? (
+                        <button 
+                          onClick={sendMessage} 
+                          disabled={sending} 
+                          className="btn-primary px-5 py-2.5 disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2"
+                        >
+                          {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleMicClick}
+                          disabled={sendingVoice}
+                          className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all disabled:opacity-50"
+                          title="Record a voice message"
+                        >
+                          {sendingVoice ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mic className="w-5 h-5" />}
+                        </button>
+                      )}
+                    </>
+                  )}
                 </div>
               </>
             )}

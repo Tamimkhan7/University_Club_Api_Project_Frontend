@@ -24,6 +24,7 @@ import MyApplications from "./pages/MyApplications";
 import MyInvites from "./pages/MyInvites";
 import InviteDetails from "./pages/InviteDetails";
 import Recommendations from "./pages/Recommendations";
+import Leaderboard from "./pages/Leaderboard";
 import Search from "./pages/Search";
 import { Toaster } from "react-hot-toast";
 import Footer from "./components/Footer";
@@ -56,6 +57,7 @@ export default function App() {
         <Route path="/" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/recommendations" element={<ProtectedRoute><Recommendations /></ProtectedRoute>} />
+        <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
         <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
         <Route path="/clubs" element={<ProtectedRoute><Clubs /></ProtectedRoute>} />
         <Route path="/clubs/:id" element={<ProtectedRoute><ClubDetails /></ProtectedRoute>} />

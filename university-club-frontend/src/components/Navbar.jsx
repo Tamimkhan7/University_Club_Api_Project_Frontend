@@ -29,6 +29,7 @@ import {
   Compass,
   ClipboardList,
   Mail,
+  Trophy,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -180,6 +181,7 @@ export default function Navbar() {
     { path: "/clubs", label: "Clubs" },
     { path: "/events", label: "Events" },
     { path: "/recommendations", label: "AI Recommended" },
+    { path: "/leaderboard", label: "Leaderboard" },
     { path: "/users", label: "Users" },
   ];
 

@@ -1,12 +1,16 @@
 import { useEffect, useState, useRef, useContext } from "react";
 import { Link } from "react-router-dom";
 import api, { getErrorMessage, toArray } from "../api/axios";
+import voiceMessageApi, { resolveMediaUrl, MessageMediaType } from "../api/voiceMessage";
+import useVoiceRecorder from "../hooks/useVoiceRecorder";
+import VoiceRecorderBar from "../components/VoiceRecorderBar";
+import VoiceMessageBubble from "../components/VoiceMessageBubble";
 import { AuthContext } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import Loader from "../components/Loader";
 import {
   Users, Plus, X, Send, Trash2, Edit2, Check, ArrowLeft, LogOut,
-  UserPlus, UserMinus, Crown, Loader2, Search,
+  UserPlus, UserMinus, Crown, Loader2, Search, Mic,
   MessageCircle, Heart, Sparkles, Zap, Star, Award,
   Clock, Shield, ShieldCheck, User, Hash, Globe, Compass,
   ChevronRight, MoreHorizontal, Bell, Settings, Settings2,
@@ -40,6 +44,7 @@ export default function Groups() {
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
 
   const [openRoleMenuFor, setOpenRoleMenuFor] = useState(null);
+  const [sendingVoice, setSendingVoice] = useState(false);
 
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
@@ -110,6 +115,7 @@ export default function Groups() {
   };
 
   const openGroup = (group) => {
+    if (isRecording) cancelRecording();
     setActiveGroup(group);
     setShowInfoDrawer(false);
     shouldAutoScroll.current = true;
@@ -149,6 +155,59 @@ export default function Groups() {
       toast.error(getErrorMessage(error, "Failed to send message"));
     } finally {
       setSending(false);
+    }
+  };
+
+  const sendVoiceBlob = async (blob, durationSeconds, extension) => {
+    if (!activeGroup || !blob || blob.size === 0) return;
+    setSendingVoice(true);
+    try {
+      await voiceMessageApi.sendGroup(activeGroup.id, blob, durationSeconds, `voice-message.${extension}`);
+      shouldAutoScroll.current = true;
+      loadGroupData(activeGroup.id);
+      loadGroups();
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to send voice message"));
+    } finally {
+      setSendingVoice(false);
+    }
+  };
+
+  const {
+    isRecording,
+    seconds: recordingSeconds,
+    error: recordingError,
+    startRecording,
+    stopRecording,
+    cancelRecording,
+  } = useVoiceRecorder({
+    onAutoStop: (blob, extension) => sendVoiceBlob(blob, 600, extension),
+  });
+
+  useEffect(() => {
+    if (recordingError) toast.error(recordingError);
+  }, [recordingError]);
+
+  const handleMicClick = () => {
+    if (!activeGroup) return;
+    startRecording();
+  };
+
+  const handleCancelRecording = () => cancelRecording();
+
+  const handleSendRecording = async () => {
+    const result = await stopRecording();
+    if (!result) return;
+    await sendVoiceBlob(result.blob, result.durationSeconds, result.extension);
+  };
+
+  const deleteVoiceMessage = async (id) => {
+    if (!confirm("Delete this voice message for everyone?")) return;
+    try {
+      await voiceMessageApi.deleteGroup(id);
+      loadGroupData(activeGroup.id);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to delete voice message"));
     }
   };
 
@@ -491,7 +550,7 @@ export default function Groups() {
                       return (
                         <div key={m.id} className={`flex ${isMine ? "justify-end" : "justify-start"} animate-fadeIn`}>
                           <div
-                            className={`max-w-[75%] ${
+                            className={`relative group max-w-[75%] ${
                               isMine ? "bg-gradient-to-r from-red-500 to-rose-600 text-white" : "bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
                             } rounded-2xl px-4 py-2.5 shadow-lg ${!isMine ? "shadow-gray-200/50 dark:shadow-gray-700/30" : "shadow-red-500/20"}`}
                           >
@@ -503,10 +562,26 @@ export default function Groups() {
                                 {m.senderName}
                               </p>
                             )}
-                            <p className="text-sm whitespace-pre-wrap leading-relaxed">{m.text}</p>
+                            {m.mediaType === MessageMediaType.Voice ? (
+                              <VoiceMessageBubble
+                                src={resolveMediaUrl(m.mediaUrl)}
+                                durationSeconds={m.durationSeconds}
+                                isMine={isMine}
+                              />
+                            ) : (
+                              <p className="text-sm whitespace-pre-wrap leading-relaxed">{m.text}</p>
+                            )}
                             <span className={`text-[10px] ${isMine ? "text-white/60" : "text-gray-400"} mt-1 block`}>
                               {formatTime(m.createdAt)}
                             </span>
+                            {isMine && m.mediaType === MessageMediaType.Voice && (
+                              <button
+                                onClick={() => deleteVoiceMessage(m.id)}
+                                className="absolute -top-2 right-2 p-1.5 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       );
@@ -531,20 +606,42 @@ export default function Groups() {
 
                 {/* Message Input */}
                 <div className="p-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm flex gap-2">
-                  <input
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                    placeholder="Type a message..."
-                    className="flex-1 input-premium py-2.5 text-sm"
-                  />
-                  <button
-                    onClick={sendMessage}
-                    disabled={sending || !text.trim()}
-                    className="btn-primary px-5 py-2.5 disabled:opacity-50 hover:scale-[1.05] disabled:hover:scale-100 flex items-center gap-2"
-                  >
-                    {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  </button>
+                  {isRecording ? (
+                    <VoiceRecorderBar
+                      seconds={recordingSeconds}
+                      onCancel={handleCancelRecording}
+                      onSend={handleSendRecording}
+                      sending={sendingVoice}
+                    />
+                  ) : (
+                    <>
+                      <input
+                        value={text}
+                        onChange={(e) => setText(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                        placeholder="Type a message..."
+                        className="flex-1 input-premium py-2.5 text-sm"
+                      />
+                      {text.trim() ? (
+                        <button
+                          onClick={sendMessage}
+                          disabled={sending}
+                          className="btn-primary px-5 py-2.5 disabled:opacity-50 hover:scale-[1.05] disabled:hover:scale-100 flex items-center gap-2"
+                        >
+                          {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleMicClick}
+                          disabled={sendingVoice}
+                          className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all disabled:opacity-50"
+                          title="Record a voice message"
+                        >
+                          {sendingVoice ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mic className="w-5 h-5" />}
+                        </button>
+                      )}
+                    </>
+                  )}
                 </div>
               </>
             )}
