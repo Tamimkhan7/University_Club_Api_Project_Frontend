@@ -6,6 +6,7 @@ import StoryViewerModal from "../components/Story/StoryViewerModal";
 import Loader from "../components/Loader";
 import toast from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
+import { usePresence, formatLastSeen } from "../context/PresenceContext";
 import {
   Mail, Save, Edit3, Sparkles, MapPin, Heart, Users as UsersIcon,
   Trash2, X, Loader2, Camera, UserPlus, UserMinus, Lock, EyeOff, Eye,
@@ -44,6 +45,16 @@ export default function Profile() {
 
   const [profileStories, setProfileStories] = useState([]); // StoryResponseDto[]
   const [showStoryViewer, setShowStoryViewer] = useState(false);
+
+  // Live online/last-seen status for the profile being viewed (see
+  // /api/presence + PresenceContext). No-op (empty ids) until the profile
+  // has actually loaded.
+  const presence = usePresence(profile?.id ? [profile.id] : []);
+  const livePresence = profile?.id ? presence[profile.id] : null;
+  const isProfileOnline = livePresence ? livePresence.isOnline : !!profile?.isOnline;
+  const profileLastSeenLabel = !isProfileOnline
+    ? formatLastSeen(livePresence?.lastSeenAt ?? profile?.lastSeenAt)
+    : null;
 
   const loadProfile = async () => {
     setLoading(true);
@@ -353,7 +364,11 @@ export default function Profile() {
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && setProfileImageFile(e.target.files[0])} />
                 </label>
               )}
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800 shadow-lg shadow-green-500/30" />
+              {isProfileOnline ? (
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800 shadow-lg shadow-green-500/30" />
+              ) : (
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gray-300 dark:bg-gray-600 rounded-full ring-2 ring-white dark:ring-gray-800" />
+              )}
             </div>
           </div>
         </div>
@@ -374,6 +389,20 @@ export default function Profile() {
                     <span className="text-gray-400">@</span>{profile.userName}
                   </p>
                 )}
+                {isProfileOnline ? (
+                  <p className="text-green-600 dark:text-green-400 text-sm mt-1 flex items-center justify-center sm:justify-start gap-1.5 font-medium">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                    </span>
+                    Online now
+                  </p>
+                ) : profileLastSeenLabel ? (
+                  <p className="text-gray-400 dark:text-gray-500 text-sm mt-1 flex items-center justify-center sm:justify-start gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    Active {profileLastSeenLabel}
+                  </p>
+                ) : null}
               </div>
               <div className="flex items-center gap-2 justify-center flex-wrap">
                 {isOwnProfile && !isEditing && (

@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
+import { usePresence, formatLastSeen } from "../context/PresenceContext";
 import Loader from "../components/Loader";
 import Logo from "../components/Logo";
 import toast from "react-hot-toast";
@@ -23,6 +24,13 @@ export default function Users() {
   const [totalPages, setTotalPages] = useState(1);
   const [followBusy, setFollowBusy] = useState({});
   const location = useLocation();
+
+  // Live online/last-seen status for every user currently on screen, kept
+  // up to date via the NotificationHub's WatchPresence/UserPresenceChanged
+  // (see /api/presence + PresenceContext). Falls back to the isOnline
+  // snapshot the /user/all|/user/search endpoint already returns until the
+  // live value arrives.
+  const presence = usePresence(users.map((u) => u.id));
 
   const loadUsers = async (targetPage = 1, query = "") => {
     setLoading(true);
@@ -174,6 +182,9 @@ export default function Users() {
           {users.map((u, index) => {
             const gradient = getRandomGradient(u.id);
             const isMe = me && me.id === u.id;
+            const live = presence[u.id];
+            const isOnline = live ? live.isOnline : u.isOnline;
+            const lastSeenLabel = !isOnline ? formatLastSeen(live?.lastSeenAt ?? u.lastSeenAt) : null;
             return (
               <div
                 key={u.id}
@@ -195,7 +206,7 @@ export default function Users() {
                       <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
 
-                      {u.isOnline && (
+                      {isOnline ? (
                         <div className="absolute top-3 left-3 bg-black/25 backdrop-blur-md rounded-full pl-1.5 pr-2.5 py-1 text-[11px] text-white font-medium flex items-center gap-1.5 border border-white/10">
                           <span className="relative flex h-1.5 w-1.5">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
@@ -203,7 +214,12 @@ export default function Users() {
                           </span>
                           Online
                         </div>
-                      )}
+                      ) : lastSeenLabel ? (
+                        <div className="absolute top-3 left-3 bg-black/25 backdrop-blur-md rounded-full pl-1.5 pr-2.5 py-1 text-[11px] text-white font-medium flex items-center gap-1.5 border border-white/10">
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-gray-300/70" />
+                          {lastSeenLabel}
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="absolute -bottom-11 left-1/2 -translate-x-1/2">
@@ -214,6 +230,9 @@ export default function Users() {
                           alt={u.name}
                           className="relative w-[88px] h-[88px] sm:w-24 sm:h-24 rounded-full ring-4 ring-white dark:ring-ink-900 shadow-xl object-cover group-hover:scale-105 transition-transform duration-500"
                         />
+                        {isOnline && (
+                          <span className="absolute bottom-1 right-1 sm:bottom-1.5 sm:right-1.5 w-4 h-4 bg-green-500 rounded-full ring-[3px] ring-white dark:ring-ink-900" />
+                        )}
                         {isMe && (
                           <div className="absolute -top-1 -right-1 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full p-1.5 shadow-lg shadow-amber-500/30 ring-2 ring-white dark:ring-ink-900">
                             <Crown className="w-3.5 h-3.5 text-white" />

@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api, { getErrorMessage, toArray } from "../api/axios";
+import { presenceApi } from "../api/presence";
+import { usePresence, formatLastSeen } from "../context/PresenceContext";
 import Loader from "../components/Loader";
 import toast from "react-hot-toast";
 import {
   UserPlus, UserMinus, UserX, Users, Search, Sparkles, ShieldOff, Ban,
   User, Heart, Star, Award, Crown, Zap, Clock, CheckCircle,
   XCircle, ChevronRight, ChevronDown, Filter, Grid3x3,
-  MessageCircle, Share2, Link2, Globe, Compass,
+  MessageCircle, Share2, Link2, Globe, Compass, Activity,
   Building2, BookOpen, Target, Eye, ThumbsUp
 } from "lucide-react";
 
@@ -16,6 +18,7 @@ const TABS = [
   { id: "common", label: "Common Interests", icon: Star },
   { id: "followers", label: "My Followers", icon: Users },
   { id: "following", label: "My Following", icon: UserPlus },
+  { id: "online", label: "Online Now", icon: Activity },
   { id: "blocked", label: "Blocked Users", icon: Ban },
 ];
 
@@ -35,6 +38,10 @@ export default function Connections() {
   const [searchTerm, setSearchTerm] = useState("");
   const [busyId, setBusyId] = useState(null);
   const [isSearchMode, setIsSearchMode] = useState(false);
+
+  // Live online/last-seen status for everyone currently listed, kept up to
+  // date via the NotificationHub (see /api/presence + PresenceContext).
+  const presence = usePresence(list.map((u) => u.id));
 
   const load = async (targetPage = 1) => {
     setLoading(true);
@@ -102,6 +109,42 @@ export default function Connections() {
             res = await api.get("/follow/following", { params: { page: targetPage, pageSize: 20 } });
             setList(res.data?.items || []);
             setTotalPages(res.data?.totalPages || 1);
+          }
+          break;
+        }
+        case "online": {
+          // /api/presence/online-following returns a plain (unpaginated-total)
+          // list of PresenceStatusDto for the requested page — map its
+          // shape (userId/userName) onto the {id, name, ...} shape the rest
+          // of this page's rendering expects, and treat these users as
+          // already-followed (they only come from the following list).
+          const pageSize = 20;
+          const toCard = (p) => ({
+            id: p.userId,
+            name: p.userName,
+            profileImage: p.profileImage,
+            isOnline: p.isOnline,
+            lastSeenAt: p.lastSeenAt,
+            isFollowing: true,
+          });
+
+          if (query) {
+            // No dedicated "search all pages" endpoint for this one, so page
+            // through online-following (capped at 10 pages) client-side.
+            let items = [];
+            for (let p = 1; p <= 10; p++) {
+              const batch = await presenceApi.getOnlineFollowing(p, pageSize);
+              items = items.concat((batch || []).map(toCard));
+              if (!batch || batch.length < pageSize) break;
+            }
+            setList(items.filter(matches));
+            setTotalPages(1);
+          } else {
+            const items = await presenceApi.getOnlineFollowing(targetPage, pageSize);
+            setList((items || []).map(toCard));
+            // The endpoint doesn't return a total count, so infer whether a
+            // next page might exist from whether this page was full.
+            setTotalPages((items || []).length < pageSize ? targetPage : targetPage + 1);
           }
           break;
         }
@@ -298,6 +341,7 @@ export default function Connections() {
                     {tab === "common" && <Star className="w-12 h-12 text-red-500" />}
                     {tab === "followers" && <Users className="w-12 h-12 text-red-500" />}
                     {tab === "following" && <UserPlus className="w-12 h-12 text-red-500" />}
+                    {tab === "online" && <Activity className="w-12 h-12 text-red-500" />}
                     {tab === "blocked" && <Ban className="w-12 h-12 text-red-500" />}
                   </>
                 )}
@@ -311,6 +355,7 @@ export default function Connections() {
                     {tab === "common" && "No common interests"}
                     {tab === "followers" && "No followers yet"}
                     {tab === "following" && "Not following anyone"}
+                    {tab === "online" && "No one you follow is online"}
                     {tab === "blocked" && "No blocked users"}
                   </>
                 )}
@@ -322,7 +367,11 @@ export default function Connections() {
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {list.map((u) => (
+            {list.map((u) => {
+              const live = presence[u.id];
+              const isOnline = live ? live.isOnline : u.isOnline;
+              const lastSeenLabel = !isOnline ? formatLastSeen(live?.lastSeenAt ?? u.lastSeenAt) : null;
+              return (
               <div
                 key={u.id}
                 className="group relative glass-card-hover rounded-3xl p-6 flex flex-col items-center text-center animate-fadeIn overflow-hidden"
@@ -341,7 +390,11 @@ export default function Connections() {
                     }}
                     className="relative w-20 h-20 rounded-full object-cover ring-4 ring-white dark:ring-slate-800 shadow-xl group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute bottom-0.5 right-0.5 w-4 h-4 bg-green-500 rounded-full ring-[3px] ring-white dark:ring-slate-900" />
+                  {isOnline ? (
+                    <span className="absolute bottom-0.5 right-0.5 w-4 h-4 bg-green-500 rounded-full ring-[3px] ring-white dark:ring-slate-900" />
+                  ) : (
+                    <span className="absolute bottom-0.5 right-0.5 w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full ring-[3px] ring-white dark:ring-slate-900" />
+                  )}
                 </div>
 
                 <Link
@@ -352,6 +405,21 @@ export default function Connections() {
                 </Link>
 
                 <div className="relative flex flex-wrap justify-center items-center gap-2 mt-2 text-xs">
+                  {isOnline && (
+                    <span className="flex items-center gap-1 text-green-600 dark:text-green-400 font-medium">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
+                      </span>
+                      Online
+                    </span>
+                  )}
+                  {!isOnline && lastSeenLabel && (
+                    <span className="flex items-center gap-1 text-gray-400 dark:text-gray-500">
+                      <Activity className="w-3 h-3" />
+                      Active {lastSeenLabel}
+                    </span>
+                  )}
                   {u.mutualCount !== undefined && u.mutualCount > 0 && (
                     <span className="badge-premium !py-1">
                       <Heart className="w-3 h-3" />
@@ -410,7 +478,8 @@ export default function Connections() {
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
