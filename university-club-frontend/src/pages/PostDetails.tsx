@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import Loader from "../components/Loader";
+import { usePresence } from "../context/PresenceContext";
 import toast from "react-hot-toast";
 import {
   Heart, MessageCircle, Send, Trash2, ArrowLeft,
@@ -22,6 +23,13 @@ export default function PostDetails() {
 
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
+
+  // Live online status for the post author + every commenter currently
+  // rendered on this page (see /api/presence + PresenceContext).
+  const presence = usePresence([
+    ...(post?.userId ? [post.userId] : []),
+    ...comments.map((c) => c.userId),
+  ]);
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState(null);
   const [replyToName, setReplyToName] = useState("");
@@ -373,7 +381,9 @@ export default function PostDetails() {
                     alt={post.userName}
                     className="relative w-14 h-14 rounded-full object-cover ring-2 ring-red-500/30 shadow-lg"
                   />
-                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                  {presence[post.userId]?.isOnline && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                  )}
                 </div>
                 <div>
                   <h2 className="font-bold text-lg sm:text-xl text-gray-800 dark:text-white flex items-center gap-2">
@@ -683,7 +693,9 @@ export default function PostDetails() {
                                 alt={comment.userName}
                                 className="w-10 h-10 rounded-full object-cover ring-2 ring-red-500/20"
                               />
-                              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                              {presence[comment.userId]?.isOnline && (
+                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                              )}
                             </div>
                             <div>
                               <b className="text-sm text-gray-800 dark:text-white">{comment.userName}</b>

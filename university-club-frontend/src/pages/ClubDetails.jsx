@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
+import { usePresence } from "../context/PresenceContext";
 import Loader from "../components/Loader";
 import PostCard from "../components/PostCard";
 import PollsSection from "../components/Poll/PollsSection";
@@ -34,6 +35,11 @@ export default function ClubDetails() {
   const [liveStatus, setLiveStatus] = useState({}); // eventId -> { status, viewerCount }
   const [activeTab, setActiveTab] = useState("posts");
   const [loading, setLoading] = useState(true);
+
+  // Live online status for everyone currently shown in the members list.
+  // Only watches ids that are actually on screen right now (current page /
+  // search results), same pattern as PostCard's reactors presence check.
+  const presence = usePresence(members.map((m) => m.userId));
 
   const loadClub = async () => {
     setLoading(true);
@@ -318,7 +324,9 @@ export default function ClubDetails() {
                         alt={m.userName}
                         className="w-12 h-12 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600 group-hover:ring-red-500/30 transition-all duration-300"
                       />
-                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                      {presence[m.userId]?.isOnline && (
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <Link 

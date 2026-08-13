@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
+import { usePresence } from "../context/PresenceContext";
 import {
   Heart, MessageCircle, ThumbsUp, Smile, Frown, Angry, Eye, X,
   Share2, Bookmark, MoreHorizontal, Clock, Sparkles, Award,
@@ -65,6 +66,16 @@ export default function PostCard({ post, onReact }) {
   const [showReactorsModal, setShowReactorsModal] = useState(false);
   const [reactorFilter, setReactorFilter] = useState("all");
   const [reactors, setReactors] = useState([]);
+
+  // Live online status for the post author + everyone in the reactors
+  // list (see /api/presence + PresenceContext). Only watches ids that are
+  // actually on screen right now.
+  const presence = usePresence(
+    showReactorsModal
+      ? [post.userId, ...reactors.map((r) => r.userId)]
+      : [post.userId]
+  );
+  const isAuthorOnline = !!presence[post.userId]?.isOnline;
 
   const loadSummary = async () => {
     try {
@@ -219,12 +230,16 @@ export default function PostCard({ post, onReact }) {
                   className="relative w-12 h-12 rounded-full object-cover ring-2 ring-red-500/30 group-hover/profile:ring-red-500/50 transition-all duration-300 group-hover/profile:scale-105"
                   onError={() => setImageError(true)}
                 />
-                <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800 shadow-lg shadow-green-500/30" />
+                {isAuthorOnline && (
+                  <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800 shadow-lg shadow-green-500/30" />
+                )}
               </div>
             ) : (
               <div className="relative w-12 h-12 rounded-full bg-gradient-to-r from-red-500 to-rose-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-red-500/25 group-hover/profile:scale-105 transition-transform duration-300">
                 {getUserInitials(post.userName)}
-                <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                {isAuthorOnline && (
+                  <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                )}
               </div>
             )}
             <div className="flex-1 min-w-0">
@@ -491,7 +506,9 @@ export default function PostCard({ post, onReact }) {
                         alt={r.userName}
                         className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600 group-hover/item:ring-red-500/30 transition-all duration-200"
                       />
-                      <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                      {presence[r.userId]?.isOnline && (
+                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                      )}
                     </div>
                     <span className="text-sm font-medium text-gray-800 dark:text-white flex-1 group-hover/item:text-red-600 dark:group-hover/item:text-red-400 transition-colors duration-200">
                       {r.userName}

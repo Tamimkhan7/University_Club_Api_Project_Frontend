@@ -8,6 +8,7 @@ import VoiceRecorderBar from "../components/VoiceRecorderBar";
 import VoiceMessageBubble from "../components/VoiceMessageBubble";
 import StoryViewerModal from "../components/Story/StoryViewerModal";
 import { AuthContext } from "../context/AuthContext";
+import { usePresence, formatLastSeen } from "../context/PresenceContext";
 import toast from "react-hot-toast";
 import Loader from "../components/Loader";
 import {
@@ -43,6 +44,14 @@ export default function Messages() {
   // userId -> StoryResponseDto[] (only populated for users with active stories)
   const [storyMap, setStoryMap] = useState({});
   const [storyViewerUser, setStoryViewerUser] = useState(null); // { userId, userName, profileImage }
+
+  // Live online/last-seen status for every conversation on screen + the
+  // "start new message" search results (see /api/presence + PresenceContext).
+  const presence = usePresence([
+    ...conversations.map((c) => c.userId),
+    ...userSearchResults.map((u) => u.id),
+    ...(activeUser?.userId ? [activeUser.userId] : []),
+  ]);
 
   const loadStoriesFor = useCallback((userIds) => {
     const idsToFetch = [...new Set(userIds)].filter((id) => id != null);
@@ -397,7 +406,9 @@ export default function Messages() {
                           alt={u.name}
                           className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600 group-hover:ring-red-500/30 transition-all"
                         />
-                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                        {presence[u.id]?.isOnline && (
+                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                        )}
                       </div>
                       <div className="flex-1 text-left">
                         <p className="font-semibold text-gray-800 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
@@ -562,7 +573,9 @@ export default function Messages() {
                         className="w-12 h-12 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600 group-hover:ring-red-500/30 transition-all duration-300"
                       />
                     )}
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                    {presence[c.userId]?.isOnline && (
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
@@ -648,8 +661,16 @@ export default function Messages() {
                   <div>
                     <span className="font-bold text-white">{activeUser.userName}</span>
                     <p className="text-white/70 text-[10px] flex items-center gap-1">
-                      <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
-                      Online
+                      {presence[activeUser.userId]?.isOnline ? (
+                        <>
+                          <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                          Online
+                        </>
+                      ) : (
+                        formatLastSeen(presence[activeUser.userId]?.lastSeenAt) && (
+                          <>Active {formatLastSeen(presence[activeUser.userId]?.lastSeenAt)}</>
+                        )
+                      )}
                     </p>
                   </div>
                   <div className="ml-auto flex gap-1">
