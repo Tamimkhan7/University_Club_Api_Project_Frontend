@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api, { getErrorMessage } from "../api/axios";
 import Loader from "../components/Loader";
 import toast from "react-hot-toast";
@@ -12,16 +12,24 @@ import {
 } from "lucide-react";
 
 const TABS = [
-  { id: "all", label: "All Files", icon: FolderOpen },
-  { id: "my", label: "My Files", icon: User },
+  { id: "all", label: "All Files", icon: FolderOpen, endpoint: "/file" },
+  { id: "my", label: "My Files", icon: User, endpoint: "/file/my" },
 ];
+
+const SEARCH_DEBOUNCE_MS = 400;
 
 export default function Files() {
   const [tab, setTab] = useState("all");
   const [files, setFiles] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  // `loading` now only ever fires on the very first mount, so it's the only
+  // thing allowed to render the full-page <Loader/>. Every subsequent load
+  // (tab switch, search, filter, pagination, upload/delete/replace, etc.)
+  // uses `searching` instead, which just dims the grid — the page (and the
+  // search input, and its cursor/focus) never unmounts again after first paint.
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,6 +37,17 @@ export default function Files() {
   const [stats, setStats] = useState(null);
   const [replacingId, setReplacingId] = useState(null);
   const [detailFile, setDetailFile] = useState(null);
+
+  // isFirstLoad: flips false after the very first successful/failed load, so
+  // every load after that goes through `searching` instead of `loading`.
+  const isFirstLoad = useRef(true);
+  // Debounce timer for real-time search-as-you-type.
+  const searchDebounceRef = useRef(null);
+  // When we programmatically clear/change searchTerm as a *side effect* of
+  // something else (tab switch, type-filter pick, X buttons) we already
+  // trigger our own loadFiles call — this flag stops the searchTerm-watching
+  // effect from firing a duplicate, stale request right after.
+  const skipNextSearchEffect = useRef(false);
 
   const viewFileDetails = async (id) => {
     try {
@@ -42,7 +61,16 @@ export default function Files() {
   const currentEndpoint = TABS.find((t) => t.id === tab)?.endpoint || "/file";
 
   const loadFiles = async (targetPage = 1, query = "", type = "") => {
-    setLoading(true);
+    // Only the very first load in this component's lifetime uses the
+    // full-page loader. Everything after that just dims the grid via
+    // `searching`, so the search <input> (and its focus/cursor) survives.
+    const firstLoad = isFirstLoad.current;
+    if (firstLoad) {
+      setLoading(true);
+    } else {
+      setSearching(true);
+    }
+
     try {
       let endpoint = currentEndpoint;
       let params = { page: targetPage, pageSize: 15 };
@@ -60,7 +88,12 @@ export default function Files() {
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to load files"));
     } finally {
-      setLoading(false);
+      if (firstLoad) {
+        isFirstLoad.current = false;
+        setLoading(false);
+      } else {
+        setSearching(false);
+      }
     }
   };
 
@@ -73,21 +106,65 @@ export default function Files() {
     }
   };
 
+  // Tab switch: clear any in-flight search, reset search box + type filter,
+  // and load this tab's default list. skipNextSearchEffect stops resetting
+  // searchTerm here from firing a second, redundant request via the
+  // debounced-search effect below.
   useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    skipNextSearchEffect.current = true;
+    setSearchTerm("");
+    setTypeFilter("");
     loadFiles(1);
     loadStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
+
+  // Real-time debounced search: typing in the box re-queries automatically,
+  // no submit needed. Since loadFiles() no longer flips `loading`, the input
+  // never unmounts and the cursor/focus is preserved while typing.
+  useEffect(() => {
+    if (skipNextSearchEffect.current) {
+      skipNextSearchEffect.current = false;
+      return;
+    }
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      loadFiles(1, searchTerm.trim(), searchTerm.trim() ? "" : typeFilter);
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(searchDebounceRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   const handleSearch = (e) => {
     e.preventDefault();
+    // Enter/submit skips the debounce wait and searches immediately.
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    skipNextSearchEffect.current = true;
     setTypeFilter("");
     loadFiles(1, searchTerm.trim());
   };
 
+  const clearSearch = () => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    skipNextSearchEffect.current = true;
+    setSearchTerm("");
+    loadFiles(1, "", typeFilter);
+  };
+
   const filterByType = (type) => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    skipNextSearchEffect.current = true;
     setSearchTerm("");
     setTypeFilter(type);
     loadFiles(1, "", type);
+  };
+
+  const clearTypeFilter = () => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    skipNextSearchEffect.current = true;
+    setTypeFilter("");
+    loadFiles(1);
   };
 
   const uploadFile = async () => {
@@ -172,6 +249,7 @@ export default function Files() {
     return <FileIcon className="w-5 h-5" />;
   };
 
+  // Only the very first mount ever shows the full-page loader now.
   if (loading) return <Loader />;
 
   return (
@@ -321,7 +399,7 @@ export default function Files() {
               return (
                 <button
                   key={t.id}
-                  onClick={() => { setTab(t.id); setSearchTerm(""); setTypeFilter(""); }}
+                  onClick={() => setTab(t.id)}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                     isActive
                       ? "btn-primary"
@@ -339,7 +417,7 @@ export default function Files() {
             <span className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-medium border border-amber-200 dark:border-amber-800/30">
               Type: {typeFilter}
               <button
-                onClick={() => { setTypeFilter(""); loadFiles(1); }}
+                onClick={clearTypeFilter}
                 className="hover:bg-amber-200 dark:hover:bg-amber-800/30 rounded-lg p-0.5 transition-colors"
               >
                 <X className="w-3 h-3" />
@@ -351,14 +429,16 @@ export default function Files() {
             onClick={() => loadFiles(page, searchTerm, typeFilter)}
             className="ml-auto p-2.5 text-gray-500 hover:text-red-500 dark:hover:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group"
           >
-            <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
+            <RefreshCw className={`w-4 h-4 transition-transform duration-500 ${searching ? "animate-spin" : "group-hover:rotate-180"}`} />
           </button>
         </div>
 
         {/* Search */}
         <form onSubmit={handleSearch} className="mb-6 relative group">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-red-500 transition-colors duration-300" />
+            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${
+              searching ? "text-red-500 animate-pulse" : "text-gray-400 group-focus-within:text-red-500"
+            }`} />
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -368,7 +448,7 @@ export default function Files() {
             {searchTerm && (
               <button
                 type="button"
-                onClick={() => { setSearchTerm(""); loadFiles(1); }}
+                onClick={clearSearch}
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <X className="w-4 h-4 text-gray-400" />
@@ -391,7 +471,7 @@ export default function Files() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className={`grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 transition-opacity duration-300 ${searching ? "opacity-60" : "opacity-100"}`}>
             {files.map((f, index) => (
               <div
                 key={f.id}

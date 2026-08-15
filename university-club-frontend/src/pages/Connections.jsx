@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import api, { getErrorMessage, toArray } from "../api/axios";
 import { presenceApi } from "../api/presence";
@@ -32,6 +32,7 @@ const avatarFor = (name) =>
 export default function Connections() {
   const [tab, setTab] = useState("suggestions");
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [list, setList] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -39,12 +40,17 @@ export default function Connections() {
   const [busyId, setBusyId] = useState(null);
   const [isSearchMode, setIsSearchMode] = useState(false);
 
+  const isFirstRun = useRef(true);
+  const skipNextSearchEffect = useRef(false);
+  const searchDebounceRef = useRef(null);
+
   // Live online/last-seen status for everyone currently listed, kept up to
   // date via the NotificationHub (see /api/presence + PresenceContext).
   const presence = usePresence(list.map((u) => u.id));
 
-  const load = async (targetPage = 1) => {
-    setLoading(true);
+  const load = async (targetPage = 1, isInitial = false) => {
+    if (isInitial) setLoading(true);
+    else setSearching(true);
     try {
       const query = searchTerm.trim().toLowerCase();
       setIsSearchMode(!!query);
@@ -167,22 +173,61 @@ export default function Connections() {
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to load"));
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
+      else setSearching(false);
     }
   };
 
+  // Tab switch (or first mount): loads immediately, no debounce. Only the
+  // very first-ever load blocks the whole page with the full <Loader/> —
+  // every load after that (tab switches, search, pagination) keeps the
+  // page mounted so the search input never loses focus.
   useEffect(() => {
-    load(1);
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      load(1, true);
+    } else {
+      load(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
+
+  // Real-time search: debounce while the user types, then fetch. Skipped
+  // right after a tab switch, since selectTab() already clears the search
+  // box and the effect above already reloads for the new tab — without this
+  // guard we'd fire a redundant duplicate request a moment later.
+  useEffect(() => {
+    if (isFirstRun.current) return;
+    if (skipNextSearchEffect.current) {
+      skipNextSearchEffect.current = false;
+      return;
+    }
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      load(1);
+    }, 400);
+    return () => clearTimeout(searchDebounceRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   const handleSearch = (e) => {
     e.preventDefault();
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    load(1);
+  };
+
+  const clearSearch = () => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    skipNextSearchEffect.current = true;
+    setSearchTerm("");
     load(1);
   };
 
   const selectTab = (id) => {
     // Switching tabs always exits search mode and clears the search box,
     // so tab navigation is predictable regardless of any previous search.
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    skipNextSearchEffect.current = true;
     setSearchTerm("");
     setIsSearchMode(false);
     setTab(id);
@@ -288,7 +333,7 @@ export default function Connections() {
         {/* Search */}
         <form onSubmit={handleSearch} className="mb-6 w-full relative group">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-red-500 transition-colors duration-300" />
+            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-red-500 transition-colors duration-300 ${searching ? "animate-pulse" : ""}`} />
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -298,7 +343,7 @@ export default function Connections() {
             {searchTerm && (
               <button
                 type="button"
-                onClick={() => { setSearchTerm(""); load(1); }}
+                onClick={clearSearch}
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <XCircle className="w-4 h-4 text-gray-400" />
@@ -366,7 +411,7 @@ export default function Connections() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className={`grid gap-5 sm:grid-cols-2 lg:grid-cols-3 transition-opacity duration-200 ${searching ? "opacity-60" : "opacity-100"}`}>
             {list.map((u) => {
               const live = presence[u.id];
               const isOnline = live ? live.isOnline : u.isOnline;

@@ -1,5 +1,5 @@
-import { useEffect, useState, useContext } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState, useContext, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import Loader from "../components/Loader";
 import { AuthContext } from "../context/AuthContext";
@@ -10,7 +10,7 @@ import {
   Globe, Hash, Award, TrendingUp, UserCheck, UserX, Crown,
   Search, Heart, Star, Zap, Shield, Rocket, Flame,
   Compass, MapPin, Calendar, Clock, Filter, ClipboardList,
-  ChevronRight, ChevronDown, Building2, BookOpen, Target
+  ChevronRight, ChevronDown, Building2, BookOpen, Target, Lock
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -19,12 +19,17 @@ const APPLICATION_STATUS = { Pending: 0, Approved: 1, Rejected: 2, Withdrawn: 3 
 
 export default function Clubs() {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [clubs, setClubs] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  // `loading` = very first mount only -> shows the full-page <Loader/>.
+  // `searching` = every subsequent load (typing, pagination, join/leave, etc.)
+  // -> keeps the page (and the search input's focus/cursor) mounted the whole time.
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [editingClub, setEditingClub] = useState(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
@@ -34,9 +39,23 @@ export default function Clubs() {
   // clubId -> pending ClubApplication (recruitment system) for the current user
   const [pendingApplications, setPendingApplications] = useState({});
   const [applyTarget, setApplyTarget] = useState(null); // club currently being applied to
+  // Club whose "View Details" was clicked while the user isn't an approved member yet.
+  // Backend now blocks club-content endpoints for non-members, so instead of navigating
+  // (and hitting a page full of 401s) we show a "join to view" prompt and stay put.
+  const [joinPromptClub, setJoinPromptClub] = useState(null);
 
-  const loadClubs = async (targetPage = 1, query = "") => {
-    setLoading(true);
+  const initialLoadDone = useRef(false);
+  const searchDebounceRef = useRef(null);
+  // Set to true right before we manually trigger a load tied to a searchTerm
+  // change (submit / clear button), so the debounce effect below doesn't fire
+  // a second, duplicate request for the same value.
+  const skipNextSearchEffect = useRef(false);
+
+  const load = async (targetPage = 1, query = "") => {
+    const isInitial = !initialLoadDone.current;
+    if (isInitial) setLoading(true);
+    else setSearching(true);
+
     try {
       const endpoint = query ? "/club/search" : "/club/all";
       const params = query ? { query, page: targetPage, pageSize: 12 } : { page: targetPage, pageSize: 12 };
@@ -68,16 +87,50 @@ export default function Clubs() {
       console.error(error);
       toast.error(getErrorMessage(error, "Failed to load clubs"));
     }
-    setLoading(false);
+
+    if (isInitial) {
+      initialLoadDone.current = true;
+      setLoading(false);
+    } else {
+      setSearching(false);
+    }
   };
 
+  // Very first load — full-page loader.
   useEffect(() => {
-    loadClubs(1);
+    load(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Real-time debounced search — typing in the box searches automatically,
+  // no need to press Enter. The grid just dims slightly (`searching`) instead
+  // of the whole page unmounting, so focus/cursor position is never lost.
+  useEffect(() => {
+    if (skipNextSearchEffect.current) {
+      skipNextSearchEffect.current = false;
+      return;
+    }
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      load(1, searchTerm.trim());
+    }, 400);
+    return () => clearTimeout(searchDebounceRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
+
+  // Enter / submit still works — jumps the search immediately instead of
+  // waiting out the debounce.
   const handleSearch = (e) => {
     e.preventDefault();
-    loadClubs(1, searchTerm.trim());
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    load(1, searchTerm.trim());
+  };
+
+  const clearSearch = () => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    skipNextSearchEffect.current = true;
+    setSearchTerm("");
+    load(1, "");
   };
 
   const createClub = async () => {
@@ -87,7 +140,7 @@ export default function Clubs() {
       setName("");
       setDescription("");
       setShowCreateForm(false);
-      loadClubs(1, searchTerm);
+      load(1, searchTerm);
       toast.success("✨ Club created successfully!");
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to create club"));
@@ -98,6 +151,21 @@ export default function Clubs() {
   // recruitment/application system and must be approved by a club admin or
   // moderator. This just opens the "Apply to Join" modal for the club.
   const openApplyModal = (club) => setApplyTarget(club);
+
+  // Club detail/members/posts endpoints now require approved membership — a
+  // non-member hitting them just gets a page full of 401 errors. So "View
+  // Details" only navigates for members/owners; otherwise it shows a prompt
+  // (and the Clubs page itself never changes).
+  const canViewClub = (club) =>
+    joinedClubs.has(club.id) || (user && club.createdBy === user.id);
+
+  const handleViewDetails = (club) => {
+    if (canViewClub(club)) {
+      navigate(`/clubs/${club.id}`);
+    } else {
+      setJoinPromptClub(club);
+    }
+  };
 
   const handleApplied = (createdApplication) => {
     const clubId = applyTarget?.id;
@@ -114,7 +182,7 @@ export default function Clubs() {
       newJoined.delete(clubId);
       setJoinedClubs(newJoined);
       toast.success("👋 Left club successfully!");
-      loadClubs(page, searchTerm);
+      load(page, searchTerm);
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to leave club"));
     }
@@ -125,7 +193,7 @@ export default function Clubs() {
     try {
       await api.put(`/club/update/${clubId}`, { name: editName, description: editDescription });
       setEditingClub(null);
-      loadClubs(page, searchTerm);
+      load(page, searchTerm);
       toast.success("✅ Club updated successfully!");
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to update club"));
@@ -136,7 +204,7 @@ export default function Clubs() {
     if (!confirm("⚠️ Are you sure you want to delete this club? All posts will also be deleted!")) return;
     try {
       await api.delete(`/club/delete/${clubId}`);
-      loadClubs(page, searchTerm);
+      load(page, searchTerm);
       toast.success("🗑️ Club deleted successfully!");
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to delete club"));
@@ -174,6 +242,10 @@ export default function Clubs() {
     return emojis[id % emojis.length];
   };
 
+  // Only the very first mount blocks with the full-page loader. Every later
+  // load (typing a search, paginating, joining/leaving, etc.) uses
+  // `searching` instead, so this component — and the search input inside it
+  // — never unmounts again.
   if (loading) return <Loader />;
 
   return (
@@ -308,18 +380,19 @@ export default function Clubs() {
         {/* Search */}
         <form onSubmit={handleSearch} className="mb-8 relative group">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-red-500 transition-colors duration-300" />
+            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-red-500 transition-colors duration-300 ${searching ? "animate-pulse text-red-400" : ""}`} />
             <input
               type="text"
               placeholder="Search clubs by name or description..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="input-premium pl-12 pr-4 py-3.5"
+              autoFocus={false}
             />
             {searchTerm && (
               <button
                 type="button"
-                onClick={() => { setSearchTerm(""); loadClubs(1); }}
+                onClick={clearSearch}
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <X className="w-4 h-4 text-gray-400" />
@@ -368,7 +441,7 @@ export default function Clubs() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className={`grid gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 transition-opacity duration-200 ${searching ? "opacity-60" : "opacity-100"}`}>
             {clubs.map((club, index) => (
               <div
                 key={club.id}
@@ -439,13 +512,14 @@ export default function Clubs() {
                           <Hash className="w-3 h-3 text-white/60" />
                           <span className="text-white/60 text-xs">ID: {club.id}</span>
                         </div>
-                        <Link
-                          to={`/clubs/${club.id}`}
+                        <button
+                          type="button"
+                          onClick={() => handleViewDetails(club)}
                           className="inline-flex items-center gap-1 mt-2 text-sm text-white/85 hover:text-white transition-colors group/link"
                         >
                           View Details
                           <ChevronRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/link:translate-x-1" />
-                        </Link>
+                        </button>
                       </div>
                     </div>
 
@@ -514,7 +588,7 @@ export default function Clubs() {
           <div className="flex flex-wrap justify-center items-center gap-3 mt-10">
             <button
               disabled={page <= 1}
-              onClick={() => loadClubs(page - 1, searchTerm)}
+              onClick={() => load(page - 1, searchTerm)}
               className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-red-300 dark:hover:border-red-500/30 transition-all duration-200 text-sm font-medium"
             >
               <ChevronDown className="w-4 h-4 rotate-90" />
@@ -531,7 +605,7 @@ export default function Clubs() {
                 return (
                   <button
                     key={i}
-                    onClick={() => loadClubs(pageNum, searchTerm)}
+                    onClick={() => load(pageNum, searchTerm)}
                     className={`w-10 h-10 rounded-xl text-sm font-medium transition-all duration-200 ${
                       page === pageNum
                         ? "btn-primary w-10 h-10 flex items-center justify-center"
@@ -546,7 +620,7 @@ export default function Clubs() {
 
             <button
               disabled={page >= totalPages}
-              onClick={() => loadClubs(page + 1, searchTerm)}
+              onClick={() => load(page + 1, searchTerm)}
               className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-red-300 dark:hover:border-red-500/30 transition-all duration-200 text-sm font-medium"
             >
               Next
@@ -563,6 +637,55 @@ export default function Clubs() {
           onClose={() => setApplyTarget(null)}
           onApplied={handleApplied}
         />
+      )}
+
+      {/* "Join to view" prompt — shown instead of navigating when a non-member
+          clicks View Details. The Clubs page underneath stays exactly as it was. */}
+      {joinPromptClub && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+          <div className="glass-card w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden">
+            <div className="bg-gradient-to-r from-red-500 via-rose-500 to-red-600 px-6 py-5 relative">
+              <button
+                onClick={() => setJoinPromptClub(null)}
+                className="absolute top-4 right-4 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-3">
+                <Lock className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-white">Join to view this club</h3>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                You need to be a member of <span className="font-semibold text-gray-800 dark:text-white">{joinPromptClub.name}</span> to
+                view its details, posts, and members. Apply to join to get access.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setJoinPromptClub(null)}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    const club = joinPromptClub;
+                    setJoinPromptClub(null);
+                    if (pendingApplications[club.id]) {
+                      toast("Your application is already pending review.");
+                      return;
+                    }
+                    openApplyModal(club);
+                  }}
+                  className="flex-1 btn-primary !py-2.5 text-sm"
+                >
+                  <ClipboardList className="w-3.5 h-3.5" /> Apply to Join
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

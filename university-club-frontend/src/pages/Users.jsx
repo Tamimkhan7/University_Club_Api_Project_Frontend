@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useRef, useState, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
@@ -19,11 +19,14 @@ export default function Users() {
   const { user: me } = useContext(AuthContext);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [followBusy, setFollowBusy] = useState({});
   const location = useLocation();
+  const debounceRef = useRef(null);
+  const isFirstRun = useRef(true);
 
   // Live online/last-seen status for every user currently on screen, kept
   // up to date via the NotificationHub's WatchPresence/UserPresenceChanged
@@ -32,8 +35,9 @@ export default function Users() {
   // live value arrives.
   const presence = usePresence(users.map((u) => u.id));
 
-  const loadUsers = async (targetPage = 1, query = "") => {
-    setLoading(true);
+  const loadUsers = async (targetPage = 1, query = "", isInitial = false) => {
+    if (isInitial) setLoading(true);
+    else setSearching(true);
     try {
       const endpoint = query ? "/user/search" : "/user/all";
       const res = await api.get(endpoint, { params: { query, page: targetPage, pageSize: 20 } });
@@ -45,23 +49,43 @@ export default function Users() {
       console.error("Error loading users:", error);
       toast.error(getErrorMessage(error, "Failed to load users"));
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
+      else setSearching(false);
     }
   };
 
+  // Sync searchQuery from the URL (e.g. navigated in from a "search users"
+  // link elsewhere in the app). Does not call the API directly — the
+  // debounced effect below reacts to searchQuery changes and loads results.
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const search = params.get("search");
-    if (search) {
-      setSearchQuery(search);
-      loadUsers(1, search);
-    } else {
-      loadUsers(1);
-    }
+    const urlSearch = params.get("search") || "";
+    setSearchQuery(urlSearch);
   }, [location]);
+
+  // Real-time search: whenever searchQuery changes, wait briefly for the
+  // user to stop typing, then fetch. The initial mount fires immediately
+  // (no artificial delay) so the page loads without waiting.
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      loadUsers(1, searchQuery.trim(), true);
+      return;
+    }
+
+    debounceRef.current = setTimeout(() => {
+      loadUsers(1, searchQuery.trim());
+    }, 400);
+
+    return () => clearTimeout(debounceRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
   const handleSearch = (e) => {
     e.preventDefault();
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     loadUsers(1, searchQuery.trim());
   };
 
@@ -156,7 +180,7 @@ export default function Users() {
               />
             </div>
             <button type="submit" className="btn-primary px-8 py-3.5 flex items-center justify-center gap-2">
-              <Search className="w-4 h-4" /> Search
+              <Search className={`w-4 h-4 ${searching ? "animate-pulse" : ""}`} /> Search
             </button>
           </form>
         </div>
@@ -178,7 +202,7 @@ export default function Users() {
         </div>
 
         {/* User Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-7">
+        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-7 transition-opacity duration-200 ${searching ? "opacity-60" : "opacity-100"}`}>
           {users.map((u, index) => {
             const gradient = getRandomGradient(u.id);
             const isMe = me && me.id === u.id;

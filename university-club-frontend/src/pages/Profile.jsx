@@ -284,6 +284,23 @@ export default function Profile() {
     }
   };
 
+  // Sends the current profile's owner into Messages with a chat already
+  // opened for them. If a conversation doesn't exist yet, Messages will
+  // create one on the fly — the receiver only actually gets a conversation
+  // once a first message/voice note is sent, matching startNewConversation.
+  const messageUser = () => {
+    if (!profile) return;
+    navigate("/messages", {
+      state: {
+        startChatWith: {
+          userId: profile.id,
+          userName: profile.name,
+          profileImage: profile.profileImage,
+        },
+      },
+    });
+  };
+
   const cancelEditing = () => {
     setIsEditing(false);
     setProfileImageFile(null);
@@ -415,21 +432,32 @@ export default function Profile() {
                 )}
                 {!isOwnProfile && (
                   <>
-                    {/* Follow button hidden once blocked in either direction — following
-                        a blocked user isn't a valid state and the backend rejects it. */}
+                    {/* Follow + Message buttons hidden once blocked in either direction —
+                        neither action is valid on a blocked relationship and the
+                        backend rejects both. */}
                     {!profile.isBlocked && (
-                      <button
-                        onClick={toggleFollow}
-                        disabled={followBusy}
-                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-all duration-300 ${
-                          profile.isFollowing
-                            ? "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                            : "btn-primary"
-                        }`}
-                      >
-                        {profile.isFollowing ? <UserMinus className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
-                        {profile.isFollowing ? "Unfollow" : "Follow"}
-                      </button>
+                      <>
+                        <button
+                          onClick={toggleFollow}
+                          disabled={followBusy}
+                          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-all duration-300 ${
+                            profile.isFollowing
+                              ? "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                              : "btn-primary"
+                          }`}
+                        >
+                          {profile.isFollowing ? <UserMinus className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                          {profile.isFollowing ? "Unfollow" : "Follow"}
+                        </button>
+
+                        <button
+                          onClick={messageUser}
+                          className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-300 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-900/40"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          Message
+                        </button>
+                      </>
                     )}
 
                     <button

@@ -35,6 +35,10 @@ export default function ClubDetails() {
   const [liveStatus, setLiveStatus] = useState({}); // eventId -> { status, viewerCount }
   const [activeTab, setActiveTab] = useState("posts");
   const [loading, setLoading] = useState(true);
+  // True when the backend blocked club-content access because the current user
+  // isn't an approved member yet (private-to-members content). Rendered as a
+  // friendly "join to view" state instead of a blank page full of console errors.
+  const [accessDenied, setAccessDenied] = useState(false);
 
   // Live online status for everyone currently shown in the members list.
   // Only watches ids that are actually on screen right now (current page /
@@ -43,6 +47,7 @@ export default function ClubDetails() {
 
   const loadClub = async () => {
     setLoading(true);
+    setAccessDenied(false);
     try {
       const [clubRes, membershipRes] = await Promise.all([
         api.get(`/club/${id}`),
@@ -54,7 +59,11 @@ export default function ClubDetails() {
       loadPosts();
       loadEvents();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to load club"));
+      if (error?.response?.status === 401) {
+        setAccessDenied(true);
+      } else {
+        toast.error(getErrorMessage(error, "Failed to load club"));
+      }
     } finally {
       setLoading(false);
     }
@@ -167,6 +176,33 @@ export default function ClubDetails() {
   const tabs = ["posts", "members", "events", "polls", "recruitment", ...(canManage ? ["privacy"] : [])];
 
   if (loading) return <Loader />;
+
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 flex items-center justify-center p-4">
+        <div className="glass-card w-full max-w-md rounded-3xl shadow-2xl overflow-hidden text-center">
+          <div className="bg-gradient-to-r from-red-500 via-rose-500 to-red-600 px-6 py-8">
+            <div className="w-14 h-14 mx-auto bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-3">
+              <Lock className="w-7 h-7 text-white" />
+            </div>
+            <h2 className="text-xl font-bold text-white">Join to view this club</h2>
+          </div>
+          <div className="p-6 space-y-4">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              You need to be an approved member of this club to see its posts, members, and events.
+            </p>
+            <button
+              onClick={() => navigate("/clubs")}
+              className="btn-primary w-full !py-2.5 text-sm"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back to Clubs
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!club) return null;
 
   return (

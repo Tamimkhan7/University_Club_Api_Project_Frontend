@@ -50,6 +50,11 @@ export default function Groups() {
   const messagesContainerRef = useRef(null);
   const shouldAutoScroll = useRef(true);
   const pollRef = useRef(null);
+  // Debounce timer for the real-time "add member" user search. Kept as a
+  // ref (not state) so updating it never triggers a re-render — a
+  // re-render here is what would otherwise risk remounting the input and
+  // losing focus/cursor position while typing.
+  const searchDebounceRef = useRef(null);
 
   const loadGroups = async () => {
     try {
@@ -82,9 +87,18 @@ export default function Groups() {
   // bottom (or a fresh group / a message they just sent forces it). This is
   // what stops the view from yanking someone back down while they're
   // scrolled up reading older messages during a background poll.
+  //
+  // IMPORTANT: scrollIntoView() defaults to block: "start", which asks the
+  // browser to scroll the *nearest scrollable ancestor chain* (including the
+  // outer page, not just the messages container) so the target lands at the
+  // top of the viewport. That's what was causing the whole page to jump.
+  // block: "nearest" + inline: "nearest" tells it to only scroll if the
+  // element isn't already visible in its scroll container, and to do the
+  // minimum scrolling necessary — so it stays contained inside the chat
+  // panel instead of moving the page.
   useEffect(() => {
     if (shouldAutoScroll.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
     }
   }, [messages]);
 
@@ -260,13 +274,14 @@ export default function Groups() {
     }
   };
 
-  const doSearchUsers = async (e) => {
-    e.preventDefault();
-    if (!searchUsers.trim()) return;
+  // Actually hits the API. Shared by both the debounced real-time effect
+  // below and the manual submit/Enter-key path, so there's a single source
+  // of truth for how a search is performed.
+  const runUserSearch = async (term) => {
     setIsSearchingUsers(true);
     try {
       const res = await api.get("/user/search", {
-        params: { query: searchUsers.trim(), page: 1, pageSize: 10 },
+        params: { query: term, page: 1, pageSize: 10 },
       });
       setUserResults(res.data?.items || []);
     } catch (error) {
@@ -276,12 +291,51 @@ export default function Groups() {
     }
   };
 
+  // Real-time debounced search: as the admin types in the "Search users to
+  // add..." box, wait 400ms after they stop typing and search automatically
+  // — no need to hit Enter or click the search button. Only runs while the
+  // members tab of the drawer is actually open, so it doesn't fire searches
+  // in the background after the drawer closes or the tab switches away.
+  useEffect(() => {
+    if (!showInfoDrawer || infoTab !== "members") return;
+    const term = searchUsers.trim();
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    if (!term) {
+      setUserResults([]);
+      setIsSearchingUsers(false);
+      return;
+    }
+    searchDebounceRef.current = setTimeout(() => {
+      runUserSearch(term);
+    }, 400);
+    return () => clearTimeout(searchDebounceRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchUsers, showInfoDrawer, infoTab]);
+
+  // Manual submit (Enter key or the search button) skips the debounce wait
+  // and searches immediately — handy if someone wants a result right away.
+  const doSearchUsers = (e) => {
+    e.preventDefault();
+    const term = searchUsers.trim();
+    if (!term) return;
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    runUserSearch(term);
+  };
+
+  // Clears the search box, cancels any pending debounced search, and wipes
+  // stale results — used by the new "X" clear button on the input.
+  const clearMemberSearch = () => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    setSearchUsers("");
+    setUserResults([]);
+    setIsSearchingUsers(false);
+  };
+
   const addMember = async (userId) => {
     try {
       await api.post(`/group/${activeGroup.id}/members`, { userId });
       toast.success("Member added");
-      setUserResults([]);
-      setSearchUsers("");
+      clearMemberSearch();
       loadGroupData(activeGroup.id);
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to add member"));
@@ -595,7 +649,7 @@ export default function Groups() {
                   <button
                     onClick={() => {
                       shouldAutoScroll.current = true;
-                      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+                      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
                     }}
                     className="absolute bottom-24 right-6 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-full p-2.5 shadow-lg shadow-red-500/30 hover:scale-105 transition-transform"
                     title="Jump to latest"
@@ -717,27 +771,30 @@ export default function Groups() {
 
                         <form onSubmit={doSearchUsers} className="flex gap-2">
                           <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 ${isSearchingUsers ? "animate-pulse" : ""}`} />
                             <input
                               value={searchUsers}
                               onChange={(e) => setSearchUsers(e.target.value)}
                               placeholder="Search users to add..."
-                              className="input-premium pl-9 pr-3 py-2 text-sm"
+                              className="input-premium pl-9 pr-9 py-2 text-sm"
                             />
+                            {searchUsers && (
+                              <button
+                                type="button"
+                                onClick={clearMemberSearch}
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                           <button type="submit" className="btn-primary px-4 py-2 text-sm">
-                            <Search className="w-4 h-4" />
+                            {isSearchingUsers ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                           </button>
                         </form>
 
-                        {isSearchingUsers && (
-                          <div className="flex justify-center py-2">
-                            <Loader2 className="w-5 h-5 text-red-500 animate-spin" />
-                          </div>
-                        )}
-
                         {userResults.length > 0 && (
-                          <div className="space-y-1.5 bg-gray-50 dark:bg-gray-800 rounded-xl p-2 border border-gray-200 dark:border-gray-700 max-h-40 overflow-y-auto">
+                          <div className={`space-y-1.5 bg-gray-50 dark:bg-gray-800 rounded-xl p-2 border border-gray-200 dark:border-gray-700 max-h-40 overflow-y-auto transition-opacity ${isSearchingUsers ? "opacity-60" : "opacity-100"}`}>
                             {userResults.map((u) => (
                               <div
                                 key={u.id}

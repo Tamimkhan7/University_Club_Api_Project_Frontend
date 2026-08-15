@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import Loader from "../components/Loader";
@@ -6,9 +6,9 @@ import toast from "react-hot-toast";
 import {
   Calendar, Plus, X, Users, MapPin, Clock, Trash2, Edit3,
   UserCheck, UserX, Search, Sparkles, ChevronDown, ChevronUp,
-  Star, Award, Flame, Rocket, Heart, Zap, Globe,
+  Star, Award, Flame, Rocket, Heart, Zap, Globe, Hourglass,
   Filter, Grid3x3, List, ChevronRight, Ticket, PartyPopper,
-  Building2, BookOpen, Target, Eye, ThumbsUp, Radio
+  Building2, BookOpen, Target, Eye, ThumbsUp, Radio, Check, ShieldCheck
 } from "lucide-react";
 
 const TABS = [
@@ -28,13 +28,21 @@ const unwrap = (res) => {
   return { success, message: body.message, data: body.data ?? body };
 };
 
+const SEARCH_DEBOUNCE_MS = 400;
+
 export default function Events() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("upcoming");
   const [events, setEvents] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  // `loading` now only ever fires on the very first mount, so it's the only
+  // thing allowed to render the full-page <Loader/>. Every subsequent load
+  // (tab switch, search, pagination, join/leave, etc.) uses `searching`
+  // instead, which just dims the grid — the page (and the search input,
+  // and its cursor/focus) never unmounts again after first paint.
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [clubs, setClubs] = useState([]);
   const [form, setForm] = useState({ title: "", description: "", eventDate: "", clubId: "" });
@@ -43,8 +51,25 @@ export default function Events() {
   const [attendees, setAttendees] = useState({});
   const [eventStats, setEventStats] = useState({});
   const [joinStatus, setJoinStatus] = useState({});
+  // Events now use an approval workflow: joining creates a pending EventJoinRequest
+  // instead of an immediate attendance. pendingStatus[id] tracks "request submitted,
+  // awaiting the organizer's decision" separately from joinStatus[id] (already approved/attending).
+  const [pendingStatus, setPendingStatus] = useState({});
+  const [joinRequests, setJoinRequests] = useState({});
+  const [requestsLoading, setRequestsLoading] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [liveStatus, setLiveStatus] = useState({}); // eventId -> { status: "NotStarted"|"Live"|"Ended", viewerCount }
+
+  // isFirstLoad: flips false after the very first successful/failed load, so
+  // every load after that goes through `searching` instead of `loading`.
+  const isFirstLoad = useRef(true);
+  // Debounce timer for real-time search-as-you-type.
+  const searchDebounceRef = useRef(null);
+  // When we programmatically clear/change searchTerm as a *side effect* of
+  // something else (tab switch, X button) we already trigger our own
+  // loadEvents call — this flag stops the searchTerm-watching effect from
+  // firing a duplicate, stale request right after.
+  const skipNextSearchEffect = useRef(false);
 
   const normalizeLiveStatus = (status) => {
     if (status === 0 || status === "NotStarted") return "NotStarted";
@@ -72,7 +97,16 @@ export default function Events() {
   });
 
   const loadEvents = async (targetPage = 1, query = "") => {
-    setLoading(true);
+    // Only the very first load in this component's lifetime uses the
+    // full-page loader. Everything after that just dims the grid via
+    // `searching`, so the search <input> (and its focus/cursor) survives.
+    const firstLoad = isFirstLoad.current;
+    if (firstLoad) {
+      setLoading(true);
+    } else {
+      setSearching(true);
+    }
+
     try {
       const endpoint = query ? "/event/search" : currentEndpoint;
       const params = query ? { keyword: query, page: targetPage, pageSize: 12 } : { page: targetPage, pageSize: 12 };
@@ -117,7 +151,12 @@ export default function Events() {
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to load events"));
     } finally {
-      setLoading(false);
+      if (firstLoad) {
+        isFirstLoad.current = false;
+        setLoading(false);
+      } else {
+        setSearching(false);
+      }
     }
   };
 
@@ -133,14 +172,47 @@ export default function Events() {
     }
   };
 
+  // Tab switch: clear any in-flight search, reset the search box, and load
+  // this tab's default list. We also flip skipNextSearchEffect so clearing
+  // searchTerm here doesn't cause the debounced-search effect below to fire
+  // a second, redundant request right after this one.
   useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    skipNextSearchEffect.current = true;
+    setSearchTerm("");
     loadEvents(1);
     loadMyClubs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
+
+  // Real-time debounced search: typing in the box re-queries automatically,
+  // no submit needed. Since loadEvents() no longer flips `loading`, the
+  // input never unmounts and the cursor/focus is preserved while typing.
+  useEffect(() => {
+    if (skipNextSearchEffect.current) {
+      skipNextSearchEffect.current = false;
+      return;
+    }
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      loadEvents(1, searchTerm.trim());
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(searchDebounceRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   const handleSearch = (e) => {
     e.preventDefault();
+    // Enter/submit skips the debounce wait and searches immediately.
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     loadEvents(1, searchTerm.trim());
+  };
+
+  const clearSearch = () => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    skipNextSearchEffect.current = true;
+    setSearchTerm("");
+    loadEvents(1);
   };
 
   const submitEvent = async () => {
@@ -215,7 +287,16 @@ export default function Events() {
         toast.error(message || "Failed to join event");
         return;
       }
-      setJoinStatus((prev) => ({ ...prev, [id]: true }));
+      // Joining an event now goes through an approval workflow: the backend creates
+      // a pending EventJoinRequest and only attaches attendance once the organizer
+      // approves it. Detect that from the response message rather than assuming
+      // an immediate join.
+      const isPending = /pending/i.test(message || "");
+      if (isPending) {
+        setPendingStatus((prev) => ({ ...prev, [id]: true }));
+      } else {
+        setJoinStatus((prev) => ({ ...prev, [id]: true }));
+      }
       toast.success(message || "Joined event!");
       loadEvents(page, searchTerm);
     } catch (error) {
@@ -231,11 +312,43 @@ export default function Events() {
         toast.error(message || "Failed to leave event");
         return;
       }
+      // Leave also cancels a still-pending join request, so clear both flags.
       setJoinStatus((prev) => ({ ...prev, [id]: false }));
+      setPendingStatus((prev) => ({ ...prev, [id]: false }));
       toast.success(message || "Left event");
       loadEvents(page, searchTerm);
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to leave event"));
+    }
+  };
+
+  const loadJoinRequests = async (id) => {
+    setRequestsLoading((prev) => ({ ...prev, [id]: true }));
+    try {
+      const res = await api.get(`/event/${id}/join-requests`);
+      const { success, data } = unwrap(res);
+      setJoinRequests((prev) => ({ ...prev, [id]: success ? (data || []) : [] }));
+    } catch {
+      // Not the organizer / not authorized — silently skip, section just won't show data.
+      setJoinRequests((prev) => ({ ...prev, [id]: [] }));
+    } finally {
+      setRequestsLoading((prev) => ({ ...prev, [id]: false }));
+    }
+  };
+
+  const respondJoinRequest = async (eventId, requestId, approve) => {
+    try {
+      const res = await api.put(`/event/${eventId}/join-requests/${requestId}/${approve ? "approve" : "reject"}`);
+      const { success, message } = unwrap(res);
+      if (!success) {
+        toast.error(message || "Failed to update join request");
+        return;
+      }
+      toast.success(message || (approve ? "Join request approved" : "Join request rejected"));
+      loadJoinRequests(eventId);
+      loadEvents(page, searchTerm);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to update join request"));
     }
   };
 
@@ -256,10 +369,16 @@ export default function Events() {
       } catch (error) {
         console.error(error);
       }
+      // Only the event's organizer sees join requests here — everyone else is a
+      // regular attendee/viewer for whom the backend returns "access denied".
+      if (tab === "my") {
+        loadJoinRequests(id);
+      }
     }
     setExpanded((prev) => ({ ...prev, [id]: !isOpen }));
   };
 
+  // Only the very first mount ever shows the full-page loader now.
   if (loading) return <Loader />;
 
   return (
@@ -343,7 +462,9 @@ export default function Events() {
         {/* Search */}
         <form onSubmit={handleSearch} className="mb-6 relative group">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-red-500 transition-colors duration-300" />
+            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${
+              searching ? "text-red-500 animate-pulse" : "text-gray-400 group-focus-within:text-red-500"
+            }`} />
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -353,7 +474,7 @@ export default function Events() {
             {searchTerm && (
               <button
                 type="button"
-                onClick={() => { setSearchTerm(""); loadEvents(1); }}
+                onClick={clearSearch}
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <X className="w-4 h-4 text-gray-400" />
@@ -429,7 +550,7 @@ export default function Events() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className={`grid gap-5 md:grid-cols-2 lg:grid-cols-3 transition-opacity duration-300 ${searching ? "opacity-60" : "opacity-100"}`}>
             {events.map((ev) => (
               <div
                 key={ev.id}
@@ -460,6 +581,11 @@ export default function Events() {
                         <div className="flex items-center gap-1 bg-red-600/90 backdrop-blur-sm px-2 py-1 rounded-xl border border-white/10">
                           <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                           <span className="text-[10px] font-bold text-white">LIVE · {liveStatus[ev.id].viewerCount}</span>
+                        </div>
+                      ) : tab === "my" && (joinRequests[ev.id]?.length > 0) ? (
+                        <div className="flex items-center gap-1 bg-amber-500/90 backdrop-blur-sm px-2 py-1 rounded-xl border border-white/10">
+                          <Hourglass className="w-3 h-3 text-white" />
+                          <span className="text-[10px] font-bold text-white">{joinRequests[ev.id].length} pending</span>
                         </div>
                       ) : new Date(ev.eventDate) > new Date() ? (
                         <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-xl border border-white/10">
@@ -496,6 +622,14 @@ export default function Events() {
                       >
                         <UserX className="w-3.5 h-3.5" /> Leave
                       </button>
+                    ) : pendingStatus[ev.id] ? (
+                      <button
+                        onClick={() => leaveEvent(ev.id)}
+                        title="Cancel join request"
+                        className="flex-1 bg-gradient-to-r from-amber-400 to-amber-500 text-white px-3 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-1.5 hover:shadow-xl hover:shadow-amber-500/25 transition-all duration-300 hover:scale-[1.02]"
+                      >
+                        <Hourglass className="w-3.5 h-3.5" /> Request Pending
+                      </button>
                     ) : (
                       <button
                         onClick={() => joinEvent(ev.id)}
@@ -531,6 +665,49 @@ export default function Events() {
                       ? "View Live Recap"
                       : "Live Room"}
                   </button>
+
+                  {expanded[ev.id] && tab === "my" && (
+                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 space-y-2">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                        <ShieldCheck className="w-3.5 h-3.5" /> Pending Join Requests
+                      </div>
+                      {requestsLoading[ev.id] ? (
+                        <p className="text-xs text-gray-400 text-center py-2">Loading requests...</p>
+                      ) : (joinRequests[ev.id] || []).length === 0 ? (
+                        <p className="text-xs text-gray-400 text-center py-2">No pending requests.</p>
+                      ) : (
+                        (joinRequests[ev.id] || []).map((r) => (
+                          <div
+                            key={r.id}
+                            className="flex items-center justify-between gap-2 text-xs bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-xl px-3 py-2"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                                {(r.userName || "U").charAt(0).toUpperCase()}
+                              </div>
+                              <span className="truncate text-gray-700 dark:text-gray-200 font-medium">{r.userName || `User #${r.userId}`}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              <button
+                                onClick={() => respondJoinRequest(ev.id, r.id, true)}
+                                title="Approve"
+                                className="p-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => respondJoinRequest(ev.id, r.id, false)}
+                                title="Reject"
+                                className="p-1.5 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
 
                   {expanded[ev.id] && (
                     <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 space-y-2 max-h-48 overflow-y-auto">

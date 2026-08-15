@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef, useContext, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState, useRef, useContext, useCallback, useMemo } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import storyApi from "../api/story";
 import voiceMessageApi, { resolveMediaUrl, MessageMediaType } from "../api/voiceMessage";
@@ -22,6 +22,8 @@ import {
 
 export default function Messages() {
   const { user: me } = useContext(AuthContext);
+  const location = useLocation();
+  const navigate = useNavigate();
   const [conversations, setConversations] = useState([]);
   const [loadingConvos, setLoadingConvos] = useState(true);
   const [activeUser, setActiveUser] = useState(null);
@@ -31,14 +33,24 @@ export default function Messages() {
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null); // scrolls only the chat panel, not the window
   const pollRef = useRef(null);
+
+  // Sidebar search (real-time): matches conversations locally + searches
+  // people and message content on the server as the user types.
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [searchResults, setSearchResults] = useState(null);
+  const [searchResults, setSearchResults] = useState(null); // message-content matches
+  const [peopleResults, setPeopleResults] = useState([]); // user matches (may include people with no conversation yet)
+  const [searchingSidebar, setSearchingSidebar] = useState(false);
+  const sidebarSearchReqIdRef = useRef(0);
+
   const [users, setUsers] = useState([]);
   const [showUserSearch, setShowUserSearch] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [userSearchResults, setUserSearchResults] = useState([]);
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
+  const userSearchReqIdRef = useRef(0);
+
   const [sendingVoice, setSendingVoice] = useState(false);
 
   // userId -> StoryResponseDto[] (only populated for users with active stories)
@@ -46,10 +58,12 @@ export default function Messages() {
   const [storyViewerUser, setStoryViewerUser] = useState(null); // { userId, userName, profileImage }
 
   // Live online/last-seen status for every conversation on screen + the
-  // "start new message" search results (see /api/presence + PresenceContext).
+  // "start new message" search results + the sidebar people search results
+  // (see /api/presence + PresenceContext).
   const presence = usePresence([
     ...conversations.map((c) => c.userId),
     ...userSearchResults.map((u) => u.id),
+    ...peopleResults.map((u) => u.id),
     ...(activeUser?.userId ? [activeUser.userId] : []),
   ]);
 
@@ -74,25 +88,46 @@ export default function Messages() {
 
   const storyAttemptedRef = useRef(new Set());
 
+  // Loads/searches the global user directory for the "New Message" modal.
+  // Shared by the debounced live-search effect below and the Enter/submit
+  // handler, using a request id so a slow older request can never clobber
+  // a newer one's results.
   const loadUsers = async (query = "") => {
+    const reqId = ++userSearchReqIdRef.current;
     setIsSearchingUsers(true);
     try {
       const res = await api.get("/user/search", { 
         params: { query: query.trim() || "", page: 1, pageSize: 20 } 
       });
-      setUserSearchResults(res.data?.items || []);
+      if (reqId === userSearchReqIdRef.current) {
+        setUserSearchResults(res.data?.items || []);
+      }
     } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to search users"));
+      if (reqId === userSearchReqIdRef.current) {
+        toast.error(getErrorMessage(error, "Failed to search users"));
+      }
     } finally {
-      setIsSearchingUsers(false);
+      if (reqId === userSearchReqIdRef.current) {
+        setIsSearchingUsers(false);
+      }
     }
   };
 
+  // Real-time search for the "New Message" modal: fires as soon as the
+  // modal opens (shows everyone by default) and again ~300ms after each
+  // keystroke, so typing "b" live-filters to every user with "b" in it.
+  useEffect(() => {
+    if (!showUserSearch) return;
+    const query = userSearchQuery.trim();
+    const handle = setTimeout(() => {
+      loadUsers(query);
+    }, query ? 300 : 0);
+    return () => clearTimeout(handle);
+  }, [userSearchQuery, showUserSearch]);
+
   const handleUserSearch = (e) => {
     e.preventDefault();
-    if (userSearchQuery.trim()) {
-      loadUsers(userSearchQuery);
-    }
+    loadUsers(userSearchQuery);
   };
 
   const startNewConversation = async (userId) => {
@@ -125,18 +160,62 @@ export default function Messages() {
     }
   };
 
-  const handleMessageSearch = async (e) => {
-    e.preventDefault();
-    if (!searchKeyword.trim()) return;
-    try {
-      const res = await api.get("/message/search", { 
-        params: { keyword: searchKeyword.trim(), page: 1, pageSize: 20 } 
-      });
-      setSearchResults(res.data?.items || []);
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Search failed"));
+  // Real-time sidebar search: as the user types, search both message
+  // content and the user directory in parallel (debounced), so someone
+  // like "bofoga" who has no conversation yet still shows up and can be
+  // clicked to start a chat. A request id guards against a slow older
+  // response overwriting a newer one.
+  useEffect(() => {
+    const keyword = searchKeyword.trim();
+    if (!keyword) {
+      setSearchResults(null);
+      setPeopleResults([]);
+      setSearchingSidebar(false);
+      return;
     }
+    const reqId = ++sidebarSearchReqIdRef.current;
+    setSearchingSidebar(true);
+    const handle = setTimeout(async () => {
+      const [msgRes, userRes] = await Promise.allSettled([
+        api.get("/message/search", { params: { keyword, page: 1, pageSize: 20 } }),
+        api.get("/user/search", { params: { query: keyword, page: 1, pageSize: 20 } }),
+      ]);
+      if (reqId !== sidebarSearchReqIdRef.current) return; // stale response, ignore
+      if (msgRes.status === "fulfilled") {
+        setSearchResults(msgRes.value.data?.items || []);
+      }
+      if (userRes.status === "fulfilled") {
+        setPeopleResults(userRes.value.data?.items || []);
+      }
+      setSearchingSidebar(false);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [searchKeyword]);
+
+  const clearSidebarSearch = () => {
+    setSearchKeyword("");
+    setSearchResults(null);
+    setPeopleResults([]);
   };
+
+  const handleSelectPerson = (u) => {
+    startNewConversation(u.id);
+    clearSidebarSearch();
+  };
+
+  // Conversations filtered live (client-side, instant) by the typed name.
+  const filteredConversations = useMemo(() => {
+    const keyword = searchKeyword.trim().toLowerCase();
+    if (!keyword) return conversations;
+    return conversations.filter((c) => c.userName?.toLowerCase().includes(keyword));
+  }, [conversations, searchKeyword]);
+
+  // People found via the server-side directory search, excluding anyone
+  // who already has a conversation (they're already covered above) or is me.
+  const newPeopleResults = useMemo(() => {
+    const conversationUserIds = new Set(conversations.map((c) => c.userId));
+    return peopleResults.filter((u) => !conversationUserIds.has(u.id) && u.id !== me?.id);
+  }, [peopleResults, conversations, me]);
 
   const loadConversations = async () => {
     try {
@@ -200,8 +279,44 @@ export default function Messages() {
     };
   }, []);
 
+  // Deep-link support: when we arrive here from Profile's "Message" button
+  // (navigate("/messages", { state: { startChatWith: {...} } })), open a
+  // chat with that user as soon as the conversation list has loaded —
+  // reusing the existing conversation if there is one, or starting a fresh
+  // one (same shape as startNewConversation) if not. The router state is
+  // cleared right after so a page refresh or back/forward navigation
+  // doesn't keep re-opening the same chat.
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const target = location.state?.startChatWith;
+    if (!target || loadingConvos) return;
+
+    const existing = conversations.find((c) => c.userId === target.userId);
+    if (existing) {
+      openChat(existing);
+    } else {
+      const newConv = {
+        userId: target.userId,
+        userName: target.userName,
+        profileImage: target.profileImage,
+        lastMessage: "Start a conversation",
+        unreadCount: 0,
+      };
+      setConversations((prev) => [newConv, ...prev]);
+      openChat(newConv);
+    }
+
+    navigate(location.pathname, { replace: true, state: {} });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state, loadingConvos, conversations]);
+
+  // Scroll only the chat messages container to the bottom on new messages -
+  // never scrollIntoView(), since that also drags the whole window/page
+  // scroll position along with it and causes the page to "jump" to the top.
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
   }, [messages]);
 
   const sendMessage = async () => {
@@ -377,18 +492,14 @@ export default function Messages() {
                   <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     value={userSearchQuery}
-                    onChange={(e) => {
-                      setUserSearchQuery(e.target.value);
-                      if (!e.target.value.trim()) {
-                        setUserSearchResults([]);
-                      }
-                    }}
+                    onChange={(e) => setUserSearchQuery(e.target.value)}
                     placeholder="Search by name or email..."
                     className="input-premium pl-10 pr-4 py-2.5 text-sm"
+                    autoFocus
                   />
                 </div>
                 <button type="submit" className="btn-primary px-4 py-2.5 text-sm">
-                  <Search className="w-4 h-4" />
+                  {isSearchingUsers ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                 </button>
               </form>
 
@@ -427,16 +538,16 @@ export default function Messages() {
                 </div>
               )}
 
-              {isSearchingUsers && (
+              {isSearchingUsers && userSearchResults.length === 0 && (
                 <div className="flex justify-center py-4">
                   <Loader2 className="w-6 h-6 text-red-500 animate-spin" />
                 </div>
               )}
 
-              {userSearchQuery && userSearchResults.length === 0 && !isSearchingUsers && (
+              {userSearchResults.length === 0 && !isSearchingUsers && (
                 <div className="text-center py-6 text-gray-500 dark:text-gray-400">
                   <Search className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">No users found</p>
+                  <p className="text-sm">{userSearchQuery.trim() ? "No users found" : "No users to show"}</p>
                 </div>
               )}
             </div>
@@ -460,38 +571,88 @@ export default function Messages() {
               </button>
             </div>
 
-            {/* Search Messages */}
-            <form onSubmit={handleMessageSearch} className="p-3 border-b border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
+            {/* Search - real-time: filters conversations instantly and looks up
+                people + message content on the server as you type. */}
+            <div className="p-3 border-b border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
-                  placeholder="Search messages..."
-                  className="input-premium pl-9 pr-3 py-2 text-sm"
+                  placeholder="Search people or messages..."
+                  className="input-premium pl-9 pr-8 py-2 text-sm"
                 />
+                {searchKeyword && (
+                  <button
+                    type="button"
+                    onClick={clearSidebarSearch}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
-            </form>
+            </div>
 
-            {/* Search Results */}
-            {searchResults !== null && (
+            {/* People results - live search across the whole user directory,
+                so someone without an existing conversation still shows up. */}
+            {searchKeyword.trim() && (
+              <div className="border-b border-gray-200/50 dark:border-gray-700/50">
+                <div className="flex justify-between items-center px-4 py-2 bg-red-50/80 dark:bg-red-900/20 backdrop-blur-sm">
+                  <span className="text-xs font-medium text-red-700 dark:text-red-400 flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5" />
+                    People
+                  </span>
+                  {searchingSidebar && <Loader2 className="w-3.5 h-3.5 text-red-500 animate-spin" />}
+                </div>
+                {newPeopleResults.length > 0 ? (
+                  newPeopleResults.map((u) => (
+                    <button
+                      key={u.id}
+                      onClick={() => handleSelectPerson(u)}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 dark:hover:from-red-900/10 dark:hover:to-rose-900/10 transition-all border-b border-gray-50 dark:border-gray-700/50 group"
+                    >
+                      <div className="relative">
+                        <img
+                          src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=dc2626&color=fff&bold=true`}
+                          alt={u.name}
+                          className="w-9 h-9 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600 group-hover:ring-red-500/30 transition-all"
+                        />
+                        {presence[u.id]?.isOnline && (
+                          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-800" />
+                        )}
+                      </div>
+                      <div className="flex-1 text-left min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 dark:text-white truncate group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                          {u.name}
+                        </p>
+                        {u.department && (
+                          <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{u.department}</p>
+                        )}
+                      </div>
+                      <Send className="w-3.5 h-3.5 text-gray-400 group-hover:text-red-500 transition-colors flex-shrink-0" />
+                    </button>
+                  ))
+                ) : (
+                  !searchingSidebar && (
+                    <div className="text-center text-gray-400 text-xs py-3">No matching people.</div>
+                  )
+                )}
+              </div>
+            )}
+
+            {/* Message-content search results */}
+            {searchKeyword.trim() && searchResults !== null && (
               <div className="border-b border-gray-200/50 dark:border-gray-700/50">
                 <div className="flex justify-between items-center px-4 py-2 bg-amber-50/80 dark:bg-amber-900/20 backdrop-blur-sm">
                   <span className="text-xs font-medium text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
                     <Zap className="w-3.5 h-3.5" />
-                    Search results
+                    Messages
                   </span>
-                  <button 
-                    onClick={() => { setSearchResults(null); setSearchKeyword(""); }} 
-                    className="p-1 hover:bg-amber-200 dark:hover:bg-amber-800/30 rounded-lg transition-all"
-                  >
-                    <X className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                  </button>
                 </div>
                 {searchResults.length === 0 ? (
-                  <div className="text-center text-gray-400 text-xs py-6">
-                    <Search className="w-6 h-6 mx-auto mb-1 text-gray-300" />
-                    No messages found.
+                  <div className="text-center text-gray-400 text-xs py-4">
+                    No matching messages.
                   </div>
                 ) : (
                   searchResults.map((m) => (
@@ -506,7 +667,7 @@ export default function Messages() {
                           userName: otherName, 
                           profileImage: otherImage 
                         });
-                        setSearchResults(null);
+                        clearSidebarSearch();
                       }}
                       className="w-full text-left px-4 py-2.5 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 dark:hover:from-red-900/10 dark:hover:to-rose-900/10 transition-all border-b border-gray-50 dark:border-gray-700/50 group"
                     >
@@ -523,21 +684,32 @@ export default function Messages() {
               </div>
             )}
 
-            {/* Conversations */}
-            {conversations.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[60%] text-center px-4">
-                <div className="empty-state">
-                  <div className="icon w-20 h-20">
-                    <MessageSquare className="w-10 h-10 text-gray-400" />
+            {/* Conversations (live-filtered by the search box when typing) */}
+            {filteredConversations.length === 0 ? (
+              searchKeyword.trim() ? (
+                !searchingSidebar &&
+                newPeopleResults.length === 0 &&
+                (searchResults === null || searchResults.length === 0) && (
+                  <div className="flex flex-col items-center justify-center h-[40%] text-center px-4 py-10">
+                    <Search className="w-8 h-8 text-gray-300 mb-2" />
+                    <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">No results found</p>
                   </div>
-                  <p className="text-gray-500 dark:text-gray-400 font-medium">No conversations yet</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    Click the <UserPlus className="w-3 h-3 inline" /> icon to start a new chat
-                  </p>
+                )
+              ) : (
+                <div className="flex flex-col items-center justify-center h-[60%] text-center px-4">
+                  <div className="empty-state">
+                    <div className="icon w-20 h-20">
+                      <MessageSquare className="w-10 h-10 text-gray-400" />
+                    </div>
+                    <p className="text-gray-500 dark:text-gray-400 font-medium">No conversations yet</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      Click the <UserPlus className="w-3 h-3 inline" /> icon to start a new chat
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )
             ) : (
-              conversations.map((c) => (
+              filteredConversations.map((c) => (
                 <button
                   key={c.userId}
                   onClick={() => openChat(c)}
@@ -693,7 +865,10 @@ export default function Messages() {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30 dark:bg-gray-800/30">
+                <div
+                  ref={messagesContainerRef}
+                  className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30 dark:bg-gray-800/30"
+                >
                   {messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-gray-400">
                       <MessageSquare className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
