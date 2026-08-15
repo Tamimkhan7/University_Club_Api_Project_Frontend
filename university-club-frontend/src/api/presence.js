@@ -37,9 +37,15 @@ export const presenceApi = {
   },
 
   // GET /api/presence/online-following?page=&pageSize=
+  // Backend now returns a PagedResultDto<PresenceStatusDto> (page, pageSize,
+  // totalCount, totalPages, items), not a bare array — unwrap it down to
+  // just `items` here so every presenceApi method keeps the same "returns
+  // a list" contract, and callers (e.g. Connections.jsx) don't need to
+  // know about the pagination envelope.
   getOnlineFollowing: async (page = 1, pageSize = 50) => {
     const res = await api.get("/presence/online-following", { params: { page, pageSize } });
-    return unwrap(res, "Failed to load online connections.");
+    const body = unwrap(res, "Failed to load online connections.");
+    return body?.items || [];
   },
 };
 
