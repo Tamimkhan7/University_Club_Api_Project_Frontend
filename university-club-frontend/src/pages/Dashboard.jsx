@@ -153,7 +153,6 @@ export default function Dashboard() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
         
-        {/* Hero Header */}
         <div className="page-hero p-6 sm:p-8 md:p-10">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-slow" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
@@ -192,7 +191,6 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* AI Insight */}
         {insight && (
           <div className="group bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 dark:from-amber-500/5 dark:via-orange-500/5 dark:to-amber-500/5 backdrop-blur-sm rounded-2xl p-4 sm:p-5 border border-amber-200/50 dark:border-amber-800/30 shadow-lg hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-500 hover:-translate-y-0.5">
             <div className="flex items-start gap-4">
@@ -210,7 +208,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {statCards.map((card, index) => {
             const Icon = card.icon;
@@ -242,7 +239,6 @@ export default function Dashboard() {
           })}
         </div>
 
-        {/* Activity Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
           {/* Your Activity */}
           <div className="glass-card rounded-2xl hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-1 overflow-hidden">
@@ -275,7 +271,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* This Week */}
           <div className="glass-card rounded-2xl hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-1 overflow-hidden">
             <div className="bg-gradient-to-r from-rose-500 to-red-600 p-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl" />
@@ -307,7 +302,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Trending Posts */}
         <div className="glass-card rounded-2xl hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 overflow-hidden">
           <div className="bg-gradient-to-r from-rose-500 to-red-600 px-5 sm:px-6 py-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl" />
@@ -365,7 +359,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Quick Actions */}
         <div className="bg-gradient-to-br from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-800/50 backdrop-blur-sm rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             <Link

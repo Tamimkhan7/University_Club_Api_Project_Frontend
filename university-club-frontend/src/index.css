@@ -44,7 +44,6 @@
 }
 
 @layer components {
-  /* ---------- Surfaces ---------- */
   .glass-card {
     @apply bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl border border-gray-100 dark:border-slate-700/60 shadow-xl shadow-gray-900/5 dark:shadow-black/20;
   }
@@ -57,7 +56,6 @@
     @apply bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-3xl shadow-sm shadow-gray-900/5;
   }
 
-  /* ---------- Buttons ---------- */
   .btn-primary {
     @apply relative overflow-hidden bg-gradient-to-r from-red-600 via-rose-600 to-red-600 bg-[length:200%_100%] text-white font-semibold px-6 py-3 rounded-2xl shadow-lg shadow-red-600/25 hover:shadow-xl hover:shadow-red-600/35 hover:bg-right hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 inline-flex items-center justify-center gap-2;
   }
@@ -87,12 +85,10 @@
     @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-red-500/10 to-rose-500/10 text-red-600 dark:text-red-400 border border-red-200/50 dark:border-red-800/30;
   }
 
-  /* Pill badge used inside dark hero banners */
   .hero-pill {
     @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-white/10 border border-white/20 text-white backdrop-blur-md shadow-inner shadow-white/5;
   }
 
-  /* ---------- Page hero / banner ---------- */
   .page-hero {
     @apply relative overflow-hidden rounded-[2rem] text-white shadow-2xl shadow-red-950/30 isolate;
     background:
@@ -121,7 +117,6 @@
     @apply relative w-14 h-14 rounded-2xl flex items-center justify-center bg-white/15 border border-white/25 backdrop-blur-md shadow-lg shadow-black/10;
   }
 
-  /* ---------- Section headers ---------- */
   .section-header {
     @apply flex items-center gap-3 mb-5;
   }
@@ -179,7 +174,6 @@
     @apply text-gray-500 dark:text-gray-400;
   }
 
-  /* ---------- Nav ---------- */
   .nav-link {
     @apply relative px-3.5 py-2 rounded-xl transition-all duration-300 flex items-center gap-2 text-sm font-medium;
   }

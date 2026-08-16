@@ -56,11 +56,9 @@ export default function Search() {
   const [submittedQuery, setSubmittedQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
 
-  // "All" tab (global search)
   const [globalResult, setGlobalResult] = useState(null);
   const [globalLoading, setGlobalLoading] = useState(false);
 
-  // Dedicated entity tab (advanced search)
   const [advResult, setAdvResult] = useState(null);
   const [advLoading, setAdvLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -70,11 +68,9 @@ export default function Search() {
   const [toDate, setToDate] = useState("");
   const [clubsList, setClubsList] = useState([]);
 
-  // Suggestions (typeahead)
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Sidebar: recent + trending
   const [recent, setRecent] = useState([]);
   const [recentLoading, setRecentLoading] = useState(true);
   const [trending, setTrending] = useState([]);
@@ -86,7 +82,6 @@ export default function Search() {
     activeTab
   );
 
-  // ---------- initial load: read ?query= from URL, load recent + trending ----------
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const q = params.get("query") || "";
@@ -102,7 +97,6 @@ export default function Search() {
       const data = await searchApi.getRecent(10);
       setRecent(data || []);
     } catch (error) {
-      // Non-critical sidebar content — fail silently, don't block the page.
       console.error(error);
     } finally {
       setRecentLoading(false);
@@ -126,7 +120,6 @@ export default function Search() {
     loadTrending();
   }, [loadRecent, loadTrending]);
 
-  // ---------- global search ("All" tab) ----------
   useEffect(() => {
     if (activeTab !== "all") return;
     if (!submittedQuery.trim()) {
@@ -145,7 +138,6 @@ export default function Search() {
       })
       .finally(() => {
         if (!cancelled) setGlobalLoading(false);
-        // A search was just saved server-side — refresh the recent list.
         loadRecent();
       });
     return () => {
@@ -153,7 +145,6 @@ export default function Search() {
     };
   }, [activeTab, submittedQuery, loadRecent]);
 
-  // ---------- advanced search (dedicated entity tab) ----------
   useEffect(() => {
     if (activeTab === "all") return;
     let cancelled = false;
@@ -182,20 +173,16 @@ export default function Search() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, submittedQuery, page, sortBy, clubId, fromDate, toDate]);
 
-  // Load clubs once, lazily, the first time a club-filterable tab is opened.
   useEffect(() => {
     if (!supportsClubDateFilters || clubsList.length > 0) return;
     api
       .get("/club/all", { params: { page: 1, pageSize: 100 } })
       .then((res) => setClubsList(res.data?.items || []))
       .catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supportsClubDateFilters]);
 
-  // ---------- suggestions (typeahead) ----------
   const handleQueryChange = (val) => {
     setQuery(val);
     setShowSuggestions(true);
@@ -272,7 +259,6 @@ export default function Search() {
     }
   };
 
-  // ---------- render helpers ----------
   const renderUserCard = (u) => (
     <Link
       key={`u-${u.id}`}
@@ -421,7 +407,6 @@ export default function Search() {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 space-y-6 sm:space-y-8">
-        {/* Hero + search bar */}
         <div className="page-hero p-6 sm:p-8 md:p-10">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-slow" />
           <div className="relative">
@@ -488,7 +473,6 @@ export default function Search() {
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
           {TABS.map((t) => {
             const Icon = t.icon;
@@ -515,7 +499,6 @@ export default function Search() {
           })}
         </div>
 
-        {/* Filters (advanced tabs only) */}
         {activeTab !== "all" && (
           <div className="glass-card rounded-2xl p-4 flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm font-medium">
@@ -575,7 +558,6 @@ export default function Search() {
           </div>
         )}
 
-        {/* ---------- Content: All tab ---------- */}
         {activeTab === "all" && (
           <>
             {!submittedQuery.trim() ? (
@@ -625,7 +607,6 @@ export default function Search() {
                   )}
                 </div>
 
-                {/* Trending searches */}
                 <div className="glass-card rounded-3xl p-6">
                   <div className="section-header">
                     <div className="section-header-icon"><TrendingUp /></div>
@@ -691,7 +672,6 @@ export default function Search() {
           </>
         )}
 
-        {/* ---------- Content: dedicated entity tab ---------- */}
         {activeTab !== "all" && (
           <div>
             {advLoading ? (

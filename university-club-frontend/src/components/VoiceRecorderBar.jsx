@@ -7,10 +7,7 @@ const formatTimer = (totalSeconds) => {
   return `${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}`;
 };
 
-// Replaces the text input row while a voice message is being recorded. Sits
-// inside the same p-4/border-t/backdrop container used by the normal message
-// input bar in Messages.jsx and Groups.jsx, so it reuses the app's existing
-// red/rose color scheme and rounded-2xl shape instead of introducing a new one.
+
 export default function VoiceRecorderBar({ seconds, onCancel, onSend, sending }) {
   return (
     <div className="flex-1 flex items-center gap-3 bg-red-50/80 dark:bg-red-900/10 border-2 border-red-200 dark:border-red-800/40 rounded-2xl px-4 py-2">

@@ -33,14 +33,13 @@ export default function Messages() {
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
   const messagesEndRef = useRef(null);
-  const messagesContainerRef = useRef(null); // scrolls only the chat panel, not the window
+  const messagesContainerRef = useRef(null); 
   const pollRef = useRef(null);
 
-  // Sidebar search (real-time): matches conversations locally + searches
-  // people and message content on the server as the user types.
+
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [searchResults, setSearchResults] = useState(null); // message-content matches
-  const [peopleResults, setPeopleResults] = useState([]); // user matches (may include people with no conversation yet)
+  const [searchResults, setSearchResults] = useState(null); 
+  const [peopleResults, setPeopleResults] = useState([]); 
   const [searchingSidebar, setSearchingSidebar] = useState(false);
   const sidebarSearchReqIdRef = useRef(0);
 
@@ -53,13 +52,9 @@ export default function Messages() {
 
   const [sendingVoice, setSendingVoice] = useState(false);
 
-  // userId -> StoryResponseDto[] (only populated for users with active stories)
   const [storyMap, setStoryMap] = useState({});
-  const [storyViewerUser, setStoryViewerUser] = useState(null); // { userId, userName, profileImage }
+  const [storyViewerUser, setStoryViewerUser] = useState(null); 
 
-  // Live online/last-seen status for every conversation on screen + the
-  // "start new message" search results + the sidebar people search results
-  // (see /api/presence + PresenceContext).
   const presence = usePresence([
     ...conversations.map((c) => c.userId),
     ...userSearchResults.map((u) => u.id),
@@ -81,17 +76,12 @@ export default function Messages() {
           return prev;
         });
       } catch {
-        // Blocked/private/no-story cases are all silent here - the ring just won't show.
       }
     });
   }, []);
 
   const storyAttemptedRef = useRef(new Set());
 
-  // Loads/searches the global user directory for the "New Message" modal.
-  // Shared by the debounced live-search effect below and the Enter/submit
-  // handler, using a request id so a slow older request can never clobber
-  // a newer one's results.
   const loadUsers = async (query = "") => {
     const reqId = ++userSearchReqIdRef.current;
     setIsSearchingUsers(true);
@@ -113,9 +103,6 @@ export default function Messages() {
     }
   };
 
-  // Real-time search for the "New Message" modal: fires as soon as the
-  // modal opens (shows everyone by default) and again ~300ms after each
-  // keystroke, so typing "b" live-filters to every user with "b" in it.
   useEffect(() => {
     if (!showUserSearch) return;
     const query = userSearchQuery.trim();
@@ -160,11 +147,6 @@ export default function Messages() {
     }
   };
 
-  // Real-time sidebar search: as the user types, search both message
-  // content and the user directory in parallel (debounced), so someone
-  // like "bofoga" who has no conversation yet still shows up and can be
-  // clicked to start a chat. A request id guards against a slow older
-  // response overwriting a newer one.
   useEffect(() => {
     const keyword = searchKeyword.trim();
     if (!keyword) {
@@ -203,15 +185,14 @@ export default function Messages() {
     clearSidebarSearch();
   };
 
-  // Conversations filtered live (client-side, instant) by the typed name.
+
   const filteredConversations = useMemo(() => {
     const keyword = searchKeyword.trim().toLowerCase();
     if (!keyword) return conversations;
     return conversations.filter((c) => c.userName?.toLowerCase().includes(keyword));
   }, [conversations, searchKeyword]);
 
-  // People found via the server-side directory search, excluding anyone
-  // who already has a conversation (they're already covered above) or is me.
+
   const newPeopleResults = useMemo(() => {
     const conversationUserIds = new Set(conversations.map((c) => c.userId));
     return peopleResults.filter((u) => !conversationUserIds.has(u.id) && u.id !== me?.id);
@@ -234,10 +215,7 @@ export default function Messages() {
     return () => clearInterval(interval);
   }, []);
 
-  // Check which conversation partners currently have an active story. New
-  // partners (not yet attempted) are checked as soon as they appear; the
-  // full set is periodically re-checked so expired/new stories stay in sync,
-  // without re-fetching on every 8s message poll.
+
   useEffect(() => {
     const ids = conversations.map((c) => c.userId).filter(Boolean);
     const newIds = ids.filter((id) => !storyAttemptedRef.current.has(id));
@@ -279,13 +257,6 @@ export default function Messages() {
     };
   }, []);
 
-  // Deep-link support: when we arrive here from Profile's "Message" button
-  // (navigate("/messages", { state: { startChatWith: {...} } })), open a
-  // chat with that user as soon as the conversation list has loaded —
-  // reusing the existing conversation if there is one, or starting a fresh
-  // one (same shape as startNewConversation) if not. The router state is
-  // cleared right after so a page refresh or back/forward navigation
-  // doesn't keep re-opening the same chat.
   useEffect(() => {
     const target = location.state?.startChatWith;
     if (!target || loadingConvos) return;
@@ -306,12 +277,8 @@ export default function Messages() {
     }
 
     navigate(location.pathname, { replace: true, state: {} });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state, loadingConvos, conversations]);
 
-  // Scroll only the chat messages container to the bottom on new messages -
-  // never scrollIntoView(), since that also drags the whole window/page
-  // scroll position along with it and causes the page to "jump" to the top.
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (container) {
@@ -438,7 +405,6 @@ export default function Messages() {
 
       <div className="relative max-w-6xl mx-auto px-4 py-6 sm:py-8">
         
-        {/* Header */}
         <div className="relative mb-6">
           <div className="page-hero rounded-2xl p-5">
             <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl animate-float-slow" />
@@ -466,7 +432,6 @@ export default function Messages() {
           </div>
         </div>
 
-        {/* New Message User Search */}
         {showUserSearch && (
           <div className="mb-6 animate-slideDown">
             <div className="glass-card rounded-2xl p-4 shadow-xl">
@@ -554,10 +519,8 @@ export default function Messages() {
           </div>
         )}
 
-        {/* Main Layout */}
         <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden h-[75vh] grid grid-cols-1 md:grid-cols-3">
           
-          {/* Conversations List */}
           <div className={`border-r border-gray-200/50 dark:border-gray-700/50 overflow-y-auto ${activeUser ? "hidden md:block" : ""}`}>
             <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 sticky top-0 z-10 flex items-center justify-between">
               <h2 className="font-bold text-white flex items-center gap-2">
@@ -571,8 +534,6 @@ export default function Messages() {
               </button>
             </div>
 
-            {/* Search - real-time: filters conversations instantly and looks up
-                people + message content on the server as you type. */}
             <div className="p-3 border-b border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -594,9 +555,7 @@ export default function Messages() {
               </div>
             </div>
 
-            {/* People results - live search across the whole user directory,
-                so someone without an existing conversation still shows up. */}
-            {searchKeyword.trim() && (
+                        {searchKeyword.trim() && (
               <div className="border-b border-gray-200/50 dark:border-gray-700/50">
                 <div className="flex justify-between items-center px-4 py-2 bg-red-50/80 dark:bg-red-900/20 backdrop-blur-sm">
                   <span className="text-xs font-medium text-red-700 dark:text-red-400 flex items-center gap-1.5">
@@ -641,7 +600,6 @@ export default function Messages() {
               </div>
             )}
 
-            {/* Message-content search results */}
             {searchKeyword.trim() && searchResults !== null && (
               <div className="border-b border-gray-200/50 dark:border-gray-700/50">
                 <div className="flex justify-between items-center px-4 py-2 bg-amber-50/80 dark:bg-amber-900/20 backdrop-blur-sm">
@@ -684,7 +642,6 @@ export default function Messages() {
               </div>
             )}
 
-            {/* Conversations (live-filtered by the search box when typing) */}
             {filteredConversations.length === 0 ? (
               searchKeyword.trim() ? (
                 !searchingSidebar &&
@@ -771,7 +728,6 @@ export default function Messages() {
             )}
           </div>
 
-          {/* Chat Panel */}
           <div className={`md:col-span-2 flex flex-col ${!activeUser ? "hidden md:flex" : ""}`}>
             {!activeUser ? (
               <div className="flex-1 flex items-center justify-center text-gray-400">
@@ -796,7 +752,6 @@ export default function Messages() {
               </div>
             ) : (
               <>
-                {/* Chat Header */}
                 <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex items-center gap-3 sticky top-0 z-10 shadow-lg">
                   <button 
                     onClick={() => setActiveUser(null)} 
@@ -864,7 +819,6 @@ export default function Messages() {
                   </div>
                 </div>
 
-                {/* Messages */}
                 <div
                   ref={messagesContainerRef}
                   className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30 dark:bg-gray-800/30"
@@ -949,7 +903,6 @@ export default function Messages() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Message Input */}
                 <div className="p-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm flex gap-2">
                   {isRecording ? (
                     <VoiceRecorderBar

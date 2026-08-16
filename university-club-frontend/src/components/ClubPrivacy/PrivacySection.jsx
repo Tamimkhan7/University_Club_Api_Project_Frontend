@@ -60,7 +60,6 @@ export default function PrivacySection({ clubId, club, membership, onClubUpdated
 
   useEffect(() => {
     if (canManage) loadInvites(1, statusFilter);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubId, canManage, statusFilter]);
 
   const handleChangeVisibility = async (visibility) => {
@@ -106,7 +105,6 @@ export default function PrivacySection({ clubId, club, membership, onClubUpdated
 
   return (
     <div className="space-y-5">
-      {/* Visibility */}
       <div className="glass-card rounded-3xl shadow-xl p-5 sm:p-6">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-9 h-9 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/25">

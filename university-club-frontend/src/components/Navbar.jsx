@@ -77,7 +77,6 @@ export default function Navbar() {
   useEffect(() => {
     if (!user) return;
     const loadCounts = async () => {
-      // allSettled so a hiccup in one endpoint doesn't blank out the others
       const [notifRes, msgRes, invitesRes] = await Promise.allSettled([
         api.get("/notification/count"),
         api.get("/message/unread-count"),
@@ -110,9 +109,7 @@ export default function Navbar() {
     }
   };
 
-  // NEW: typeahead — powers the navbar search dropdown via
-  // GET /api/search/suggestions, called on keystroke as documented on the
-  // backend controller (GlobalSearch stays reserved for on-submit search).
+
   const handleSearchInput = (val) => {
     setSearchQuery(val);
     setShowSuggestions(true);
@@ -257,7 +254,7 @@ export default function Navbar() {
               </form>
             </div>
 
-            {/* Desktop Navigation */}
+        
             <div className="hidden lg:flex items-center space-x-1.5">
               <button
                 onClick={toggleDarkMode}
@@ -471,7 +468,7 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Mobile Controls */}
+       
             <div className="flex items-center space-x-1 lg:hidden">
               <button
                 onClick={() => setShowSearch(!showSearch)}
@@ -492,7 +489,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Mobile Search */}
+
           {showSearch && (
             <div className="lg:hidden py-3 border-t border-white/5 animate-slideDown">
               <form onSubmit={handleSearch} className="relative">
@@ -514,7 +511,7 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Mobile Menu */}
+
           {isOpen && (
             <div className="lg:hidden py-4 space-y-1 border-t border-white/5 animate-slideDown">
               {user ? (

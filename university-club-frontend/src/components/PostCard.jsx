@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-// Helper functions
+
 const formatDate = (date) => {
   if (!date) return "Recently";
   const now = new Date();
@@ -44,7 +44,7 @@ const getUserInitials = (name) => {
   return name.charAt(0).toUpperCase();
 };
 
-// Must match Enums/ReactionType.cs exactly: Like=0, Love=1, Haha=2, Wow=3, Sad=4, Angry=5
+
 const REACTIONS = [
   { type: "Like", value: 0, icon: ThumbsUp, color: "text-blue-500", bgColor: "bg-blue-50", emoji: "👍" },
   { type: "Love", value: 1, icon: Heart, color: "text-red-500", bgColor: "bg-red-50", emoji: "❤️" },
@@ -67,9 +67,7 @@ export default function PostCard({ post, onReact }) {
   const [reactorFilter, setReactorFilter] = useState("all");
   const [reactors, setReactors] = useState([]);
 
-  // Live online status for the post author + everyone in the reactors
-  // list (see /api/presence + PresenceContext). Only watches ids that are
-  // actually on screen right now.
+
   const presence = usePresence(
     showReactorsModal
       ? [post.userId, ...reactors.map((r) => r.userId)]
@@ -209,16 +207,16 @@ export default function PostCard({ post, onReact }) {
   return (
     <div className="group relative bg-white dark:bg-gray-800 rounded-3xl shadow-xl hover:shadow-3xl hover:shadow-red-500/15 transition-all duration-500 overflow-hidden border border-gray-100/80 dark:border-gray-700/80 hover:border-red-200/50 dark:hover:border-red-800/30">
       
-      {/* Premium Decorative Elements */}
+
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl bg-gradient-to-br from-red-500/3 via-rose-500/3 to-red-500/3 pointer-events-none" />
       
-      {/* Animated Glow Orbs */}
+
       <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
       <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-gradient-to-br from-amber-500/5 to-orange-500/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
       <div className="p-5 pb-3 relative">
-        {/* Header */}
+
         <div className="flex items-start justify-between relative">
           <Link to={`/profile/${post.userId}`} className="flex items-center gap-3 flex-1 group/profile">
             {post.userImage && !imageError ? (
@@ -297,7 +295,7 @@ export default function PostCard({ post, onReact }) {
           </div>
         </div>
 
-        {/* Content */}
+
         <div className="mt-4">
           <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap text-[15px]">
             {truncateText(post.content)}
@@ -316,7 +314,7 @@ export default function PostCard({ post, onReact }) {
           )}
         </div>
 
-        {/* Image */}
+
         {post.imageUrl && (
           <div className="mt-4 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-700 group/image relative">
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-rose-500/5 opacity-0 group-hover/image:opacity-100 transition-opacity duration-500" />
@@ -330,7 +328,7 @@ export default function PostCard({ post, onReact }) {
         )}
       </div>
 
-      {/* Stats Bar */}
+     
       <div className="mx-5 px-4 py-2.5 border-t border-gray-100 dark:border-gray-700 flex justify-between text-sm bg-gradient-to-r from-gray-50/50 to-gray-50/30 dark:from-gray-800/50 dark:to-gray-800/30 rounded-b-2xl">
         <div className="flex items-center gap-2">
           {userReaction && (
@@ -360,7 +358,7 @@ export default function PostCard({ post, onReact }) {
         </div>
       </div>
 
-      {/* Action Buttons */}
+
       <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-700 flex gap-2">
         <div className="relative flex-1">
           <button
@@ -432,7 +430,7 @@ export default function PostCard({ post, onReact }) {
         </button>
       </div>
 
-      {/* Reactors Modal */}
+   
       {showReactorsModal && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"
@@ -442,7 +440,7 @@ export default function PostCard({ post, onReact }) {
             className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-sm w-full max-h-[80vh] overflow-hidden animate-scaleIn"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header */}
+        
             <div className="relative bg-gradient-to-r from-red-500 via-rose-500 to-red-600 px-6 py-4 flex justify-between items-center">
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10" />
               <div className="relative flex items-center gap-3">
@@ -459,7 +457,7 @@ export default function PostCard({ post, onReact }) {
               </button>
             </div>
 
-            {/* Filter Tabs */}
+       
             <div className="flex gap-1.5 p-3 border-b border-gray-100 dark:border-gray-700 overflow-x-auto scrollbar-hide bg-gray-50/50 dark:bg-gray-800/50">
               <button
                 onClick={() => { setReactorFilter("all"); loadReactors("all"); }}
@@ -487,7 +485,7 @@ export default function PostCard({ post, onReact }) {
               ))}
             </div>
 
-            {/* Reactors List */}
+ 
             <div className="overflow-y-auto max-h-[calc(80vh-140px)] divide-y divide-gray-100 dark:divide-gray-700">
               {reactors.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -526,7 +524,7 @@ export default function PostCard({ post, onReact }) {
         </div>
       )}
 
-      {/* Global Styles for Animations */}
+
       <style>{`
         @keyframes shimmer {
           0% { background-position: 0% 50%; }

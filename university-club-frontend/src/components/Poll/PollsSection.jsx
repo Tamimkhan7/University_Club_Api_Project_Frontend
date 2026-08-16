@@ -41,7 +41,6 @@ export default function PollsSection({ clubId, currentUserId, membership }) {
 
   useEffect(() => {
     loadPolls(1, activeOnly);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubId, activeOnly]);
 
   const handleCreated = (created) => {
@@ -60,7 +59,6 @@ export default function PollsSection({ clubId, currentUserId, membership }) {
 
   return (
     <div className="space-y-5">
-      {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-4 glass-card rounded-2xl shadow-lg">
         <button
           onClick={() => setActiveOnly((v) => !v)}
@@ -123,8 +121,7 @@ export default function PollsSection({ clubId, currentUserId, membership }) {
           ))}
         </div>
       )}
-
-      {/* Pagination */}
+  
       {totalPages > 1 && (
         <div className="flex items-center justify-between p-4 glass-card rounded-2xl">
           <button

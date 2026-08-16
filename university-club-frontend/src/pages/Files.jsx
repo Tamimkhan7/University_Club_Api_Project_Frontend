@@ -23,11 +23,7 @@ export default function Files() {
   const [files, setFiles] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  // `loading` now only ever fires on the very first mount, so it's the only
-  // thing allowed to render the full-page <Loader/>. Every subsequent load
-  // (tab switch, search, filter, pagination, upload/delete/replace, etc.)
-  // uses `searching` instead, which just dims the grid — the page (and the
-  // search input, and its cursor/focus) never unmounts again after first paint.
+
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -38,15 +34,9 @@ export default function Files() {
   const [replacingId, setReplacingId] = useState(null);
   const [detailFile, setDetailFile] = useState(null);
 
-  // isFirstLoad: flips false after the very first successful/failed load, so
-  // every load after that goes through `searching` instead of `loading`.
   const isFirstLoad = useRef(true);
-  // Debounce timer for real-time search-as-you-type.
   const searchDebounceRef = useRef(null);
-  // When we programmatically clear/change searchTerm as a *side effect* of
-  // something else (tab switch, type-filter pick, X buttons) we already
-  // trigger our own loadFiles call — this flag stops the searchTerm-watching
-  // effect from firing a duplicate, stale request right after.
+
   const skipNextSearchEffect = useRef(false);
 
   const viewFileDetails = async (id) => {
@@ -61,9 +51,7 @@ export default function Files() {
   const currentEndpoint = TABS.find((t) => t.id === tab)?.endpoint || "/file";
 
   const loadFiles = async (targetPage = 1, query = "", type = "") => {
-    // Only the very first load in this component's lifetime uses the
-    // full-page loader. Everything after that just dims the grid via
-    // `searching`, so the search <input> (and its focus/cursor) survives.
+
     const firstLoad = isFirstLoad.current;
     if (firstLoad) {
       setLoading(true);
@@ -106,10 +94,6 @@ export default function Files() {
     }
   };
 
-  // Tab switch: clear any in-flight search, reset search box + type filter,
-  // and load this tab's default list. skipNextSearchEffect stops resetting
-  // searchTerm here from firing a second, redundant request via the
-  // debounced-search effect below.
   useEffect(() => {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     skipNextSearchEffect.current = true;
@@ -117,12 +101,9 @@ export default function Files() {
     setTypeFilter("");
     loadFiles(1);
     loadStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  // Real-time debounced search: typing in the box re-queries automatically,
-  // no submit needed. Since loadFiles() no longer flips `loading`, the input
-  // never unmounts and the cursor/focus is preserved while typing.
+
   useEffect(() => {
     if (skipNextSearchEffect.current) {
       skipNextSearchEffect.current = false;
@@ -133,12 +114,10 @@ export default function Files() {
       loadFiles(1, searchTerm.trim(), searchTerm.trim() ? "" : typeFilter);
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(searchDebounceRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // Enter/submit skips the debounce wait and searches immediately.
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     skipNextSearchEffect.current = true;
     setTypeFilter("");
@@ -249,7 +228,6 @@ export default function Files() {
     return <FileIcon className="w-5 h-5" />;
   };
 
-  // Only the very first mount ever shows the full-page loader now.
   if (loading) return <Loader />;
 
   return (
@@ -263,7 +241,6 @@ export default function Files() {
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         
-        {/* Hero Header */}
         <div className="relative mb-8">
           <div className="page-hero p-6 sm:p-8 md:p-10">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-slow" />
@@ -298,7 +275,6 @@ export default function Files() {
           </div>
         </div>
 
-        {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
             <div className="glass-card rounded-2xl hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 hover:-translate-y-1 p-4 border border-gray-200/50 dark:border-gray-700/50">
@@ -334,7 +310,6 @@ export default function Files() {
           </div>
         )}
 
-        {/* Upload Section */}
         <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 p-5 mb-6 transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/25">
@@ -390,7 +365,6 @@ export default function Files() {
           )}
         </div>
 
-        {/* Tabs and Controls */}
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <div className="flex flex-wrap gap-1.5 p-1 bg-gray-50/50 dark:bg-gray-800/50 rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
             {TABS.map((t) => {
@@ -433,7 +407,6 @@ export default function Files() {
           </button>
         </div>
 
-        {/* Search */}
         <form onSubmit={handleSearch} className="mb-6 relative group">
           <div className="relative">
             <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${
@@ -457,7 +430,6 @@ export default function Files() {
           </div>
         </form>
 
-        {/* Files List */}
         {files.length === 0 ? (
           <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 p-12 sm:p-16 text-center">
             <div className="empty-state">
@@ -553,7 +525,6 @@ export default function Files() {
           </div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex flex-wrap justify-center items-center gap-3 mt-8">
             <button
@@ -600,7 +571,6 @@ export default function Files() {
         )}
       </div>
 
-      {/* File Details Modal */}
       {detailFile && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"

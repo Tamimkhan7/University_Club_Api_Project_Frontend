@@ -1,8 +1,5 @@
 import { useCallback, useRef, useState } from "react";
 
-// Matches the backend's SendVoiceMessageDto.DurationSeconds range (1-600s) -
-// recording auto-stops once it hits this so we never produce a clip the
-// backend would reject.
 const MAX_DURATION_SECONDS = 600;
 
 const MIME_CANDIDATES = [
@@ -18,14 +15,10 @@ function pickSupportedMimeType() {
   for (const candidate of MIME_CANDIDATES) {
     if (MediaRecorder.isTypeSupported(candidate.mimeType)) return candidate;
   }
-  return { mimeType: "", extension: "webm" }; // let the browser choose a default
+  return { mimeType: "", extension: "webm" }; 
 }
 
-// Records short voice-message clips via the browser's MediaRecorder API.
-//
-// onAutoStop(blob, extension) fires only if the MAX_DURATION_SECONDS cap is
-// hit before the caller calls stopRecording() themselves - it lets the
-// caller (e.g. send the clip that was just force-stopped) without losing it.
+
 export default function useVoiceRecorder({ onAutoStop } = {}) {
   const [isRecording, setIsRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -83,7 +76,6 @@ export default function useVoiceRecorder({ onAutoStop } = {}) {
         if (resolve) {
           resolve(blob);
         } else if (blob.size > 0) {
-          // Stopped by the MAX_DURATION_SECONDS cap, not by the caller.
           onAutoStopRef.current?.(blob, extensionRef.current);
         }
       };
@@ -116,8 +108,6 @@ export default function useVoiceRecorder({ onAutoStop } = {}) {
     }
   }, []);
 
-  // Stops recording and resolves with { blob, durationSeconds, extension },
-  // or null if nothing was recording.
   const stopRecording = useCallback(() => {
     return new Promise((resolve) => {
       const recorder = recorderRef.current;
@@ -135,7 +125,6 @@ export default function useVoiceRecorder({ onAutoStop } = {}) {
     });
   }, []);
 
-  // Stops and discards the current recording (e.g. the user cancels).
   const cancelRecording = useCallback(() => {
     clearTimer();
     const recorder = recorderRef.current;

@@ -25,7 +25,6 @@ const TYPE_META = {
   ClubInvite: { icon: Mail, color: "text-rose-500 bg-rose-50", emoji: "✉️" },
 };
 
-// Notification types that should route the user to a specific page when tapped.
 const TYPE_LINKS = {
   ClubInvite: "/invites",
 };
@@ -163,10 +162,8 @@ export default function Notifications() {
           </div>
         </div>
 
-        {/* Main Card */}
         <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
           
-          {/* Header Actions */}
           <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex items-center justify-between relative overflow-hidden">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10" />
             <div className="relative flex items-center gap-2">
@@ -183,7 +180,6 @@ export default function Notifications() {
             </button>
           </div>
 
-          {/* Filter Bar */}
           <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex items-center gap-1.5 text-xs font-medium text-gray-400 dark:text-gray-500 mr-1">
@@ -221,7 +217,6 @@ export default function Notifications() {
             </div>
           </div>
 
-          {/* Notifications List */}
           <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {notifications.length === 0 ? (
               <div className="empty-state py-16">
@@ -317,7 +312,6 @@ export default function Notifications() {
             )}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex flex-wrap justify-center items-center gap-3 p-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
               <button
@@ -363,7 +357,6 @@ export default function Notifications() {
             </div>
           )}
 
-          {/* Footer Stats */}
           {notifications.length > 0 && (
             <div className="px-5 py-3 border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/30 dark:bg-gray-800/30 flex justify-between items-center text-xs text-gray-400 dark:text-gray-500">
               <span>{notifications.length} notifications</span>

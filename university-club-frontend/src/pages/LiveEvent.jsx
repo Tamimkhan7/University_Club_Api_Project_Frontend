@@ -19,8 +19,7 @@ const STATUS_META = {
   Ended: { label: "Ended", dot: "bg-gray-400" },
 };
 
-// LiveStatus can arrive from the API as a number (enum) or a string depending
-// on serializer config, so normalize both shapes to the same key.
+
 const normalizeStatus = (status) => {
   if (status === 0 || status === "NotStarted") return "NotStarted";
   if (status === 1 || status === "Live") return "Live";
@@ -40,7 +39,7 @@ export default function LiveEvent() {
   const { user: me } = useContext(AuthContext);
 
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState(null); // LiveSessionResponseDto
+  const [session, setSession] = useState(null); 
   const [membership, setMembership] = useState(null);
   const [notAMember, setNotAMember] = useState(false);
 
@@ -54,11 +53,10 @@ export default function LiveEvent() {
   const [chatText, setChatText] = useState("");
   const [isMuted, setIsMuted] = useState(false);
   const [banned, setBanned] = useState(false);
-  const [connectionState, setConnectionState] = useState("connecting"); // connecting | connected | disconnected
-
+  const [connectionState, setConnectionState] = useState("connecting"); 
   const [viewers, setViewers] = useState([]);
   const [viewerCount, setViewerCount] = useState(0);
-  const [activeTab, setActiveTab] = useState("chat"); // chat | viewers
+  const [activeTab, setActiveTab] = useState("chat"); 
   const [unbanUserId, setUnbanUserId] = useState("");
 
   const connectionRef = useRef(null);
@@ -68,8 +66,6 @@ export default function LiveEvent() {
   const status = normalizeStatus(session?.status);
   const canManage = membership?.role === "Admin" || membership?.role === "Moderator";
   const isAdmin = membership?.role === "Admin";
-
-  // ---------- Loading ----------
 
   const loadStatus = useCallback(async () => {
     try {
@@ -96,12 +92,11 @@ export default function LiveEvent() {
   const loadChatHistory = useCallback(async (page = 1) => {
     try {
       const data = await liveEventApi.getChatHistory(eventId, { page, pageSize: 30 });
-      const items = (data.items || []).slice().reverse(); // API returns newest-first; we render oldest-first
+      const items = (data.items || []).slice().reverse(); 
       setChatPage(data.page || 1);
       setChatTotalPages(data.totalPages || 1);
       setMessages((prev) => (page === 1 ? items : [...items, ...prev]));
     } catch (error) {
-      // Non-members get a friendly failure message rather than a raw error toast on first load
       if (page === 1) console.error(error);
     }
   }, [eventId]);
@@ -133,10 +128,8 @@ export default function LiveEvent() {
 
   useEffect(() => {
     init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
 
-  // Refresh the viewer list (with mute/ban flags) periodically while live and manageable
   useEffect(() => {
     if (status !== "Live") return;
     const interval = setInterval(loadViewers, 8000);
@@ -148,8 +141,6 @@ export default function LiveEvent() {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
-
-  // ---------- SignalR (join room, live chat, moderation pushes) ----------
 
   useEffect(() => {
     if (notAMember) return undefined;
@@ -223,8 +214,6 @@ export default function LiveEvent() {
       connection.stop();
     };
   }, [eventId, notAMember]);
-
-  // ---------- Actions ----------
 
   const startLive = async () => {
     if (!meetingLinkInput.trim()) return toast.error("Meeting link is required");
@@ -478,10 +467,8 @@ export default function LiveEvent() {
                 </div>
               </div>
 
-              {/* Tabs (mobile-friendly: chat/viewers under video too on small screens handled by column order) */}
             </div>
 
-            {/* Side panel: Chat / Viewers */}
             <div className="glass-card rounded-3xl shadow-xl flex flex-col h-[600px] overflow-hidden">
               <div className="flex border-b border-gray-100 dark:border-gray-700/60">
                 <button

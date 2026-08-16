@@ -31,9 +31,8 @@ export default function Groups() {
   const [newGroupName, setNewGroupName] = useState("");
   const [memberIdsInput, setMemberIdsInput] = useState("");
 
-  // Info drawer (members / settings)
   const [showInfoDrawer, setShowInfoDrawer] = useState(false);
-  const [infoTab, setInfoTab] = useState("members"); // members | settings
+  const [infoTab, setInfoTab] = useState("members"); 
 
   const [editNameValue, setEditNameValue] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
@@ -50,19 +49,13 @@ export default function Groups() {
   const messagesContainerRef = useRef(null);
   const shouldAutoScroll = useRef(true);
   const pollRef = useRef(null);
-  // Debounce timer for the real-time "add member" user search. Kept as a
-  // ref (not state) so updating it never triggers a re-render — a
-  // re-render here is what would otherwise risk remounting the input and
-  // losing focus/cursor position while typing.
+
   const searchDebounceRef = useRef(null);
 
   const loadGroups = async () => {
     try {
       const res = await api.get("/group");
-      // /group can come back either as a bare array or as a paginated
-      // { items: [...] } wrapper depending on the backend version —
-      // toArray() handles both so this doesn't crash with
-      // "groups.map is not a function" either way.
+     
       setGroups(toArray(res.data));
     } catch (error) {
       toast.error(getErrorMessage(error, "Failed to load groups"));
@@ -83,20 +76,7 @@ export default function Groups() {
     };
   }, []);
 
-  // Only auto-scroll to the newest message if the user was already near the
-  // bottom (or a fresh group / a message they just sent forces it). This is
-  // what stops the view from yanking someone back down while they're
-  // scrolled up reading older messages during a background poll.
-  //
-  // IMPORTANT: scrollIntoView() defaults to block: "start", which asks the
-  // browser to scroll the *nearest scrollable ancestor chain* (including the
-  // outer page, not just the messages container) so the target lands at the
-  // top of the viewport. That's what was causing the whole page to jump.
-  // block: "nearest" + inline: "nearest" tells it to only scroll if the
-  // element isn't already visible in its scroll container, and to do the
-  // minimum scrolling necessary — so it stays contained inside the chat
-  // panel instead of moving the page.
-  useEffect(() => {
+   useEffect(() => {
     if (shouldAutoScroll.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
     }
@@ -115,11 +95,7 @@ export default function Groups() {
         api.get(`/group/${groupId}`),
         api.get(`/group/${groupId}/messages`, { params: { page: 1, pageSize: 50 } }),
       ]);
-      // Some backend responses omit/rename the members array (or send it
-      // as null) depending on the endpoint version. Normalizing it here
-      // keeps every `details.members.length` / `.map()` below safe instead
-      // of crashing with "Cannot read properties of undefined (reading
-      // 'length')".
+
       const d = detailsRes.data;
       setDetails(d ? { ...d, members: toArray(d.members) } : null);
       setMessages(msgRes.data?.items || []);
@@ -274,9 +250,7 @@ export default function Groups() {
     }
   };
 
-  // Actually hits the API. Shared by both the debounced real-time effect
-  // below and the manual submit/Enter-key path, so there's a single source
-  // of truth for how a search is performed.
+
   const runUserSearch = async (term) => {
     setIsSearchingUsers(true);
     try {
@@ -291,11 +265,6 @@ export default function Groups() {
     }
   };
 
-  // Real-time debounced search: as the admin types in the "Search users to
-  // add..." box, wait 400ms after they stop typing and search automatically
-  // — no need to hit Enter or click the search button. Only runs while the
-  // members tab of the drawer is actually open, so it doesn't fire searches
-  // in the background after the drawer closes or the tab switches away.
   useEffect(() => {
     if (!showInfoDrawer || infoTab !== "members") return;
     const term = searchUsers.trim();
@@ -309,11 +278,8 @@ export default function Groups() {
       runUserSearch(term);
     }, 400);
     return () => clearTimeout(searchDebounceRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchUsers, showInfoDrawer, infoTab]);
 
-  // Manual submit (Enter key or the search button) skips the debounce wait
-  // and searches immediately — handy if someone wants a result right away.
   const doSearchUsers = (e) => {
     e.preventDefault();
     const term = searchUsers.trim();
@@ -322,8 +288,6 @@ export default function Groups() {
     runUserSearch(term);
   };
 
-  // Clears the search box, cancels any pending debounced search, and wipes
-  // stale results — used by the new "X" clear button on the input.
   const clearMemberSearch = () => {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     setSearchUsers("");
@@ -425,10 +389,7 @@ export default function Groups() {
           </div>
         </div>
 
-        {/* Main Layout */}
         <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden h-[75vh] grid grid-cols-1 md:grid-cols-3">
-
-          {/* Group List */}
           <div className={`border-r border-gray-200/50 dark:border-gray-700/50 overflow-y-auto ${activeGroup ? "hidden md:block" : ""}`}>
             <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex items-center justify-between sticky top-0 z-10">
               <h2 className="font-bold text-white flex items-center gap-2">
@@ -522,7 +483,6 @@ export default function Groups() {
             )}
           </div>
 
-          {/* Chat Panel */}
           <div className={`md:col-span-2 flex flex-col relative ${!activeGroup ? "hidden md:flex" : ""}`}>
             {!activeGroup ? (
               <div className="flex-1 flex items-center justify-center text-gray-400">
@@ -542,7 +502,6 @@ export default function Groups() {
               </div>
             ) : (
               <>
-                {/* Chat Header */}
                 <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex items-center gap-3 sticky top-0 z-10">
                   <button
                     onClick={() => setActiveGroup(null)}
@@ -644,7 +603,6 @@ export default function Groups() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Jump to latest button, appears when the user has scrolled up */}
                 {!shouldAutoScroll.current && messages.length > 0 && (
                   <button
                     onClick={() => {
@@ -658,7 +616,6 @@ export default function Groups() {
                   </button>
                 )}
 
-                {/* Message Input */}
                 <div className="p-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm flex gap-2">
                   {isRecording ? (
                     <VoiceRecorderBar
@@ -703,7 +660,6 @@ export default function Groups() {
         </div>
       </div>
 
-      {/* ================= Group Info Drawer ================= */}
       <div className={`fixed inset-0 z-50 ${showInfoDrawer ? "" : "pointer-events-none"}`}>
         <div
           onClick={() => setShowInfoDrawer(false)}
@@ -718,7 +674,6 @@ export default function Groups() {
         >
           {details && activeGroup && (
             <>
-              {/* Drawer Header */}
               <div className="bg-gradient-to-r from-red-500 to-rose-600 px-5 py-4 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white font-bold shrink-0">
                   {details?.name?.charAt(0)?.toUpperCase()}
@@ -735,7 +690,6 @@ export default function Groups() {
                 </button>
               </div>
 
-              {/* Tabs */}
               <div className="flex border-b border-gray-200/70 dark:border-gray-700/70">
                 {[
                   { key: "members", label: "Members", icon: Users },
@@ -757,7 +711,6 @@ export default function Groups() {
               </div>
 
               <div className="flex-1 overflow-y-auto p-4">
-                {/* ---------- Members tab ---------- */}
                 {infoTab === "members" && (
                   <div className="space-y-4">
                     {myIsAdmin && (
@@ -928,7 +881,6 @@ export default function Groups() {
                   </div>
                 )}
 
-                {/* ---------- Settings tab ---------- */}
                 {infoTab === "settings" && (
                   <div className="space-y-4">
                     <div>

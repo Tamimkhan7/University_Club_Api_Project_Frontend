@@ -32,17 +32,13 @@ export default function ClubDetails() {
   const [memberSearch, setMemberSearch] = useState("");
   const [posts, setPosts] = useState([]);
   const [events, setEvents] = useState([]);
-  const [liveStatus, setLiveStatus] = useState({}); // eventId -> { status, viewerCount }
+  const [liveStatus, setLiveStatus] = useState({}); 
   const [activeTab, setActiveTab] = useState("posts");
   const [loading, setLoading] = useState(true);
-  // True when the backend blocked club-content access because the current user
-  // isn't an approved member yet (private-to-members content). Rendered as a
-  // friendly "join to view" state instead of a blank page full of console errors.
+  
   const [accessDenied, setAccessDenied] = useState(false);
 
-  // Live online status for everyone currently shown in the members list.
-  // Only watches ids that are actually on screen right now (current page /
-  // search results), same pattern as PostCard's reactors presence check.
+
   const presence = usePresence(members.map((m) => m.userId));
 
   const loadClub = async () => {
@@ -114,7 +110,6 @@ export default function ClubDetails() {
             }));
           }
         } catch {
-          /* ignore */
         }
       });
     } catch (error) {
@@ -216,7 +211,6 @@ export default function ClubDetails() {
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         
-        {/* Back Button */}
         <Link 
           to="/clubs" 
           className="group inline-flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 mb-5 px-4 py-2.5 rounded-2xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-300 hover:translate-x-[-4px]"
@@ -225,7 +219,6 @@ export default function ClubDetails() {
           <span className="font-medium text-sm">Back to Clubs</span>
         </Link>
 
-        {/* Hero Header */}
         <div className="page-hero p-6 sm:p-8 md:p-10 mb-8">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10" />
           <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />

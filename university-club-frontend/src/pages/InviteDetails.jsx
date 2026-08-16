@@ -21,9 +21,7 @@ export default function InviteDetails() {
     setLoading(true);
     setError("");
     try {
-      // GET /api/club-privacy/invites/{inviteId} — the backend allows either
-      // the invited user themself, or an Admin/Moderator of that club, to
-      // view any single invite regardless of its status.
+  
       const res = await clubPrivacyApi.getInviteById(inviteId);
       setInvite(res);
     } catch (err) {

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import api, { getErrorMessage } from "../api/axios";
 import PostCard from "../components/PostCard";
 import CreatePost from "../components/CreatePost";
@@ -35,35 +35,34 @@ export default function Feed() {
 
   const currentEndpoint = TABS.find((t) => t.id === tab)?.endpoint || "/feed/global";
 
-  const loadPosts = useCallback(
-    async (targetPage = 1, isRefresh = false) => {
-      if (isRefresh) setRefreshing(true);
-      else setLoading(true);
-      setError("");
+  const requestIdRef = useRef(0);
 
-      try {
-        let res;
-        if (tab === "browse" && browseQuery.trim()) {
-          res = await api.get("/post/search", {
-            params: { query: browseQuery.trim(), page: targetPage, pageSize: 10 },
-          });
-        } else if (tab === "browse") {
-          res = await api.get("/post/all", {
-            params: { clubId: browseClubId || undefined, userId: browseUserId || undefined, page: targetPage, pageSize: 10 },
-          });
-        } else {
-          res = await api.get(currentEndpoint, { params: { page: targetPage, pageSize: 10 } });
-        }
+  const loadPosts = useCallback(
+  async (targetPage = 1, isRefresh = false) => {
+    const myRequestId = ++requestIdRef.current;
+
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+    setError("");
+
+    try {
+      let res;
+      if (tab === "browse" && browseQuery.trim()) {
+        res = await api.get("/post/search", { params: { query: browseQuery.trim(), page: targetPage, pageSize: 10 } });
+      } else if (tab === "browse") {
+        res = await api.get("/post/all", { params: { clubId: browseClubId || undefined, userId: browseUserId || undefined, page: targetPage, pageSize: 10 } });
+      } else {
+        res = await api.get(currentEndpoint, { params: { page: targetPage, pageSize: 10 } });
+      }
+
+      if(myRequestId != requestIdRef.current)return;
+
         const data = res.data || {};
         const items = data.items || [];
         setPosts(items);
         setPage(data.page || 1);
         setTotalPages(data.totalPages || 1);
 
-        // The post list endpoint's `commentCount` field is not kept in sync when a
-        // new comment is added elsewhere (e.g. on the PostDetails page), so it can
-        // show stale/zero counts here. Fetch the real, current count per post from
-        // the comments API and patch it into state once it resolves.
         if (items.length > 0) {
           Promise.all(
             items.map((p) =>
@@ -76,6 +75,8 @@ export default function Feed() {
                 .catch(() => ({ id: p.id, count: p.commentCount ?? 0 }))
             )
           ).then((counts) => {
+            if(myRequestId !== requestIdRef.current)return;
+
             const countMap = Object.fromEntries(counts.map((c) => [c.id, c.count]));
             setPosts((prev) => prev.map((p) => ({ ...p, commentCount: countMap[p.id] ?? p.commentCount ?? 0 })));
           });
@@ -84,14 +85,17 @@ export default function Feed() {
         console.error("Error loading posts:", err);
         setError(getErrorMessage(err, "Failed to load posts. Please refresh the page."));
       } finally {
+        if(myRequestId === requestIdRef.current){
         setLoading(false);
         setRefreshing(false);
+        }
       }
     },
     [currentEndpoint, tab, browseQuery, browseClubId, browseUserId]
   );
 
   useEffect(() => {
+  
     loadPosts(1);
     const handleScroll = () => setShowScrollTop(window.scrollY > 300);
     window.addEventListener("scroll", handleScroll);
@@ -141,7 +145,6 @@ export default function Feed() {
               </div>
             </div>
 
-            {/* Tabs */}
             <div className="flex flex-wrap gap-1.5 p-1 bg-gray-50/50 dark:bg-gray-800/50 rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
               {TABS.map((t) => {
                 const Icon = t.icon;
@@ -165,10 +168,8 @@ export default function Feed() {
           </div>
         </div>
 
-        {/* Stories */}
         <StoriesBar />
 
-        {/* Error */}
         {error && (
           <div className="bg-red-50/90 dark:bg-red-950/20 backdrop-blur-sm border border-red-200 dark:border-red-800/30 rounded-2xl p-5 mb-6 animate-shake shadow-lg shadow-red-500/5">
             <div className="flex items-start gap-3">
@@ -189,14 +190,12 @@ export default function Feed() {
           </div>
         )}
 
-        {/* Create Post */}
         {tab === "global" && (
           <div className="mb-6 animate-slideDown">
             <CreatePost reload={handlePostCreated} />
           </div>
         )}
 
-        {/* Browse Filters */}
         {tab === "browse" && (
           <div className="glass-card rounded-2xl p-4 mb-6 animate-slideDown">
             <div className="flex items-center gap-2 mb-3">
@@ -248,7 +247,6 @@ export default function Feed() {
           </div>
         )}
 
-        {/* Feed Header */}
         {posts.length > 0 && (
           <div className="flex items-center justify-between mb-4 px-1">
             <div className="flex items-center gap-2">
@@ -271,7 +269,6 @@ export default function Feed() {
           </div>
         )}
 
-        {/* Posts */}
         {posts.length === 0 ? (
           <div className="glass-card rounded-3xl p-12 sm:p-16 text-center">
             <div className="relative">
@@ -310,7 +307,6 @@ export default function Feed() {
           </div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex flex-wrap justify-center items-center gap-3 mt-8">
             <button
@@ -356,7 +352,6 @@ export default function Feed() {
           </div>
         )}
 
-        {/* End of Feed */}
         {posts.length > 5 && (
           <div className="text-center mt-8 py-6 relative">
             <div className="absolute inset-0 flex items-center justify-center">
@@ -372,7 +367,6 @@ export default function Feed() {
           </div>
         )}
 
-        {/* Scroll to Top */}
         {showScrollTop && (
           <button
             onClick={scrollToTop}

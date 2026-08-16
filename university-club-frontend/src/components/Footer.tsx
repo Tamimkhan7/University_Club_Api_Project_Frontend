@@ -86,7 +86,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Quick Links */}
         <div>
           <h3 className="text-lg font-display font-semibold mb-5 flex items-center gap-2">
             <span className="w-1 h-6 bg-gradient-to-b from-red-500 to-amber-400 rounded-full" />
@@ -107,7 +106,6 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Contact */}
         <div>
           <h3 className="text-lg font-display font-semibold mb-5 flex items-center gap-2">
             <span className="w-1 h-6 bg-gradient-to-b from-red-500 to-amber-400 rounded-full" />
@@ -135,7 +133,6 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Social */}
         <div>
           <h3 className="text-lg font-display font-semibold mb-5 flex items-center gap-2">
             <span className="w-1 h-6 bg-gradient-to-b from-red-500 to-amber-400 rounded-full" />
@@ -175,7 +172,6 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Divider */}
       <div className="relative max-w-7xl mx-auto px-6">
         <div className="relative">
           <div className="border-t border-white/10" />

@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-// Application statuses returned by the recruitment API (must match backend enum)
 const APPLICATION_STATUS = { Pending: 0, Approved: 1, Rejected: 2, Withdrawn: 3 };
 
 export default function Clubs() {
@@ -25,9 +24,6 @@ export default function Clubs() {
   const [totalPages, setTotalPages] = useState(1);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  // `loading` = very first mount only -> shows the full-page <Loader/>.
-  // `searching` = every subsequent load (typing, pagination, join/leave, etc.)
-  // -> keeps the page (and the search input's focus/cursor) mounted the whole time.
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [editingClub, setEditingClub] = useState(null);
@@ -36,20 +32,14 @@ export default function Clubs() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [joinedClubs, setJoinedClubs] = useState(new Set());
-  // clubId -> pending ClubApplication (recruitment system) for the current user
   const [pendingApplications, setPendingApplications] = useState({});
-  const [applyTarget, setApplyTarget] = useState(null); // club currently being applied to
-  // Club whose "View Details" was clicked while the user isn't an approved member yet.
-  // Backend now blocks club-content endpoints for non-members, so instead of navigating
-  // (and hitting a page full of 401s) we show a "join to view" prompt and stay put.
+  const [applyTarget, setApplyTarget] = useState(null); 
+
   const [joinPromptClub, setJoinPromptClub] = useState(null);
 
   const initialLoadDone = useRef(false);
   const searchDebounceRef = useRef(null);
-  // Set to true right before we manually trigger a load tied to a searchTerm
-  // change (submit / clear button), so the debounce effect below doesn't fire
-  // a second, duplicate request for the same value.
-  const skipNextSearchEffect = useRef(false);
+ const skipNextSearchEffect = useRef(false);
 
   const load = async (targetPage = 1, query = "") => {
     const isInitial = !initialLoadDone.current;
@@ -68,9 +58,7 @@ export default function Clubs() {
       const myRes = await api.get("/club/my");
       setJoinedClubs(new Set((myRes.data || []).map((c) => c.clubId)));
 
-      // Load the user's own recruitment applications so we know which clubs
-      // already have a pending application (instead of allowing a direct join).
-      try {
+        try {
         const appsRes = await recruitmentApi.getMyApplications({ page: 1, pageSize: 100 });
         const pendingMap = {};
         (appsRes?.items || []).forEach((a) => {
@@ -80,7 +68,6 @@ export default function Clubs() {
         });
         setPendingApplications(pendingMap);
       } catch (err) {
-        // non-fatal: applications badge is a nice-to-have, don't block the page
         console.error(err);
       }
     } catch (error) {
@@ -96,15 +83,10 @@ export default function Clubs() {
     }
   };
 
-  // Very first load — full-page loader.
   useEffect(() => {
     load(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Real-time debounced search — typing in the box searches automatically,
-  // no need to press Enter. The grid just dims slightly (`searching`) instead
-  // of the whole page unmounting, so focus/cursor position is never lost.
   useEffect(() => {
     if (skipNextSearchEffect.current) {
       skipNextSearchEffect.current = false;
@@ -115,11 +97,8 @@ export default function Clubs() {
       load(1, searchTerm.trim());
     }, 400);
     return () => clearTimeout(searchDebounceRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
-  // Enter / submit still works — jumps the search immediately instead of
-  // waiting out the debounce.
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
@@ -147,15 +126,10 @@ export default function Clubs() {
     }
   };
 
-  // Clubs no longer allow instant joining — every join now goes through the
-  // recruitment/application system and must be approved by a club admin or
-  // moderator. This just opens the "Apply to Join" modal for the club.
+
   const openApplyModal = (club) => setApplyTarget(club);
 
-  // Club detail/members/posts endpoints now require approved membership — a
-  // non-member hitting them just gets a page full of 401 errors. So "View
-  // Details" only navigates for members/owners; otherwise it shows a prompt
-  // (and the Clubs page itself never changes).
+
   const canViewClub = (club) =>
     joinedClubs.has(club.id) || (user && club.createdBy === user.id);
 
@@ -242,10 +216,7 @@ export default function Clubs() {
     return emojis[id % emojis.length];
   };
 
-  // Only the very first mount blocks with the full-page loader. Every later
-  // load (typing a search, paginating, joining/leaving, etc.) uses
-  // `searching` instead, so this component — and the search input inside it
-  // — never unmounts again.
+
   if (loading) return <Loader />;
 
   return (
@@ -259,7 +230,6 @@ export default function Clubs() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         
-        {/* Hero Header */}
         <div className="relative mb-8 sm:mb-12">
           <div className="page-hero p-6 sm:p-10 md:p-12">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-slow" />
@@ -316,7 +286,6 @@ export default function Clubs() {
           </div>
         </div>
 
-        {/* Create Club Button */}
         <div className="mb-6">
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
@@ -334,7 +303,6 @@ export default function Clubs() {
           </button>
         </div>
 
-        {/* Create Form */}
         {showCreateForm && (
           <div className="mb-8 animate-slideDown">
             <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden">
@@ -377,7 +345,6 @@ export default function Clubs() {
           </div>
         )}
 
-        {/* Search */}
         <form onSubmit={handleSearch} className="mb-8 relative group">
           <div className="relative">
             <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-red-500 transition-colors duration-300 ${searching ? "animate-pulse text-red-400" : ""}`} />
@@ -401,7 +368,6 @@ export default function Clubs() {
           </div>
         </form>
 
-        {/* Header */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/25">
@@ -583,7 +549,6 @@ export default function Clubs() {
           </div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex flex-wrap justify-center items-center gap-3 mt-10">
             <button
@@ -639,8 +604,7 @@ export default function Clubs() {
         />
       )}
 
-      {/* "Join to view" prompt — shown instead of navigating when a non-member
-          clicks View Details. The Clubs page underneath stays exactly as it was. */}
+   
       {joinPromptClub && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
           <div className="glass-card w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden">

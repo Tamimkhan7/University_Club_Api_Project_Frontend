@@ -83,7 +83,6 @@ export default function Leaderboard() {
       const result = await leaderboardApi.getInsight(category, period);
       setInsight(result);
     } catch (error) {
-      // Non-critical — the leaderboard itself still works without the tip.
       setInsight(null);
     } finally {
       setInsightLoading(false);
@@ -141,7 +140,6 @@ export default function Leaderboard() {
           </p>
         </div>
 
-        {/* Category tabs */}
         <div className="flex flex-wrap gap-2 p-1.5 glass-card rounded-2xl shadow-lg">
           {CATEGORY_TABS.map((t) => {
             const Icon = t.icon;
@@ -162,7 +160,6 @@ export default function Leaderboard() {
           })}
         </div>
 
-        {/* Period tabs */}
         <div className="flex flex-wrap gap-2">
           {PERIOD_TABS.map((t) => (
             <button
@@ -179,7 +176,6 @@ export default function Leaderboard() {
           ))}
         </div>
 
-        {/* AI insight */}
         {(insight?.suggestion || insightLoading) && (
           <div className="glass-card rounded-3xl shadow-lg p-5 sm:p-6 flex items-start gap-4">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/25">
@@ -206,7 +202,6 @@ export default function Leaderboard() {
           </div>
         )}
 
-        {/* My rank (sticky summary if outside top list) */}
         {myEntry && (
           <div className="glass-card-hover rounded-3xl shadow-lg p-4 sm:p-5 flex items-center gap-4 border-2 border-red-500/20">
             <RankBadge rank={myEntry.rank} />
@@ -234,7 +229,6 @@ export default function Leaderboard() {
           </div>
         )}
 
-        {/* Empty state */}
         {topEntries.length === 0 && !myEntry && (
           <div className="glass-card rounded-3xl shadow-xl shadow-red-500/10 p-12 sm:p-16 text-center">
             <div className="empty-state">
@@ -247,7 +241,6 @@ export default function Leaderboard() {
           </div>
         )}
 
-        {/* Rankings list */}
         {topEntries.length > 0 && (
           <div className="glass-card rounded-3xl shadow-xl shadow-red-500/10 overflow-hidden">
             <div className="divide-y divide-gray-100 dark:divide-slate-800">

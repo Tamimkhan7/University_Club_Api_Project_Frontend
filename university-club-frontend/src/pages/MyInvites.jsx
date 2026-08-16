@@ -15,9 +15,7 @@ export default function MyInvites() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      // GET /api/club-privacy/invites/my — always the invited user's currently
-      // Pending invites (see ClubPrivacyService.GetMyInvitesAsync), no
-      // pagination/status params on this endpoint.
+     
       const res = await clubPrivacyApi.getMyInvites();
       setInvites(toArray(res));
     } catch (error) {
@@ -46,7 +44,6 @@ export default function MyInvites() {
       </div>
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {/* Hero Header */}
         <div className="page-hero p-6 sm:p-8 md:p-10 mb-8">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10" />
           <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
@@ -68,7 +65,6 @@ export default function MyInvites() {
           </div>
         </div>
 
-        {/* List */}
         {loading ? (
           <div className="glass-card rounded-3xl shadow-xl p-16 text-center text-gray-400 dark:text-gray-500 text-sm font-medium">
             Loading invites...

@@ -87,7 +87,7 @@ export default function AuthProvider({ children }) {
   if (loading) {
     return (
       <div className="fixed inset-0 bg-gradient-to-br from-red-50 via-rose-50/50 to-orange-50/50 dark:from-gray-900 dark:via-red-950/20 dark:to-gray-900 flex items-center justify-center z-50 overflow-hidden">
-        {/* Premium Background Animations */}
+
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/10 to-rose-500/10 rounded-full blur-3xl animate-float-slow" />
           <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/10 to-amber-500/10 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
@@ -95,15 +95,15 @@ export default function AuthProvider({ children }) {
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNjY2MiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
         </div>
 
-        {/* Main Loading Card */}
+
         <div className="relative max-w-sm w-full mx-4">
           <div className="absolute -inset-4 bg-gradient-to-r from-red-500/10 to-rose-500/10 rounded-3xl blur-2xl animate-pulse-slow" />
           
           <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-red-500/20 dark:shadow-red-500/10 p-8 md:p-10 border border-white/30 dark:border-gray-700/50 transition-all duration-500">
-            {/* Top Gradient Bar */}
+      
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-gradient-x rounded-t-3xl" />
 
-            {/* Logo Icon */}
+
             <div className="relative mb-8">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-28 h-28 bg-gradient-to-r from-red-500/10 to-rose-500/10 rounded-full animate-ping-slow" />
@@ -121,7 +121,7 @@ export default function AuthProvider({ children }) {
               </div>
             </div>
 
-            {/* Loading Text */}
+
             <div className="text-center mb-6">
               <h3 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-red-600 to-rose-600 dark:from-red-400 dark:to-rose-400 bg-clip-text text-transparent">
                 Welcome to PUCPC
@@ -139,7 +139,7 @@ export default function AuthProvider({ children }) {
               </div>
             </div>
 
-            {/* Security Badges */}
+  
             <div className="flex justify-center gap-4 mt-2 pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
               <div className="flex items-center gap-1.5 text-[10px] text-gray-400 dark:text-gray-500">
                 <Shield className="w-3 h-3 text-green-500" />
@@ -157,7 +157,6 @@ export default function AuthProvider({ children }) {
               </div>
             </div>
 
-            {/* Loading Progress */}
             <div className="mt-4">
               <div className="h-1 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-red-500 via-amber-500 via-pink-500 to-red-600 bg-[length:200%_100%] animate-gradient-x rounded-full animate-shimmer" style={{ width: "60%" }} />
@@ -166,7 +165,6 @@ export default function AuthProvider({ children }) {
           </div>
         </div>
 
-        {/* Global Styles for Animations */}
         <style>{`
           @keyframes gradient-x {
             0%, 100% { background-position: 0% 50%; }

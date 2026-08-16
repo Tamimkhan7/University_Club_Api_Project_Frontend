@@ -101,7 +101,6 @@ export default function Recommendations() {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 space-y-6 sm:space-y-8">
-        {/* Hero */}
         <div className="page-hero p-6 sm:p-8 md:p-10">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-slow" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
@@ -145,7 +144,6 @@ export default function Recommendations() {
           </p>
         </div>
 
-        {/* Tabs */}
         <div className="flex flex-wrap gap-2 p-1.5 glass-card rounded-2xl shadow-lg">
           {TABS.map((t) => {
             const Icon = t.icon;
@@ -174,7 +172,6 @@ export default function Recommendations() {
           })}
         </div>
 
-        {/* Empty state */}
         {activeCount === 0 && (
           <div className="glass-card rounded-3xl shadow-xl shadow-red-500/10 p-12 sm:p-16 text-center">
             <div className="empty-state">
@@ -193,7 +190,6 @@ export default function Recommendations() {
           </div>
         )}
 
-        {/* CLUBS */}
         {tab === "clubs" && clubs.length > 0 && (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {clubs.map((c) => (
@@ -251,7 +247,6 @@ export default function Recommendations() {
           </div>
         )}
 
-        {/* EVENTS */}
         {tab === "events" && events.length > 0 && (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {events.map((e) => (
@@ -305,7 +300,6 @@ export default function Recommendations() {
           </div>
         )}
 
-        {/* PEOPLE */}
         {tab === "people" && people.length > 0 && (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {people.map((p) => (

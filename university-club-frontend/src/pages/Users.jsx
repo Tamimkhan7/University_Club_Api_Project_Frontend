@@ -28,11 +28,7 @@ export default function Users() {
   const debounceRef = useRef(null);
   const isFirstRun = useRef(true);
 
-  // Live online/last-seen status for every user currently on screen, kept
-  // up to date via the NotificationHub's WatchPresence/UserPresenceChanged
-  // (see /api/presence + PresenceContext). Falls back to the isOnline
-  // snapshot the /user/all|/user/search endpoint already returns until the
-  // live value arrives.
+ 
   const presence = usePresence(users.map((u) => u.id));
 
   const loadUsers = async (targetPage = 1, query = "", isInitial = false) => {
@@ -54,18 +50,13 @@ export default function Users() {
     }
   };
 
-  // Sync searchQuery from the URL (e.g. navigated in from a "search users"
-  // link elsewhere in the app). Does not call the API directly — the
-  // debounced effect below reacts to searchQuery changes and loads results.
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const urlSearch = params.get("search") || "";
     setSearchQuery(urlSearch);
   }, [location]);
 
-  // Real-time search: whenever searchQuery changes, wait briefly for the
-  // user to stop typing, then fetch. The initial mount fires immediately
-  // (no artificial delay) so the page loads without waiting.
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -80,7 +71,6 @@ export default function Users() {
     }, 400);
 
     return () => clearTimeout(debounceRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
   const handleSearch = (e) => {
@@ -131,7 +121,6 @@ export default function Users() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 space-y-6 lg:space-y-8">
         
-        {/* Hero Header */}
         <div className="page-hero p-8 lg:p-12">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl"></div>
@@ -166,7 +155,6 @@ export default function Users() {
           </div>
         </div>
 
-        {/* Search */}
         <div className="glass-card rounded-2xl shadow-xl shadow-red-500/10 p-5 lg:p-6">
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 relative">
@@ -185,7 +173,6 @@ export default function Users() {
           </form>
         </div>
 
-        {/* Stats */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="glass-card rounded-xl px-4 py-2">
@@ -201,7 +188,6 @@ export default function Users() {
           </button>
         </div>
 
-        {/* User Grid */}
         <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-7 transition-opacity duration-200 ${searching ? "opacity-60" : "opacity-100"}`}>
           {users.map((u, index) => {
             const gradient = getRandomGradient(u.id);
@@ -343,7 +329,6 @@ export default function Users() {
           })}
         </div>
 
-        {/* Empty State */}
         {users.length === 0 && (
           <div className="glass-card rounded-3xl shadow-xl p-16 text-center">
             <div className="empty-state">
@@ -356,7 +341,6 @@ export default function Users() {
           </div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
             <button 
@@ -395,7 +379,6 @@ export default function Users() {
           </div>
         )}
 
-        {/* Footer Stats */}
         <div className="bg-gradient-to-r from-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-800/50 backdrop-blur-sm rounded-2xl p-6 lg:p-8 mt-8 border border-gray-200/50 dark:border-gray-700/50">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="flex items-center gap-3 text-gray-600 dark:text-gray-300">

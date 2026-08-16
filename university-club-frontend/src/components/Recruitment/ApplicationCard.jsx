@@ -42,7 +42,6 @@ function formatDate(d) {
   });
 }
 
-// mode: "manage" (club admin/moderator reviewing) | "own" (applicant viewing their own application)
 export default function ApplicationCard({ application, mode = "manage", onChanged, onRemoved }) {
   const [note, setNote] = useState("");
   const [showNote, setShowNote] = useState(false);

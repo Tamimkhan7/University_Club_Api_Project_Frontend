@@ -7,7 +7,6 @@ import { X, Plus, Trash2, Sparkles, BarChart3, Crown, Loader2 } from "lucide-rea
 function defaultEndDate() {
   const d = new Date();
   d.setDate(d.getDate() + 7);
-  // format for <input type="datetime-local">
   const pad = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
@@ -15,7 +14,7 @@ function defaultEndDate() {
 export default function CreatePollModal({ clubId, onClose, onCreated }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [type, setType] = useState(0); // 0 = General, 1 = Election
+  const [type, setType] = useState(0); 
   const [isMultipleChoice, setIsMultipleChoice] = useState(false);
   const [endDate, setEndDate] = useState(defaultEndDate());
   const [options, setOptions] = useState(["", ""]);

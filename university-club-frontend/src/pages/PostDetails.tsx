@@ -24,8 +24,6 @@ export default function PostDetails() {
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
 
-  // Live online status for the post author + every commenter currently
-  // rendered on this page (see /api/presence + PresenceContext).
   const presence = usePresence([
     ...(post?.userId ? [post.userId] : []),
     ...comments.map((c) => c.userId),
@@ -367,11 +365,9 @@ export default function PostDetails() {
           <span className="font-medium">Back</span>
         </button>
 
-        {/* Post Card */}
         <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
           <div className="p-5 sm:p-6 pb-4">
             
-            {/* Post Header */}
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <div className="relative">
@@ -451,7 +447,6 @@ export default function PostDetails() {
               </div>
             </div>
 
-            {/* Report Box */}
             {showReportBox && (
               <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl border border-amber-200 dark:border-amber-800/30 animate-slideDown">
                 <div className="flex items-center gap-2 mb-2">
@@ -482,7 +477,6 @@ export default function PostDetails() {
               </div>
             )}
 
-            {/* Post Content */}
             {isEditingPost ? (
               <div className="mt-5 space-y-4 animate-slideDown">
                 <textarea
@@ -552,7 +546,6 @@ export default function PostDetails() {
               </>
             )}
 
-            {/* Post Stats */}
             <div className="flex gap-6 mt-5 pt-4 border-t border-gray-100 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
               <div className="flex items-center gap-2">
                 <Heart className={`w-4 h-4 ${post.isLiked ? "text-red-500 fill-red-500 animate-pulse" : "text-red-500"}`} />
@@ -573,7 +566,6 @@ export default function PostDetails() {
           </div>
         </div>
 
-        {/* Comments Section */}
         <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
           <div className="p-5 sm:p-6">
             <h3 className="font-bold text-xl text-gray-800 dark:text-white mb-5 flex items-center gap-3">
@@ -584,7 +576,6 @@ export default function PostDetails() {
               <span className="text-sm font-normal text-gray-400 dark:text-gray-500">({comments.length})</span>
             </h3>
 
-            {/* Reply Indicator */}
             {replyTo && (
               <div className="bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 rounded-2xl p-3 mb-4 flex justify-between items-center border border-red-200 dark:border-red-800/30 animate-slideDown">
                 <div className="flex items-center gap-2">
@@ -602,7 +593,6 @@ export default function PostDetails() {
               </div>
             )}
 
-            {/* Comment Input */}
             <div className="flex gap-3 mb-6">
               <div className="flex-shrink-0">
                 <div className="w-11 h-11 bg-gradient-to-r from-red-500 to-rose-600 rounded-full flex items-center justify-center shadow-lg shadow-red-500/25">
@@ -637,7 +627,6 @@ export default function PostDetails() {
               </div>
             </div>
 
-            {/* Comments List */}
             {comments.length === 0 ? (
               <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
                 <div className="empty-state">
@@ -750,7 +739,6 @@ export default function PostDetails() {
                           </button>
                         </div>
 
-                        {/* Replies */}
                         {showReplies[comment.id] && (
                           <div className="ml-11 mt-3 space-y-2 border-l-2 border-red-200 dark:border-red-800/50 pl-4 animate-slideDown">
                             {(replies[comment.id] || []).length === 0 ? (

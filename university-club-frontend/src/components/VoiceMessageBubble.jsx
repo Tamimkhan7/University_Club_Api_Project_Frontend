@@ -8,10 +8,7 @@ const formatDuration = (totalSeconds) => {
   return `${m}:${String(r).padStart(2, "0")}`;
 };
 
-// Inline audio player rendered inside a chat bubble for MediaType.Voice
-// messages (direct & group). `isMine` only drives the accent color so it
-// matches the surrounding bubble - white-on-red for own messages, red-on-white
-// for others' - keeping the existing chat color scheme intact.
+
 export default function VoiceMessageBubble({ src, durationSeconds, isMine }) {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);

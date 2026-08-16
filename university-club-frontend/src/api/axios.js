@@ -38,33 +38,13 @@ api.interceptors.response.use(
       Object.prototype.hasOwnProperty.call(body, "data");
 
     if (isApiResponseEnvelope && body.success === false) {
-      // The backend's controllers always `return Ok(result)`, even when the
-      // service layer returned ApiResponse.Fail(...) (wrong permissions,
-      // "not found", validation errors, etc). That means a business-logic
-      // failure arrives as a normal 2xx HTTP response with { success:false,
-      // message, data:null } in the body.
-      //
-      // Previously this branch didn't exist, so the code below unwrapped
-      // straight to `data` (null) and every caller saw a "successful" 2xx
-      // response with empty data — actions like starting/ending a live
-      // session, muting/kicking a user, joining an event, etc. would look
-      // like they worked even when the backend rejected them, and the real
-      // error message was silently lost.
-      //
-      // Rejecting here — with the message attached the same way a real HTTP
-      // error would be — means every existing `catch (error) { toast.error(
-      // getErrorMessage(error, ...)) }` block across the app now handles
-      // soft failures exactly like hard ones, with no other file needing to
-      // change.
+     
       const err = new Error(body.message || "Request failed");
       err.response = response;
       err.isApiError = true;
       return Promise.reject(err);
     }
 
-    // Success: unwrap ApiResponse<T> -> T. Only one level is unwrapped
-    // (rather than looping) so a legitimate DTO that happens to contain its
-    // own "data" field isn't mistaken for another envelope.
     if (isApiResponseEnvelope) {
       response.data = body.data;
     }
@@ -129,13 +109,6 @@ export const getErrorMessage = (error, fallback = "Something went wrong") => {
   return error?.message || fallback;
 };
 
-// Normalizes an endpoint's payload down to a plain array, regardless of
-// whether it came back as a bare array (e.g. `Ok(list)`) or as a paginated
-// wrapper (e.g. `Ok(new PagedResultDto { Items = list, ... })` /
-// ApiResponse<PagedResult<T>>). Several pages (Groups, Connections, ...)
-// were written assuming a bare array and broke with
-// "<var>.map is not a function" once an endpoint started returning the
-// paginated shape instead — this keeps both shapes working everywhere.
 export const toArray = (data) => {
   if (Array.isArray(data)) return data;
   if (data && Array.isArray(data.items)) return data.items;

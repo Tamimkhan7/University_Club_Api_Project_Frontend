@@ -19,12 +19,10 @@ const TABS = [
   { id: "my-clubs", label: "My Clubs Upcoming", icon: Users, endpoint: "/event/my-clubs-upcoming" },
 ];
 
-// Backend now consistently returns a single-level ApiResponse: { success, message, data }.
-// This helper pulls the real payload out and lets callers check success/message honestly
-// instead of assuming every 2xx response means the operation actually succeeded.
+
 const unwrap = (res) => {
   const body = res?.data ?? {};
-  const success = body.success !== false; // treat missing flag as success (defensive)
+  const success = body.success !== false; 
   return { success, message: body.message, data: body.data ?? body };
 };
 
@@ -36,11 +34,7 @@ export default function Events() {
   const [events, setEvents] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  // `loading` now only ever fires on the very first mount, so it's the only
-  // thing allowed to render the full-page <Loader/>. Every subsequent load
-  // (tab switch, search, pagination, join/leave, etc.) uses `searching`
-  // instead, which just dims the grid — the page (and the search input,
-  // and its cursor/focus) never unmounts again after first paint.
+
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -51,24 +45,17 @@ export default function Events() {
   const [attendees, setAttendees] = useState({});
   const [eventStats, setEventStats] = useState({});
   const [joinStatus, setJoinStatus] = useState({});
-  // Events now use an approval workflow: joining creates a pending EventJoinRequest
-  // instead of an immediate attendance. pendingStatus[id] tracks "request submitted,
-  // awaiting the organizer's decision" separately from joinStatus[id] (already approved/attending).
+
   const [pendingStatus, setPendingStatus] = useState({});
   const [joinRequests, setJoinRequests] = useState({});
   const [requestsLoading, setRequestsLoading] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
-  const [liveStatus, setLiveStatus] = useState({}); // eventId -> { status: "NotStarted"|"Live"|"Ended", viewerCount }
+  const [liveStatus, setLiveStatus] = useState({}); 
 
-  // isFirstLoad: flips false after the very first successful/failed load, so
-  // every load after that goes through `searching` instead of `loading`.
+
   const isFirstLoad = useRef(true);
-  // Debounce timer for real-time search-as-you-type.
   const searchDebounceRef = useRef(null);
-  // When we programmatically clear/change searchTerm as a *side effect* of
-  // something else (tab switch, X button) we already trigger our own
-  // loadEvents call — this flag stops the searchTerm-watching effect from
-  // firing a duplicate, stale request right after.
+
   const skipNextSearchEffect = useRef(false);
 
   const normalizeLiveStatus = (status) => {
@@ -80,11 +67,6 @@ export default function Events() {
 
   const currentEndpoint = TABS.find((t) => t.id === tab)?.endpoint || "/event/upcoming";
 
-  // The backend returns different DTO shapes per endpoint:
-  //  - /event, /event/upcoming, /event/my, /event/search  -> EventSummaryDto   (id, title, description, totalAttendees)
-  //  - /event/joined                                      -> MyJoinedEventDto (eventId, eventTitle, eventDescription)
-  //  - /event/my-clubs-upcoming                            -> ClubUpcomingEventDto (eventId, clubName, totalAttendees)
-  // Normalize them all to a single consistent shape the UI relies on.
   const normalizeEvent = (item) => ({
     ...item,
     id: item.id ?? item.eventId,
@@ -97,9 +79,7 @@ export default function Events() {
   });
 
   const loadEvents = async (targetPage = 1, query = "") => {
-    // Only the very first load in this component's lifetime uses the
-    // full-page loader. Everything after that just dims the grid via
-    // `searching`, so the search <input> (and its focus/cursor) survives.
+  
     const firstLoad = isFirstLoad.current;
     if (firstLoad) {
       setLoading(true);
@@ -172,22 +152,15 @@ export default function Events() {
     }
   };
 
-  // Tab switch: clear any in-flight search, reset the search box, and load
-  // this tab's default list. We also flip skipNextSearchEffect so clearing
-  // searchTerm here doesn't cause the debounced-search effect below to fire
-  // a second, redundant request right after this one.
+  
   useEffect(() => {
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     skipNextSearchEffect.current = true;
     setSearchTerm("");
     loadEvents(1);
     loadMyClubs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  // Real-time debounced search: typing in the box re-queries automatically,
-  // no submit needed. Since loadEvents() no longer flips `loading`, the
-  // input never unmounts and the cursor/focus is preserved while typing.
   useEffect(() => {
     if (skipNextSearchEffect.current) {
       skipNextSearchEffect.current = false;
@@ -198,12 +171,10 @@ export default function Events() {
       loadEvents(1, searchTerm.trim());
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(searchDebounceRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // Enter/submit skips the debounce wait and searches immediately.
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     loadEvents(1, searchTerm.trim());
   };
@@ -233,10 +204,7 @@ export default function Events() {
 
       const { success, message } = unwrap(res);
 
-      // This is the actual fix: previously we assumed a 2xx HTTP status meant
-      // the event was created/updated. The backend can return 2xx with
-      // success:false (e.g. "Only admin or moderator can create events."),
-      // so we must check the body before celebrating.
+ 
       if (!success) {
         toast.error(message || "Failed to save event");
         return;
@@ -287,10 +255,7 @@ export default function Events() {
         toast.error(message || "Failed to join event");
         return;
       }
-      // Joining an event now goes through an approval workflow: the backend creates
-      // a pending EventJoinRequest and only attaches attendance once the organizer
-      // approves it. Detect that from the response message rather than assuming
-      // an immediate join.
+   
       const isPending = /pending/i.test(message || "");
       if (isPending) {
         setPendingStatus((prev) => ({ ...prev, [id]: true }));
@@ -312,7 +277,6 @@ export default function Events() {
         toast.error(message || "Failed to leave event");
         return;
       }
-      // Leave also cancels a still-pending join request, so clear both flags.
       setJoinStatus((prev) => ({ ...prev, [id]: false }));
       setPendingStatus((prev) => ({ ...prev, [id]: false }));
       toast.success(message || "Left event");
@@ -329,7 +293,6 @@ export default function Events() {
       const { success, data } = unwrap(res);
       setJoinRequests((prev) => ({ ...prev, [id]: success ? (data || []) : [] }));
     } catch {
-      // Not the organizer / not authorized — silently skip, section just won't show data.
       setJoinRequests((prev) => ({ ...prev, [id]: [] }));
     } finally {
       setRequestsLoading((prev) => ({ ...prev, [id]: false }));
@@ -369,8 +332,7 @@ export default function Events() {
       } catch (error) {
         console.error(error);
       }
-      // Only the event's organizer sees join requests here — everyone else is a
-      // regular attendee/viewer for whom the backend returns "access denied".
+
       if (tab === "my") {
         loadJoinRequests(id);
       }
@@ -378,7 +340,6 @@ export default function Events() {
     setExpanded((prev) => ({ ...prev, [id]: !isOpen }));
   };
 
-  // Only the very first mount ever shows the full-page loader now.
   if (loading) return <Loader />;
 
   return (
@@ -392,7 +353,6 @@ export default function Events() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         
-        {/* Hero Header */}
         <div className="relative mb-8">
           <div className="page-hero p-6 sm:p-8 md:p-10">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-slow" />
@@ -427,7 +387,6 @@ export default function Events() {
           </div>
         </div>
 
-        {/* Tabs and Create Button */}
         <div className="flex flex-wrap items-center gap-2 mb-6 p-1.5 glass-card rounded-2xl shadow-lg">
           <div className="flex flex-wrap gap-1 flex-1">
             {TABS.map((t) => {
@@ -483,7 +442,6 @@ export default function Events() {
           </div>
         </form>
 
-        {/* Create Form */}
         {showCreateForm && (
           <div className="mb-8 animate-slideDown">
             <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 overflow-hidden">
@@ -536,7 +494,6 @@ export default function Events() {
           </div>
         )}
 
-        {/* Events Grid */}
         {events.length === 0 ? (
           <div className="glass-card rounded-3xl shadow-xl shadow-red-500/10 p-12 sm:p-16 text-center">
             <div className="empty-state">
@@ -756,7 +713,6 @@ export default function Events() {
           </div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex flex-wrap justify-center items-center gap-3 mt-10">
             <button

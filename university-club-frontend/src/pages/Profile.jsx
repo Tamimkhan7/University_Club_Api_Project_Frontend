@@ -43,12 +43,9 @@ export default function Profile() {
   const [listModal, setListModal] = useState(null);
   const [listItems, setListItems] = useState([]);
 
-  const [profileStories, setProfileStories] = useState([]); // StoryResponseDto[]
+  const [profileStories, setProfileStories] = useState([]); 
   const [showStoryViewer, setShowStoryViewer] = useState(false);
 
-  // Live online/last-seen status for the profile being viewed (see
-  // /api/presence + PresenceContext). No-op (empty ids) until the profile
-  // has actually loaded.
   const presence = usePresence(profile?.id ? [profile.id] : []);
   const livePresence = profile?.id ? presence[profile.id] : null;
   const isProfileOnline = livePresence ? livePresence.isOnline : !!profile?.isOnline;
@@ -89,8 +86,7 @@ export default function Profile() {
       if (own) {
         setIsPrivateState(!!profileRes.data.isPrivate);
       } else {
-        // Skip mutual-followers lookup if the relationship is blocked either way —
-        // avoids an extra failed call and keeps the UI clean for blocked users.
+        
         if (!profileRes.data.isBlocked) {
           try {
             const mutualRes = await api.get(`/user/mutual/${id}`, { params: { page: 1, pageSize: 10 } });
@@ -133,8 +129,7 @@ export default function Profile() {
         if (!cancelled) setProfileStories(res || []);
       })
       .catch(() => {
-        // A blocked relationship (reported as "not found") or a private profile
-        // simply means no stories to show here - fail silently.
+        
         if (!cancelled) setProfileStories([]);
       });
 
@@ -249,9 +244,6 @@ export default function Profile() {
     }
   };
 
-  // BLOCK / UNBLOCK — this was completely missing before, which is why
-  // "blocked" users still showed up in search and could still be messaged:
-  // no block relationship was ever created in the database.
   const toggleBlock = async () => {
     if (!profile) return;
 
@@ -270,8 +262,7 @@ export default function Profile() {
         await api.post(`/user/block/${profile.id}`);
         toast.success(`${profile.name} blocked`);
       }
-      // Blocking also removes any follow relationship server-side (both directions),
-      // so reflect that immediately in local state instead of waiting for a refetch.
+ 
       setProfile((p) => ({
         ...p,
         isBlocked: !p.isBlocked,
@@ -284,10 +275,6 @@ export default function Profile() {
     }
   };
 
-  // Sends the current profile's owner into Messages with a chat already
-  // opened for them. If a conversation doesn't exist yet, Messages will
-  // create one on the fly — the receiver only actually gets a conversation
-  // once a first message/voice note is sent, matching startNewConversation.
   const messageUser = () => {
     if (!profile) return;
     navigate("/messages", {
@@ -331,7 +318,6 @@ export default function Profile() {
 
       <div className="relative max-w-5xl mx-auto px-4 py-6">
         
-        {/* Cover Photo */}
         <div className="relative">
           <div className="relative h-56 sm:h-64 md:h-72 rounded-3xl overflow-hidden shadow-2xl shadow-red-500/10">
             {displayCover ? (
@@ -352,7 +338,6 @@ export default function Profile() {
             )}
           </div>
 
-          {/* Avatar */}
           <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 sm:left-8 sm:translate-x-0">
             <div className="relative group">
               {profileStories.length > 0 ? (
@@ -390,7 +375,6 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Profile Card */}
         <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 mt-20 sm:mt-16 overflow-hidden transition-all duration-500 hover:shadow-3xl hover:shadow-red-500/15">
           
           {/* Header */}
@@ -432,9 +416,7 @@ export default function Profile() {
                 )}
                 {!isOwnProfile && (
                   <>
-                    {/* Follow + Message buttons hidden once blocked in either direction —
-                        neither action is valid on a blocked relationship and the
-                        backend rejects both. */}
+                 
                     {!profile.isBlocked && (
                       <>
                         <button
@@ -498,7 +480,6 @@ export default function Profile() {
             )}
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-4 gap-2 px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-red-50/30 to-rose-50/30 dark:from-red-900/10 dark:to-rose-900/10">
             {[
               { icon: Sparkles, label: "Posts", value: stats.posts },
@@ -527,7 +508,6 @@ export default function Profile() {
             })}
           </div>
 
-          {/* Mutual Followers */}
           {!isOwnProfile && mutualList.length > 0 && (
             <div className="px-6 py-3 border-b border-gray-200/50 dark:border-gray-700/50 flex items-center gap-2 flex-wrap bg-gray-50/30 dark:bg-gray-800/30">
               <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Mutual followers:</span>
@@ -542,14 +522,12 @@ export default function Profile() {
             </div>
           )}
 
-          {/* Bio */}
           {profile.bio && !isEditing && (
             <div className="px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-red-50/20 to-rose-50/20 dark:from-red-900/10 dark:to-rose-900/10">
               <p className="text-gray-600 dark:text-gray-300 italic text-center text-base">"{profile.bio}"</p>
             </div>
           )}
 
-          {/* Profile Information */}
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-lg text-gray-800 dark:text-white flex items-center gap-2">
@@ -634,7 +612,6 @@ export default function Profile() {
             )}
           </div>
 
-          {/* Settings for Own Profile */}
           {isOwnProfile && !isEditing && (
             <>
               <div className="px-6 py-5 border-t border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between hover:bg-gray-50/30 dark:hover:bg-gray-800/30 transition-all duration-200">
@@ -701,7 +678,6 @@ export default function Profile() {
                 )}
               </div>
 
-              {/* Danger Zone */}
               <div className="px-6 py-5 border-t border-red-200/50 dark:border-red-900/30 bg-gradient-to-r from-red-50/30 to-rose-50/30 dark:from-red-900/20 dark:to-rose-900/20">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
@@ -738,7 +714,6 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* List Modal */}
       {listModal && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"

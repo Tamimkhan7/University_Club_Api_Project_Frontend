@@ -42,7 +42,6 @@ export default function MyApplications() {
 
   useEffect(() => {
     load(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleRemoved = (applicationId) => {
@@ -62,7 +61,6 @@ export default function MyApplications() {
       </div>
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {/* Hero Header */}
         <div className="page-hero p-6 sm:p-8 md:p-10 mb-8">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10" />
           <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
@@ -84,7 +82,6 @@ export default function MyApplications() {
           </div>
         </div>
 
-        {/* Filters */}
         <div className="flex flex-wrap items-center gap-2 mb-6 p-4 glass-card rounded-2xl shadow-lg">
           <div className="flex items-center gap-1.5 text-gray-400 dark:text-gray-500 text-xs font-semibold mr-1">
             <Filter className="w-3.5 h-3.5" />
@@ -133,7 +130,6 @@ export default function MyApplications() {
           </div>
         )}
 
-        {/* Pagination (server-side, only meaningful when "All" is selected) */}
         {statusFilter === "" && totalPages > 1 && (
           <div className="flex items-center justify-between p-4 glass-card rounded-2xl mt-6">
             <button

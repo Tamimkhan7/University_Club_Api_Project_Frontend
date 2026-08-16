@@ -87,7 +87,7 @@ export default function ResetPassword() {
                 
                 <div className="mt-6 p-5 bg-green-50/80 dark:bg-green-950/20 backdrop-blur-sm rounded-2xl border border-green-200/50 dark:border-green-800/30">
                   <p className="text-green-700 dark:text-green-300 text-sm font-medium">
-                    ✨ Password reset successfully!
+                   Password reset successfully!
                   </p>
                   <p className="text-green-600/70 dark:text-green-400/70 text-xs mt-2">
                     Redirecting to sign in...

@@ -155,7 +155,6 @@ export default function CreatePost({ reload }) {
           </div>
         )}
 
-        {/* Club Selection */}
         <div className="mb-5 group">
           <div className="flex items-center gap-2 mb-2.5">
             <div className="w-5 h-5 bg-gradient-to-br from-red-500 to-rose-500 rounded-lg flex items-center justify-center shadow-md shadow-red-500/20">
@@ -194,7 +193,6 @@ export default function CreatePost({ reload }) {
           </div>
         </div>
 
-        {/* Content Input */}
         <div className="mb-4 group">
           <div className="relative">
             <textarea
@@ -213,7 +211,6 @@ export default function CreatePost({ reload }) {
           </div>
         </div>
 
-        {/* Image Upload */}
         {showImageInput && (
           <div className="mb-4 animate-slideDown">
             <div className="relative">
@@ -261,7 +258,6 @@ export default function CreatePost({ reload }) {
           </div>
         )}
 
-        {/* Actions */}
         <div className="flex flex-wrap gap-3 mt-6">
           <button
             type="button"

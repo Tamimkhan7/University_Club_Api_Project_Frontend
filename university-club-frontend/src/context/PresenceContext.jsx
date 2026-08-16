@@ -3,20 +3,6 @@ import { AuthContext } from "./AuthContext";
 import { createNotificationConnection } from "../api/notificationHub";
 import { presenceApi } from "../api/presence";
 
-// Backend contract (see UniversityClubAPI.Hubs.NotificationHub /
-// UniversityClubAPI.Controllers.PresenceController):
-//   REST   GET  /api/presence/users/{userId}         -> single status
-//   REST   POST /api/presence/users/bulk              -> status[] for up to 100 ids
-//   REST   GET  /api/presence/online-following         -> paginated online-following list
-//   HUB    hub.invoke("WatchPresence", userId)         -> subscribe to live updates for a user
-//   HUB    hub.invoke("UnwatchPresence", userId)       -> unsubscribe
-//   HUB    hub.on("UserPresenceChanged", ({ userId, isOnline, lastSeenAt }) => ...)
-//
-// This context keeps ONE hub connection alive for the whole app (instead of
-// each component opening its own), tracks how many components currently
-// care about each userId (refcount) so WatchPresence/UnwatchPresence is
-// only sent when that count actually transitions to/from zero, and exposes
-// a small `usePresence(userIds)` hook that pages can call directly.
 
 export const PresenceContext = createContext(null);
 
@@ -24,8 +10,8 @@ export default function PresenceProvider({ children }) {
   const { user } = useContext(AuthContext);
   const connectionRef = useRef(null);
   const startPromiseRef = useRef(null);
-  const watchCountsRef = useRef(new Map()); // userId -> number of hooks currently watching it
-  const [statuses, setStatuses] = useState({}); // userId -> { isOnline, lastSeenAt }
+  const watchCountsRef = useRef(new Map()); 
+  const [statuses, setStatuses] = useState({}); 
 
   const applyStatus = useCallback((userId, patch) => {
     setStatuses((prev) => {
@@ -35,7 +21,6 @@ export default function PresenceProvider({ children }) {
     });
   }, []);
 
-  // Connect once a user is authenticated; tear the connection down on logout.
   useEffect(() => {
     if (!user) {
       connectionRef.current?.stop();
@@ -56,8 +41,7 @@ export default function PresenceProvider({ children }) {
     startPromiseRef.current = connection
       .start()
       .then(() => {
-        // Re-subscribe to anything components had already asked to watch
-        // before the connection finished handshaking.
+    
         for (const [userId, count] of watchCountsRef.current.entries()) {
           if (count > 0) connection.invoke("WatchPresence", userId).catch(() => {});
         }
@@ -68,7 +52,6 @@ export default function PresenceProvider({ children }) {
       connection.stop();
       if (connectionRef.current === connection) connectionRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const watch = useCallback(async (userId) => {
@@ -77,7 +60,7 @@ export default function PresenceProvider({ children }) {
     const counts = watchCountsRef.current;
     const next = (counts.get(id) || 0) + 1;
     counts.set(id, next);
-    if (next !== 1) return; // already watched by another component
+    if (next !== 1) return; 
 
     try {
       await startPromiseRef.current;
@@ -106,8 +89,6 @@ export default function PresenceProvider({ children }) {
     }
   }, []);
 
-  // Seeds the map with a REST snapshot so the UI has a value immediately,
-  // instead of waiting for the first hub push (which only fires on change).
   const seedFromServer = useCallback(async (userIds) => {
     const ids = Array.from(new Set((userIds || []).map(Number).filter(Boolean)));
     if (ids.length === 0) return;
@@ -139,11 +120,6 @@ export default function PresenceProvider({ children }) {
   return <PresenceContext.Provider value={value}>{children}</PresenceContext.Provider>;
 }
 
-// Subscribes to live presence for a list of userIds for as long as the
-// calling component is mounted, and returns a lookup of
-// { [userId]: { isOnline, lastSeenAt } }. Pass a stable/memoized array (or
-// let the hook's own JSON-based dependency check handle re-renders that
-// produce a new array with the same ids each time).
 export function usePresence(userIds) {
   const ctx = useContext(PresenceContext);
   if (!ctx) throw new Error("usePresence must be used within a PresenceProvider");
@@ -151,7 +127,7 @@ export function usePresence(userIds) {
 
   const ids = useMemo(
     () => Array.from(new Set((userIds || []).map(Number).filter(Boolean))).sort((a, b) => a - b),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [JSON.stringify(userIds || [])]
   );
 
@@ -162,7 +138,7 @@ export function usePresence(userIds) {
     return () => {
       ids.forEach((id) => unwatch(id));
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [ids.join(",")]);
 
   return useMemo(() => {
@@ -174,8 +150,6 @@ export function usePresence(userIds) {
   }, [ids, statuses]);
 }
 
-// Formats a lastSeenAt timestamp the way the UI wants to show it
-// ("Online now" is handled separately by checking isOnline first).
 export function formatLastSeen(lastSeenAt) {
   if (!lastSeenAt) return null;
   const then = new Date(lastSeenAt).getTime();

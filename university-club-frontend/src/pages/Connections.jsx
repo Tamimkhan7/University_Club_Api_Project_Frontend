@@ -22,10 +22,6 @@ const TABS = [
   { id: "blocked", label: "Blocked Users", icon: Ban },
 ];
 
-// Generates a letter-avatar fallback, and is also used to recover from a
-// broken/invalid `profileImage` URL (e.g. malformed seed/test data) via the
-// <img onError> handler below, instead of leaving the browser stuck on a
-// failed request (ERR_UNKNOWN_URL_SCHEME, 404, etc).
 const avatarFor = (name) =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "U")}&background=dc2626&color=fff&bold=true`;
 
@@ -44,8 +40,7 @@ export default function Connections() {
   const skipNextSearchEffect = useRef(false);
   const searchDebounceRef = useRef(null);
 
-  // Live online/last-seen status for everyone currently listed, kept up to
-  // date via the NotificationHub (see /api/presence + PresenceContext).
+ 
   const presence = usePresence(list.map((u) => u.id));
 
   const load = async (targetPage = 1, isInitial = false) => {
@@ -57,10 +52,7 @@ export default function Connections() {
       let res;
       const matches = (u) => u.name?.toLowerCase().includes(query);
 
-      // Fetches every page of a paginated endpoint (using the API's normal
-      // pageSize of 20) so search can look across the whole list, not just
-      // the currently visible page. Requesting one huge pageSize instead
-      // gets rejected by the API with a 400, so we page through it.
+    
       const fetchAllItems = async (endpoint) => {
         const first = await api.get(endpoint, { params: { page: 1, pageSize: 20 } });
         let items = first.data?.items || [];
@@ -79,9 +71,7 @@ export default function Connections() {
       switch (tab) {
         case "suggestions": {
           res = await api.get("/follow/suggestions");
-          // /follow/suggestions can come back either as a bare array or as
-          // a paginated { items: [...] } wrapper — toArray() handles both
-          // so this doesn't crash with "list.map is not a function".
+        
           const data = toArray(res.data);
           setList(query ? data.filter(matches) : data);
           setTotalPages(1);
@@ -119,11 +109,7 @@ export default function Connections() {
           break;
         }
         case "online": {
-          // /api/presence/online-following returns a plain (unpaginated-total)
-          // list of PresenceStatusDto for the requested page — map its
-          // shape (userId/userName) onto the {id, name, ...} shape the rest
-          // of this page's rendering expects, and treat these users as
-          // already-followed (they only come from the following list).
+       
           const pageSize = 20;
           const toCard = (p) => ({
             id: p.userId,
@@ -135,8 +121,7 @@ export default function Connections() {
           });
 
           if (query) {
-            // No dedicated "search all pages" endpoint for this one, so page
-            // through online-following (capped at 10 pages) client-side.
+          
             let items = [];
             for (let p = 1; p <= 10; p++) {
               const batch = await presenceApi.getOnlineFollowing(p, pageSize);
@@ -148,8 +133,7 @@ export default function Connections() {
           } else {
             const items = await presenceApi.getOnlineFollowing(targetPage, pageSize);
             setList((items || []).map(toCard));
-            // The endpoint doesn't return a total count, so infer whether a
-            // next page might exist from whether this page was full.
+      
             setTotalPages((items || []).length < pageSize ? targetPage : targetPage + 1);
           }
           break;
@@ -178,10 +162,7 @@ export default function Connections() {
     }
   };
 
-  // Tab switch (or first mount): loads immediately, no debounce. Only the
-  // very first-ever load blocks the whole page with the full <Loader/> —
-  // every load after that (tab switches, search, pagination) keeps the
-  // page mounted so the search input never loses focus.
+ 
   useEffect(() => {
     if (isFirstRun.current) {
       isFirstRun.current = false;
@@ -189,13 +170,9 @@ export default function Connections() {
     } else {
       load(1);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  // Real-time search: debounce while the user types, then fetch. Skipped
-  // right after a tab switch, since selectTab() already clears the search
-  // box and the effect above already reloads for the new tab — without this
-  // guard we'd fire a redundant duplicate request a moment later.
+
   useEffect(() => {
     if (isFirstRun.current) return;
     if (skipNextSearchEffect.current) {
@@ -207,7 +184,7 @@ export default function Connections() {
       load(1);
     }, 400);
     return () => clearTimeout(searchDebounceRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [searchTerm]);
 
   const handleSearch = (e) => {
@@ -224,8 +201,7 @@ export default function Connections() {
   };
 
   const selectTab = (id) => {
-    // Switching tabs always exits search mode and clears the search box,
-    // so tab navigation is predictable regardless of any previous search.
+  
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     skipNextSearchEffect.current = true;
     setSearchTerm("");
@@ -299,7 +275,6 @@ export default function Connections() {
 
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         
-        {/* Hero Header */}
         <div className="relative mb-8">
           <div className="page-hero p-6 sm:p-8 md:p-10">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-slow" />
@@ -330,7 +305,6 @@ export default function Connections() {
           </div>
         </div>
 
-        {/* Search */}
         <form onSubmit={handleSearch} className="mb-6 w-full relative group">
           <div className="relative">
             <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-red-500 transition-colors duration-300 ${searching ? "animate-pulse" : ""}`} />
@@ -352,7 +326,6 @@ export default function Connections() {
           </div>
         </form>
 
-        {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-6 p-1.5 glass-card rounded-2xl shadow-lg">
           {TABS.map((t) => {
             const Icon = t.icon;
@@ -373,7 +346,6 @@ export default function Connections() {
           })}
         </div>
 
-        {/* Empty State */}
         {list.length === 0 ? (
           <div className="glass-card rounded-3xl shadow-xl shadow-red-500/10 p-12 sm:p-16 text-center">
             <div className="empty-state">
@@ -528,7 +500,6 @@ export default function Connections() {
           </div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex flex-wrap justify-center items-center gap-3 mt-10">
             <button

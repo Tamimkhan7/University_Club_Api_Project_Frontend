@@ -37,8 +37,7 @@ function formatDate(d) {
   });
 }
 
-// mode: "manage" (club admin/moderator view) | "own" (the invited user's own pending-invite view)
-// linkToDetails: show a small link to the full /invites/:id details page (hidden when already on that page)
+
 export default function InviteCard({ invite, mode = "manage", onRevoked, onResponded, linkToDetails = true }) {
   const [revoking, setRevoking] = useState(false);
   const [accepting, setAccepting] = useState(false);

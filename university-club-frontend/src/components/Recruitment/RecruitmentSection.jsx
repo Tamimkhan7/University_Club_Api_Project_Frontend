@@ -81,7 +81,6 @@ export default function RecruitmentSection({ clubId, club, membership }) {
     } else if (!isMember) {
       loadMyApplication();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubId, canManage, isMember, statusFilter]);
 
   const handleChanged = (updated) => {
@@ -99,7 +98,6 @@ export default function RecruitmentSection({ clubId, club, membership }) {
     setMyApplication(null);
   };
 
-  // ── MANAGER VIEW ──────────────────────────────────────────────
   if (canManage) {
     return (
       <div className="space-y-5">
@@ -176,7 +174,6 @@ export default function RecruitmentSection({ clubId, club, membership }) {
     );
   }
 
-  // ── MEMBER (non-manager) VIEW ─────────────────────────────────
   if (isMember) {
     return (
       <div className="glass-card rounded-3xl shadow-xl p-16 text-center">
@@ -193,7 +190,6 @@ export default function RecruitmentSection({ clubId, club, membership }) {
     );
   }
 
-  // ── NON-MEMBER (applicant) VIEW ───────────────────────────────
   return (
     <div className="space-y-5">
       {loadingMine ? (
