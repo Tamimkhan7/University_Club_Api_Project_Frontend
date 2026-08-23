@@ -4,6 +4,8 @@ import { getErrorMessage } from "../api/axios";
 import leaderboardApi, { LeaderboardCategory, LeaderboardPeriod } from "../api/leaderboard";
 import { AuthContext } from "../context/AuthContext";
 import Loader from "../components/Loader";
+import BackgroundDecoration from "../components/BackgroundDecoration";
+import EmptyState from "../components/EmptyState";
 import toast from "react-hot-toast";
 import {
   Trophy, Medal, Crown, Sparkles, RefreshCw, MessageSquare,
@@ -100,10 +102,7 @@ export default function Leaderboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-amber-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-      </div>
+      <BackgroundDecoration blobs={2} scheme="amber" />
 
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 space-y-6 sm:space-y-8">
         {/* Hero */}
@@ -230,15 +229,11 @@ export default function Leaderboard() {
         )}
 
         {topEntries.length === 0 && !myEntry && (
-          <div className="glass-card rounded-3xl shadow-xl shadow-red-500/10 p-12 sm:p-16 text-center">
-            <div className="empty-state">
-              <div className="icon">
-                <Trophy className="w-12 h-12 text-red-500" />
-              </div>
-              <h3>No activity yet</h3>
-              <p>Nobody has scored points in this category and period yet. Be the first!</p>
-            </div>
-          </div>
+          <EmptyState
+            icon={Trophy}
+            title="No activity yet"
+            message="Nobody has scored points in this category and period yet. Be the first!"
+          />
         )}
 
         {topEntries.length > 0 && (

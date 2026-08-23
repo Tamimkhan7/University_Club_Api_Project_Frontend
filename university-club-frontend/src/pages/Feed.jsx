@@ -4,6 +4,8 @@ import PostCard from "../components/PostCard";
 import CreatePost from "../components/CreatePost";
 import Loader from "../components/Loader";
 import StoriesBar from "../components/Story/StoriesBar";
+import BackgroundDecoration from "../components/BackgroundDecoration";
+import EmptyState from "../components/EmptyState";
 import {
   Sparkles, RefreshCw, AlertCircle, ChevronUp, Coffee,
   Flame, Users2, Bookmark, Compass, Search, Home,
@@ -110,11 +112,7 @@ export default function Feed() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
-      </div>
+      <BackgroundDecoration />
 
       <div className="relative max-w-2xl mx-auto px-4 pb-12">
         {/* Hero Header */}
@@ -270,25 +268,23 @@ export default function Feed() {
         )}
 
         {posts.length === 0 ? (
-          <div className="glass-card rounded-3xl p-12 sm:p-16 text-center">
-            <div className="relative">
-              <div className="empty-state">
-                <div className="icon">
-                  <Sparkles className="w-12 h-12 text-red-500" />
-                </div>
+          <EmptyState
+            iconNode={
+              <div className="relative inline-flex">
+                <Sparkles className="w-12 h-12 text-red-500" />
                 <div className="absolute -top-2 -right-6 w-8 h-8 bg-amber-400 rounded-full flex items-center justify-center shadow-lg shadow-amber-400/50 animate-bounce-slow">
                   <Star className="w-4 h-4 text-white" />
                 </div>
               </div>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">
-              No posts yet
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-              {tab === "global"
+            }
+            title="No posts yet"
+            message={
+              tab === "global"
                 ? "Be the first to create a post and share your thoughts with the community!"
-                : "Nothing to show in this tab yet. Try switching to another view."}
-            </p>
+                : "Nothing to show in this tab yet. Try switching to another view."
+            }
+            cardClassName="glass-card rounded-3xl p-12 sm:p-16 text-center"
+          >
             {tab === "global" && (
               <button
                 onClick={() => document.querySelector("textarea")?.focus()}
@@ -298,7 +294,7 @@ export default function Feed() {
                 Create Post
               </button>
             )}
-          </div>
+          </EmptyState>
         ) : (
           <div className="space-y-5 animate-fadeIn">
             {posts.map((post) => (

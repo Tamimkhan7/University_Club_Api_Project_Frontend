@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import { getErrorMessage, toArray } from "../api/axios";
 import clubPrivacyApi from "../api/clubPrivacy";
 import Loader from "../components/Loader";
+import BackgroundDecoration from "../components/BackgroundDecoration";
+import EmptyState from "../components/EmptyState";
 import InviteCard from "../components/ClubPrivacy/InviteCard";
 import { Mail, Sparkles, Building2 } from "lucide-react";
 
@@ -38,10 +40,7 @@ export default function MyInvites() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-      </div>
+      <BackgroundDecoration blobs={2} />
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="page-hero p-6 sm:p-8 md:p-10 mb-8">
@@ -70,20 +69,17 @@ export default function MyInvites() {
             Loading invites...
           </div>
         ) : invites.length === 0 ? (
-          <div className="glass-card rounded-3xl shadow-xl p-16 text-center">
-            <div className="empty-state">
-              <div className="icon">
-                <Building2 className="w-12 h-12 text-gray-400" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">No pending invites</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-5">
-                When a club admin invites you to join, it will show up here.
-              </p>
-              <Link to="/clubs" className="btn-primary px-6 py-2.5 inline-flex">
-                Browse Clubs
-              </Link>
-            </div>
-          </div>
+          <EmptyState
+            icon={Building2}
+            iconClassName="w-12 h-12 text-gray-400"
+            title="No pending invites"
+            message="When a club admin invites you to join, it will show up here."
+            cardClassName="glass-card rounded-3xl shadow-xl p-16 text-center"
+          >
+            <Link to="/clubs" className="btn-primary px-6 py-2.5 inline-flex mt-4">
+              Browse Clubs
+            </Link>
+          </EmptyState>
         ) : (
           <div className="space-y-4">
             {invites.map((inv) => (

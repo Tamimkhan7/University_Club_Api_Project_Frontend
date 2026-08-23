@@ -1,14 +1,5 @@
 import api from "./axios";
-
-const unwrap = (res, fallback) => {
-  const body = res.data;
-
-  if (body && typeof body === "object" && !Array.isArray(body) && body.success === false) {
-    throw new Error(body.message || fallback);
-  }
-
-  return body;
-};
+import { unwrap } from "./apiUtils";
 
 const MAX_BULK_SIZE = 100;
 
@@ -17,7 +8,6 @@ export const presenceApi = {
     const res = await api.get(`/presence/users/${userId}`);
     return unwrap(res, "Failed to load presence status.");
   },
-
 
   getBulkStatus: async (userIds) => {
     const distinctIds = Array.from(new Set(userIds || [])).slice(0, MAX_BULK_SIZE);

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import api, { getErrorMessage } from "../../api/axios";
 import clubPrivacyApi from "../../api/clubPrivacy";
-import { X, Search, UserPlus, Send, Loader2, Sparkles } from "lucide-react";
+import Modal from "../Modal";
+import { Search, UserPlus, Send, Loader2, Sparkles } from "lucide-react";
 
 export default function InviteUserModal({ clubId, clubName, onClose, onInvited }) {
   const [query, setQuery] = useState("");
@@ -48,32 +49,14 @@ export default function InviteUserModal({ clubId, clubName, onClose, onInvited }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fadeIn"
-        onClick={() => onClose?.()}
-      />
-
-      <div className="relative w-full max-w-lg max-h-[85vh] flex flex-col glass-card rounded-3xl shadow-2xl p-6 sm:p-7 animate-scaleIn">
-        <div className="flex items-start justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-500/25">
-              <UserPlus className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-800 dark:text-white font-display">Invite a User</h2>
-              <p className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[240px]">
-                {clubName || "This club"}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => onClose?.()}
-            className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all duration-200"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Modal
+      onClose={onClose}
+      icon={UserPlus}
+      title="Invite a User"
+      subtitle={<span className="truncate max-w-[240px] block">{clubName || "This club"}</span>}
+      maxHeight="max-h-[85vh]"
+      cardClassName="flex flex-col"
+    >
 
         <div className="relative mb-4">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -135,7 +118,6 @@ export default function InviteUserModal({ clubId, clubName, onClose, onInvited }
           <Sparkles className="w-3.5 h-3.5" />
           Already-blocked or already-member users will be rejected automatically.
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

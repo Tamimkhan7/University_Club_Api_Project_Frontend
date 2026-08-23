@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "../../api/axios";
 import clubPrivacyApi, { InviteStatus, InviteStatusLabels } from "../../api/clubPrivacy";
+import { formatFullDateTime as formatDate } from "../../utils/dateUtils";
 import {
   Clock, CheckCircle2, XCircle, Ban, Trash2, Loader2, CalendarDays, Hash, Eye,
 } from "lucide-react";
@@ -26,16 +27,7 @@ const STATUS_META = {
   },
 };
 
-function formatDate(d) {
-  if (!d) return "";
-  return new Date(d).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+// formatDate এখন src/utils/dateUtils.js থেকে আসছে
 
 
 export default function InviteCard({ invite, mode = "manage", onRevoked, onResponded, linkToDetails = true }) {

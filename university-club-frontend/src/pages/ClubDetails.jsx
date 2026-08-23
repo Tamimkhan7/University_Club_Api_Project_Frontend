@@ -4,6 +4,9 @@ import api, { getErrorMessage } from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import { usePresence } from "../context/PresenceContext";
 import Loader from "../components/Loader";
+import BackgroundDecoration from "../components/BackgroundDecoration";
+import EmptyState from "../components/EmptyState";
+import { isClubManager } from "../utils/textUtils";
 import PostCard from "../components/PostCard";
 import PollsSection from "../components/Poll/PollsSection";
 import RecruitmentSection from "../components/Recruitment/RecruitmentSection";
@@ -158,7 +161,7 @@ export default function ClubDetails() {
     }
   };
 
-  const canManage = membership?.role === "Admin" || membership?.role === "Moderator";
+  const canManage = isClubManager(membership);
 
   const visibilityMeta = {
     [ClubVisibility.Public]: { icon: Globe, classes: "" },
@@ -203,11 +206,7 @@ export default function ClubDetails() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
       
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
-      </div>
+      <BackgroundDecoration />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         
@@ -299,15 +298,13 @@ export default function ClubDetails() {
         {activeTab === "posts" && (
           <div className="space-y-5">
             {posts.length === 0 ? (
-              <div className="glass-card rounded-3xl shadow-xl p-16 text-center">
-                <div className="empty-state">
-                  <div className="icon">
-                    <MessageCircle className="w-12 h-12 text-gray-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">No posts in this club yet</h3>
-                  <p className="text-gray-500 dark:text-gray-400">Be the first to share something!</p>
-                </div>
-              </div>
+              <EmptyState
+                icon={MessageCircle}
+                iconClassName="w-12 h-12 text-gray-400"
+                title="No posts in this club yet"
+                message="Be the first to share something!"
+                cardClassName="glass-card rounded-3xl shadow-xl p-16 text-center"
+              />
             ) : (
               posts.map((p) => <PostCard key={p.id} post={p} />)
             )}
@@ -435,15 +432,13 @@ export default function ClubDetails() {
         {activeTab === "events" && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
             {events.length === 0 ? (
-              <div className="col-span-2 glass-card rounded-3xl shadow-xl p-16 text-center">
-                <div className="empty-state">
-                  <div className="icon">
-                    <Calendar className="w-12 h-12 text-gray-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">No events for this club</h3>
-                  <p className="text-gray-500 dark:text-gray-400">Check back later for updates</p>
-                </div>
-              </div>
+              <EmptyState
+                icon={Calendar}
+                iconClassName="w-12 h-12 text-gray-400"
+                title="No events for this club"
+                message="Check back later for updates"
+                cardClassName="col-span-2 glass-card rounded-3xl shadow-xl p-16 text-center"
+              />
             ) : (
               events.map((ev) => (
                 <div key={ev.id} className="glass-card rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 p-5 border border-gray-200/50 dark:border-gray-700/50 hover:border-red-200/50 dark:hover:border-red-800/30 group">

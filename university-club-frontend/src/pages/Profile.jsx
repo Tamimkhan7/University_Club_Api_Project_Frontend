@@ -4,6 +4,7 @@ import api, { getErrorMessage } from "../api/axios";
 import storyApi from "../api/story";
 import StoryViewerModal from "../components/Story/StoryViewerModal";
 import Loader from "../components/Loader";
+import BackgroundDecoration from "../components/BackgroundDecoration";
 import toast from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
 import { usePresence, formatLastSeen } from "../context/PresenceContext";
@@ -310,11 +311,7 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
       
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
-      </div>
+      <BackgroundDecoration />
 
       <div className="relative max-w-5xl mx-auto px-4 py-6">
         

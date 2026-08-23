@@ -4,6 +4,8 @@ import { getErrorMessage } from "../../api/axios";
 import recruitmentApi from "../../api/recruitment";
 import ApplicationCard from "./ApplicationCard";
 import ApplyModal from "./ApplyModal";
+import EmptyState from "../EmptyState";
+import { isClubManager } from "../../utils/textUtils";
 import {
   ClipboardList, Plus, ChevronDown, UserCheck, Loader2,
 } from "lucide-react";
@@ -17,7 +19,7 @@ const STATUS_FILTERS = [
 ];
 
 export default function RecruitmentSection({ clubId, club, membership }) {
-  const canManage = membership?.role === "Admin" || membership?.role === "Moderator";
+  const canManage = isClubManager(membership);
   const isMember = !!membership?.isMember;
 
   const [applications, setApplications] = useState([]);
@@ -128,17 +130,13 @@ export default function RecruitmentSection({ clubId, club, membership }) {
             Loading applications...
           </div>
         ) : applications.length === 0 ? (
-          <div className="glass-card rounded-3xl shadow-xl p-16 text-center">
-            <div className="empty-state">
-              <div className="icon">
-                <ClipboardList className="w-12 h-12 text-gray-400" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">No applications found</h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                {statusFilter === "" ? "No one has applied to this club yet." : "Nothing to show for this filter."}
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            icon={ClipboardList}
+            iconClassName="w-12 h-12 text-gray-400"
+            title="No applications found"
+            message={statusFilter === "" ? "No one has applied to this club yet." : "Nothing to show for this filter."}
+            cardClassName="glass-card rounded-3xl shadow-xl p-16 text-center"
+          />
         ) : (
           <div className="space-y-4">
             {applications.map((app) => (
@@ -176,17 +174,13 @@ export default function RecruitmentSection({ clubId, club, membership }) {
 
   if (isMember) {
     return (
-      <div className="glass-card rounded-3xl shadow-xl p-16 text-center">
-        <div className="empty-state">
-          <div className="icon">
-            <UserCheck className="w-12 h-12 text-green-500" />
-          </div>
-          <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">You're already a member!</h3>
-          <p className="text-gray-500 dark:text-gray-400">
-            Only club admins and moderators can review recruitment applications.
-          </p>
-        </div>
-      </div>
+      <EmptyState
+        icon={UserCheck}
+        iconClassName="w-12 h-12 text-green-500"
+        title="You're already a member!"
+        message="Only club admins and moderators can review recruitment applications."
+        cardClassName="glass-card rounded-3xl shadow-xl p-16 text-center"
+      />
     );
   }
 
@@ -204,23 +198,17 @@ export default function RecruitmentSection({ clubId, club, membership }) {
           onRemoved={handleWithdrawnOwn}
         />
       ) : (
-        <div className="glass-card rounded-3xl shadow-xl p-12 text-center">
-          <div className="empty-state">
-            <div className="icon">
-              <ClipboardList className="w-12 h-12 text-red-500" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">
-              Want to join {club?.name || "this club"}?
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-5">
-              Submit an application and a club admin will review it soon.
-            </p>
-            <button onClick={() => setShowApplyModal(true)} className="btn-primary px-6 py-2.5">
-              <Plus className="w-4 h-4" />
-              Apply to Join
-            </button>
-          </div>
-        </div>
+        <EmptyState
+          icon={ClipboardList}
+          title={`Want to join ${club?.name || "this club"}?`}
+          message="Submit an application and a club admin will review it soon."
+          cardClassName="glass-card rounded-3xl shadow-xl p-12 text-center"
+        >
+          <button onClick={() => setShowApplyModal(true)} className="btn-primary px-6 py-2.5 mt-4">
+            <Plus className="w-4 h-4" />
+            Apply to Join
+          </button>
+        </EmptyState>
       )}
 
       {showApplyModal && (

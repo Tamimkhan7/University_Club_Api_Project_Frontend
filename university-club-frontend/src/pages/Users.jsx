@@ -4,6 +4,9 @@ import api, { getErrorMessage } from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import { usePresence, formatLastSeen } from "../context/PresenceContext";
 import Loader from "../components/Loader";
+import Pagination from "../components/Pagination";
+import BackgroundDecoration from "../components/BackgroundDecoration";
+import EmptyState from "../components/EmptyState";
 import Logo from "../components/Logo";
 import toast from "react-hot-toast";
 import {
@@ -113,11 +116,7 @@ export default function Users() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-16">
       
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
-      </div>
+      <BackgroundDecoration />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 space-y-6 lg:space-y-8">
         
@@ -330,54 +329,16 @@ export default function Users() {
         </div>
 
         {users.length === 0 && (
-          <div className="glass-card rounded-3xl shadow-xl p-16 text-center">
-            <div className="empty-state">
-              <div className="icon">
-                <UsersIcon className="w-12 h-12 text-red-400" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">No members found</h3>
-              <p className="text-gray-500 dark:text-gray-400">Try adjusting your search or filters</p>
-            </div>
-          </div>
+          <EmptyState
+            icon={UsersIcon}
+            iconClassName="w-12 h-12 text-red-400"
+            title="No members found"
+            message="Try adjusting your search or filters"
+            cardClassName="glass-card rounded-3xl shadow-xl p-16 text-center"
+          />
         )}
 
-        {totalPages > 1 && (
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
-            <button 
-              disabled={page <= 1} 
-              onClick={() => loadUsers(page - 1, searchQuery)} 
-              className="px-6 py-2.5 rounded-xl glass-card border border-gray-200/50 dark:border-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed hover:border-red-300 transition-colors font-medium text-gray-700 dark:text-gray-300"
-            >
-              Previous
-            </button>
-            <div className="flex items-center gap-2">
-              {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                const pageNum = i + 1;
-                return (
-                  <button
-                    key={i}
-                    onClick={() => loadUsers(pageNum, searchQuery)}
-                    className={`w-10 h-10 rounded-xl font-medium transition-all duration-300 ${
-                      pageNum === page
-                        ? "btn-primary w-10 h-10 flex items-center justify-center"
-                        : "bg-white/80 dark:bg-gray-800/80 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-              {totalPages > 5 && <span className="text-gray-400">...</span>}
-            </div>
-            <button 
-              disabled={page >= totalPages} 
-              onClick={() => loadUsers(page + 1, searchQuery)} 
-              className="px-6 py-2.5 rounded-xl glass-card border border-gray-200/50 dark:border-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed hover:border-red-300 transition-colors font-medium text-gray-700 dark:text-gray-300"
-            >
-              Next
-            </button>
-          </div>
-        )}
+        <Pagination page={page} totalPages={totalPages} onPageChange={(p) => loadUsers(p, searchQuery)} />
 
         <div className="bg-gradient-to-r from-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-800/50 backdrop-blur-sm rounded-2xl p-6 lg:p-8 mt-8 border border-gray-200/50 dark:border-gray-700/50">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

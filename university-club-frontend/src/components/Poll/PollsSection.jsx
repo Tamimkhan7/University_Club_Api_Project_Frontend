@@ -4,6 +4,8 @@ import { getErrorMessage } from "../../api/axios";
 import pollApi from "../../api/poll";
 import PollCard from "./PollCard";
 import CreatePollModal from "./CreatePollModal";
+import EmptyState from "../EmptyState";
+import { isClubManager } from "../../utils/textUtils";
 import { BarChart3, Plus, ChevronDown, Filter } from "lucide-react";
 
 export default function PollsSection({ clubId, currentUserId, membership }) {
@@ -15,7 +17,7 @@ export default function PollsSection({ clubId, currentUserId, membership }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const isMember = !!membership?.isMember;
-  const canManage = membership?.role === "Admin" || membership?.role === "Moderator";
+  const canManage = isClubManager(membership);
   const isAdmin = membership?.role === "Admin";
 
   const loadPolls = useCallback(
@@ -86,25 +88,20 @@ export default function PollsSection({ clubId, currentUserId, membership }) {
           Loading polls...
         </div>
       ) : polls.length === 0 ? (
-        <div className="glass-card rounded-3xl shadow-xl p-16 text-center">
-          <div className="empty-state">
-            <div className="icon">
-              <BarChart3 className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">
-              {activeOnly ? "No active polls" : "No polls yet"}
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              {canManage ? "Create a poll to hear from your members" : "Check back later for club polls"}
-            </p>
-            {canManage && !activeOnly && (
-              <button onClick={() => setShowCreateModal(true)} className="btn-primary mt-5 px-6 py-2.5 text-sm">
-                <Plus className="w-4 h-4" />
-                Create Poll
-              </button>
-            )}
-          </div>
-        </div>
+        <EmptyState
+          icon={BarChart3}
+          iconClassName="w-12 h-12 text-gray-400"
+          title={activeOnly ? "No active polls" : "No polls yet"}
+          message={canManage ? "Create a poll to hear from your members" : "Check back later for club polls"}
+          cardClassName="glass-card rounded-3xl shadow-xl p-16 text-center"
+        >
+          {canManage && !activeOnly && (
+            <button onClick={() => setShowCreateModal(true)} className="btn-primary mt-5 px-6 py-2.5 text-sm">
+              <Plus className="w-4 h-4" />
+              Create Poll
+            </button>
+          )}
+        </EmptyState>
       ) : (
         <div className="space-y-4">
           {polls.map((poll) => (

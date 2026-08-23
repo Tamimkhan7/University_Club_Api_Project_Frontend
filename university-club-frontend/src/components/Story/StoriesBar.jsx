@@ -6,8 +6,7 @@ import storyApi from "../../api/story";
 import CreateStoryModal from "./CreateStoryModal";
 import StoryViewerModal from "./StoryViewerModal";
 import { Plus, Camera } from "lucide-react";
-
-const getInitials = (name) => (name ? name.charAt(0).toUpperCase() : "U");
+import { getInitials } from "../../utils/textUtils";
 
 export default function StoriesBar() {
   const { user: me } = useContext(AuthContext);

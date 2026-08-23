@@ -1,5 +1,5 @@
 import api from "./axios";
-
+import { unwrap } from "./apiUtils";
 
 const API_BASE_URL = "http://localhost:5000/api";
 const ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
@@ -9,19 +9,10 @@ export const MessageMediaType = {
   Voice: 1,
 };
 
-
 export const resolveMediaUrl = (url) => {
   if (!url) return null;
   if (/^https?:\/\//i.test(url)) return url;
   return `${ORIGIN}${url.startsWith("/") ? url : `/${url}`}`;
-};
-
-const unwrap = (res, fallback) => {
-  const body = res.data;
-  if (body && typeof body === "object" && !Array.isArray(body) && body.success === false) {
-    throw new Error(body.message || fallback);
-  }
-  return body;
 };
 
 const buildVoiceFormData = (audioBlob, durationSeconds, fileName) => {

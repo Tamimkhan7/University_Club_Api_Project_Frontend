@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "../../api/axios";
 import recruitmentApi from "../../api/recruitment";
+import { formatFullDateTime as formatDate } from "../../utils/dateUtils";
 import {
   Clock, CheckCircle2, XCircle, RotateCcw, MessageSquareText,
   Check, X, Loader2, Hash, CalendarDays,
@@ -31,16 +32,6 @@ const STATUS_META = {
   },
 };
 
-function formatDate(d) {
-  if (!d) return "";
-  return new Date(d).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 export default function ApplicationCard({ application, mode = "manage", onChanged, onRemoved }) {
   const [note, setNote] = useState("");

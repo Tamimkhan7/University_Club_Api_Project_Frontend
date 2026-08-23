@@ -2,6 +2,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "../../api/axios";
 import pollApi from "../../api/poll";
+import { formatFullDateTime } from "../../utils/dateUtils";
 import {
   BarChart3, Vote, Clock, Crown, CheckCircle2, XCircle,
   Trash2, Lock, Users, Sparkles, Loader2, CircleDot, Square, CheckSquare,
@@ -10,12 +11,7 @@ import {
 const POLL_TYPE_LABELS = { 0: "General", 1: "Election" };
 
 function formatDate(d) {
-  return new Date(d).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return formatFullDateTime(d, { includeYear: false });
 }
 
 export default function PollCard({ poll, currentUserId, isMember, canManage, isAdmin, onChanged, onDeleted }) {
@@ -160,7 +156,6 @@ export default function PollCard({ poll, currentUserId, isMember, canManage, isA
         )}
       </div>
 
-      {/* Meta row */}
       <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400 dark:text-gray-500 mb-4 pl-[56px]">
         <span className="flex items-center gap-1.5">
           <Clock className="w-3.5 h-3.5" />
@@ -178,7 +173,6 @@ export default function PollCard({ poll, currentUserId, isMember, canManage, isA
         )}
       </div>
 
-      {/* Body: results or voting form */}
       <div className="pl-[56px] space-y-2.5">
         {showResults ? (
           poll.options.map((opt) => (

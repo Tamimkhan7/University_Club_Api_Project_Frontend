@@ -1,15 +1,5 @@
 import api from "./axios";
-
-const unwrap = (res, fallback) => {
-  const body = res.data;
-
-  if (body && typeof body === "object" && !Array.isArray(body) && body.success === false) {
-    throw new Error(body.message || fallback);
-  }
-
-  return body;
-};
-
+import { unwrap } from "./apiUtils";
 
 export const SearchEntityType = {
   Users: "Users",

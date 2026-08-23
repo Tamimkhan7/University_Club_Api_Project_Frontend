@@ -2,7 +2,8 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "../../api/axios";
 import pollApi from "../../api/poll";
-import { X, Plus, Trash2, Sparkles, BarChart3, Crown, Loader2 } from "lucide-react";
+import Modal from "../Modal";
+import { Plus, Trash2, Sparkles, BarChart3, Crown, Loader2 } from "lucide-react";
 
 function defaultEndDate() {
   const d = new Date();
@@ -66,31 +67,13 @@ export default function CreatePollModal({ clubId, onClose, onCreated }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fadeIn"
-        onClick={() => !submitting && onClose?.()}
-      />
-
-      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto glass-card rounded-3xl shadow-2xl p-6 sm:p-7 animate-scaleIn">
-        <div className="flex items-start justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-500/25">
-              <BarChart3 className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-800 dark:text-white font-display">Create Poll</h2>
-              <p className="text-xs text-gray-400 dark:text-gray-500">Ask your club members something</p>
-            </div>
-          </div>
-          <button
-            onClick={() => !submitting && onClose?.()}
-            className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all duration-200"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
+    <Modal
+      onClose={onClose}
+      disableClose={submitting}
+      icon={BarChart3}
+      title="Create Poll"
+      subtitle="Ask your club members something"
+    >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">Title</label>
@@ -213,7 +196,6 @@ export default function CreatePollModal({ clubId, onClose, onCreated }) {
             {submitting ? "Creating..." : "Create Poll"}
           </button>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 }

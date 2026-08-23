@@ -4,9 +4,12 @@ import toast from "react-hot-toast";
 import { getErrorMessage } from "../api/axios";
 import recruitmentApi from "../api/recruitment";
 import Loader from "../components/Loader";
+import Pagination from "../components/Pagination";
+import BackgroundDecoration from "../components/BackgroundDecoration";
+import EmptyState from "../components/EmptyState";
 import ApplicationCard from "../components/Recruitment/ApplicationCard";
 import {
-  ClipboardList, Sparkles, ChevronDown, Building2, Filter,
+  ClipboardList, Sparkles, Building2, Filter,
 } from "lucide-react";
 
 const STATUS_FILTERS = [
@@ -55,10 +58,7 @@ export default function MyApplications() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-      </div>
+      <BackgroundDecoration blobs={2} />
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="page-hero p-6 sm:p-8 md:p-10 mb-8">
@@ -108,20 +108,17 @@ export default function MyApplications() {
             Loading applications...
           </div>
         ) : visibleApplications.length === 0 ? (
-          <div className="glass-card rounded-3xl shadow-xl p-16 text-center">
-            <div className="empty-state">
-              <div className="icon">
-                <Building2 className="w-12 h-12 text-gray-400" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">No applications yet</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-5">
-                Browse clubs and apply to the ones you'd like to join.
-              </p>
-              <Link to="/clubs" className="btn-primary px-6 py-2.5 inline-flex">
-                Browse Clubs
-              </Link>
-            </div>
-          </div>
+          <EmptyState
+            icon={Building2}
+            iconClassName="w-12 h-12 text-gray-400"
+            title="No applications yet"
+            message="Browse clubs and apply to the ones you'd like to join."
+            cardClassName="glass-card rounded-3xl shadow-xl p-16 text-center"
+          >
+            <Link to="/clubs" className="btn-primary px-6 py-2.5 inline-flex mt-4">
+              Browse Clubs
+            </Link>
+          </EmptyState>
         ) : (
           <div className="space-y-4">
             {visibleApplications.map((app) => (
@@ -130,28 +127,8 @@ export default function MyApplications() {
           </div>
         )}
 
-        {statusFilter === "" && totalPages > 1 && (
-          <div className="flex items-center justify-between p-4 glass-card rounded-2xl mt-6">
-            <button
-              disabled={page <= 1}
-              onClick={() => load(page - 1)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-red-300 dark:hover:border-red-500/30 transition-all duration-200 text-sm font-medium"
-            >
-              <ChevronDown className="w-4 h-4 rotate-90" />
-              Previous
-            </button>
-            <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-              Page <span className="text-gray-900 dark:text-white">{page}</span> of {totalPages}
-            </span>
-            <button
-              disabled={page >= totalPages}
-              onClick={() => load(page + 1)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-red-300 dark:hover:border-red-500/30 transition-all duration-200 text-sm font-medium"
-            >
-              Next
-              <ChevronDown className="w-4 h-4 -rotate-90" />
-            </button>
-          </div>
+        {statusFilter === "" && (
+          <Pagination page={page} totalPages={totalPages} onPageChange={(p) => load(p)} />
         )}
       </div>
     </div>

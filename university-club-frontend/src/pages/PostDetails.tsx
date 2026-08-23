@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import Loader from "../components/Loader";
+import BackgroundDecoration from "../components/BackgroundDecoration";
+import EmptyState from "../components/EmptyState";
+import { copyPostLink } from "../utils/clipboard";
+import { formatRelativeTime as formatDate } from "../utils/dateUtils";
 import { usePresence } from "../context/PresenceContext";
 import toast from "react-hot-toast";
 import {
@@ -59,22 +63,7 @@ export default function PostDetails() {
     }
   })();
 
-  const formatDate = (date) => {
-    if (!date) return "Recently";
-    const now = new Date();
-    const postDate = new Date(date);
-    const diffMs = now - postDate;
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-    return postDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  };
+  // formatDate এখন src/utils/dateUtils.js থেকে আসছে
 
   const loadData = async () => {
     setLoading(true);
@@ -301,14 +290,7 @@ export default function PostDetails() {
     }
   };
 
-  const handleShare = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.origin + `/post/${post.id}`);
-      toast.success("📋 Post link copied!");
-    } catch (err) {
-      toast.error("Failed to copy link");
-    }
-  };
+  const handleShare = () => copyPostLink(post.id);
 
   const submitReport = async () => {
     try {
@@ -325,20 +307,19 @@ export default function PostDetails() {
   if (!post) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="text-center">
-          <div className="empty-state">
-            <div className="icon">
-              <MessageCircle className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">Post not found</h3>
-            <button
-              onClick={() => navigate("/")}
-              className="btn-primary px-6 py-2.5"
-            >
-              Go back to feed
-            </button>
-          </div>
-        </div>
+        <EmptyState
+          bare
+          icon={MessageCircle}
+          iconClassName="w-12 h-12 text-gray-400"
+          title="Post not found"
+        >
+          <button
+            onClick={() => navigate("/")}
+            className="btn-primary px-6 py-2.5 mt-4"
+          >
+            Go back to feed
+          </button>
+        </EmptyState>
       </div>
     );
   }
@@ -348,11 +329,7 @@ export default function PostDetails() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
       
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
-      </div>
+      <BackgroundDecoration />
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5 sm:space-y-6">
         
@@ -628,15 +605,16 @@ export default function PostDetails() {
             </div>
 
             {comments.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
-                <div className="empty-state">
-                  <div className="icon w-20 h-20">
-                    <MessageCircle className="w-10 h-10 text-gray-400" />
-                  </div>
-                  <p className="text-gray-500 dark:text-gray-400 font-medium">No comments yet</p>
-                  <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Be the first to start the conversation!</p>
-                </div>
-              </div>
+              <EmptyState
+                icon={MessageCircle}
+                iconClassName="w-10 h-10 text-gray-400"
+                iconWrapperClassName="w-20 h-20"
+                title="No comments yet"
+                titleClassName="text-gray-500 dark:text-gray-400 font-medium"
+                message="Be the first to start the conversation!"
+                messageClassName="text-gray-400 dark:text-gray-500 text-sm mt-1"
+                cardClassName="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-2xl"
+              />
             ) : (
               <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                 {comments.map((comment) => (

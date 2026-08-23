@@ -10,8 +10,13 @@ import {
 import api, { getErrorMessage } from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import Loader from "../components/Loader";
+import BackgroundDecoration from "../components/BackgroundDecoration";
+import EmptyState from "../components/EmptyState";
+import { copyToClipboard } from "../utils/clipboard";
+import { isClubManager, isClubAdmin } from "../utils/textUtils";
 import liveEventApi from "../api/liveEvent";
 import createLiveEventConnection from "../api/liveEventHub";
+import { formatClockTime as formatTime } from "../utils/dateUtils";
 
 const STATUS_META = {
   NotStarted: { label: "Not Started", dot: "bg-gray-400" },
@@ -27,11 +32,7 @@ const normalizeStatus = (status) => {
   return "NotStarted";
 };
 
-const formatTime = (dateStr) => {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-};
+// formatTime এখন src/utils/dateUtils.js থেকে আসছে (formatClockTime)
 
 export default function LiveEvent() {
   const { eventId } = useParams();
@@ -64,8 +65,8 @@ export default function LiveEvent() {
   const shouldAutoScroll = useRef(true);
 
   const status = normalizeStatus(session?.status);
-  const canManage = membership?.role === "Admin" || membership?.role === "Moderator";
-  const isAdmin = membership?.role === "Admin";
+  const canManage = isClubManager(membership);
+  const isAdmin = isClubAdmin(membership);
 
   const loadStatus = useCallback(async () => {
     try {
@@ -295,8 +296,7 @@ export default function LiveEvent() {
 
   const copyMeetingLink = () => {
     if (!session?.meetingLink) return;
-    navigator.clipboard.writeText(session.meetingLink);
-    toast.success("Meeting link copied!");
+    copyToClipboard(session.meetingLink, { successMessage: "Meeting link copied!" });
   };
 
   const handleMessagesScroll = (e) => {
@@ -321,10 +321,7 @@ export default function LiveEvent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-      </div>
+      <BackgroundDecoration blobs={2} />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <button
@@ -390,30 +387,30 @@ export default function LiveEvent() {
         </div>
 
         {notAMember ? (
-          <div className="glass-card rounded-3xl shadow-xl p-12 text-center">
-            <div className="empty-state">
-              <div className="icon"><Lock className="w-12 h-12 text-red-500" /></div>
-              <h3>Members only</h3>
-              <p>You need to be a member of {session.clubName || "this club"} to view this live session.</p>
-            </div>
-          </div>
+          <EmptyState
+            icon={Lock}
+            title="Members only"
+            message={`You need to be a member of ${session.clubName || "this club"} to view this live session.`}
+            cardClassName="glass-card rounded-3xl shadow-xl p-12 text-center"
+          />
         ) : banned ? (
-          <div className="glass-card rounded-3xl shadow-xl p-12 text-center">
-            <div className="empty-state">
-              <div className="icon"><Ban className="w-12 h-12 text-red-500" /></div>
-              <h3>Access removed</h3>
-              <p>You have been removed from this live session.</p>
-            </div>
-          </div>
+          <EmptyState
+            icon={Ban}
+            title="Access removed"
+            message="You have been removed from this live session."
+            cardClassName="glass-card rounded-3xl shadow-xl p-12 text-center"
+          />
         ) : status === "NotStarted" ? (
           <div className="glass-card rounded-3xl shadow-xl p-8 sm:p-12 text-center">
             {canManage ? (
               <div className="max-w-md mx-auto">
-                <div className="empty-state !pb-4">
-                  <div className="icon"><Video className="w-12 h-12 text-red-500" /></div>
-                  <h3>Go live for your club</h3>
-                  <p>Paste your meeting link (Zoom, Google Meet, Jitsi, YouTube Live, etc.) to start streaming.</p>
-                </div>
+                <EmptyState
+                  bare
+                  icon={Video}
+                  title="Go live for your club"
+                  message="Paste your meeting link (Zoom, Google Meet, Jitsi, YouTube Live, etc.) to start streaming."
+                  className="!pb-4"
+                />
                 <div className="flex flex-col sm:flex-row gap-3 mt-4">
                   <input
                     value={meetingLinkInput}
@@ -428,11 +425,12 @@ export default function LiveEvent() {
                 </div>
               </div>
             ) : (
-              <div className="empty-state">
-                <div className="icon"><Clock className="w-12 h-12 text-red-500" /></div>
-                <h3>Not live yet</h3>
-                <p>This event's live session hasn't started. Check back soon!</p>
-              </div>
+              <EmptyState
+                icon={Clock}
+                title="Not live yet"
+                message="This event's live session hasn't started. Check back soon!"
+                bare
+              />
             )}
           </div>
         ) : (

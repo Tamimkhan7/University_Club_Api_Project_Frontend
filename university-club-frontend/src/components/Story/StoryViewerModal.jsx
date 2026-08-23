@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "../../api/axios";
 import storyApi from "../../api/story";
+import { formatRelativeTime } from "../../utils/dateUtils";
+import { getInitials } from "../../utils/textUtils";
 import {
   X, ChevronLeft, ChevronRight, Trash2, Eye, Pause, Play,
   MoreVertical, Loader2, Users as UsersIcon,
@@ -9,18 +11,8 @@ import {
 
 const IMAGE_DURATION_MS = 6000;
 
-const getInitials = (name) => (name ? name.charAt(0).toUpperCase() : "U");
-
-const timeAgo = (dateStr) => {
-  if (!dateStr) return "";
-  const diffMs = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h`;
-  return `${Math.floor(hours / 24)}d`;
-};
+// timeAgo এখন src/utils/dateUtils.js-এর formatRelativeTime (shortForm) ব্যবহার করে
+const timeAgo = (dateStr) => formatRelativeTime(dateStr, { shortForm: true });
 
 /**
  * Full-screen story viewer.

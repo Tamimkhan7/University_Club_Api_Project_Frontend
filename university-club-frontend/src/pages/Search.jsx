@@ -2,11 +2,15 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import searchApi, { SearchEntityType, SearchSortBy } from "../api/search";
+import Pagination from "../components/Pagination";
+import BackgroundDecoration from "../components/BackgroundDecoration";
+import EmptyState from "../components/EmptyState";
+import { formatBytes } from "../utils/formatBytes";
 import toast from "react-hot-toast";
 import {
   Search as SearchIcon, X, Users as UsersIcon, Building2, FileText, Calendar,
   UsersRound, FolderOpen, Sparkles, TrendingUp, Clock, ChevronRight,
-  ChevronLeft, Heart, FileImage, FileVideo, FileAudio, File as FileIcon,
+  Heart, FileImage, FileVideo, FileAudio, File as FileIcon,
   Archive, CalendarClock, SlidersHorizontal, Trash2, Compass,
 } from "lucide-react";
 
@@ -36,12 +40,7 @@ const fileIconFor = (fileType) => {
   return FileIcon;
 };
 
-const formatBytes = (bytes) => {
-  if (!bytes && bytes !== 0) return "";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-};
+// formatBytes এখন src/utils/formatBytes.js থেকে আসছে
 
 const avatarFor = (name, img) =>
   img || `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "?")}&background=e11d48&color=fff&bold=true&length=2`;
@@ -390,21 +389,18 @@ export default function Search() {
   };
 
   const emptyStateFor = (label) => (
-    <div className="glass-card rounded-3xl shadow-xl p-16 text-center col-span-full">
-      <div className="empty-state">
-        <div className="icon"><SearchIcon className="w-12 h-12 text-red-400" /></div>
-        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">No {label} found</h3>
-        <p className="text-gray-500 dark:text-gray-400">Try a different search term or adjust your filters</p>
-      </div>
-    </div>
+    <EmptyState
+      icon={SearchIcon}
+      iconClassName="w-12 h-12 text-red-400"
+      title={`No ${label} found`}
+      message="Try a different search term or adjust your filters"
+      cardClassName="glass-card rounded-3xl shadow-xl p-16 text-center col-span-full"
+    />
   );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-16">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-      </div>
+      <BackgroundDecoration blobs={2} />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 space-y-6 sm:space-y-8">
         <div className="page-hero p-6 sm:p-8 md:p-10">
@@ -684,42 +680,12 @@ export default function Search() {
                     emptyStateFor(TABS.find((t) => t.id === activeTab)?.label.toLowerCase() || "results")}
                 </div>
 
-                {advResult && advResult.totalPages > 1 && (
-                  <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
-                    <button
-                      disabled={page <= 1}
-                      onClick={() => setPage((p) => p - 1)}
-                      className="px-5 py-2.5 rounded-xl glass-card border border-gray-200/50 dark:border-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed hover:border-red-300 transition-colors font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1"
-                    >
-                      <ChevronLeft className="w-4 h-4" /> Previous
-                    </button>
-                    <div className="flex items-center gap-2">
-                      {[...Array(Math.min(5, advResult.totalPages))].map((_, i) => {
-                        const pageNum = i + 1;
-                        return (
-                          <button
-                            key={i}
-                            onClick={() => setPage(pageNum)}
-                            className={`w-10 h-10 rounded-xl font-medium transition-all duration-300 ${
-                              pageNum === page
-                                ? "btn-primary w-10 h-10 flex items-center justify-center"
-                                : "bg-white/80 dark:bg-gray-800/80 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                            }`}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      })}
-                      {advResult.totalPages > 5 && <span className="text-gray-400">...</span>}
-                    </div>
-                    <button
-                      disabled={page >= advResult.totalPages}
-                      onClick={() => setPage((p) => p + 1)}
-                      className="px-5 py-2.5 rounded-xl glass-card border border-gray-200/50 dark:border-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed hover:border-red-300 transition-colors font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1"
-                    >
-                      Next <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
+                {advResult && (
+                  <Pagination
+                    page={page}
+                    totalPages={advResult.totalPages}
+                    onPageChange={(p) => setPage(p)}
+                  />
                 )}
               </>
             )}

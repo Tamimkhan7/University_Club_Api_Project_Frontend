@@ -3,11 +3,13 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import storyApi from "../api/story";
 import voiceMessageApi, { resolveMediaUrl, MessageMediaType } from "../api/voiceMessage";
+import BackgroundDecoration from "../components/BackgroundDecoration";
 import useVoiceRecorder from "../hooks/useVoiceRecorder";
 import VoiceRecorderBar from "../components/VoiceRecorderBar";
 import VoiceMessageBubble from "../components/VoiceMessageBubble";
 import StoryViewerModal from "../components/Story/StoryViewerModal";
 import { AuthContext } from "../context/AuthContext";
+import { formatClockTime as formatTime } from "../utils/dateUtils";
 import { usePresence, formatLastSeen } from "../context/PresenceContext";
 import toast from "react-hot-toast";
 import Loader from "../components/Loader";
@@ -386,22 +388,14 @@ export default function Messages() {
     }
   };
 
-  const formatTime = (date) =>
-    new Date(date).toLocaleTimeString("en-US", { 
-      hour: "2-digit", 
-      minute: "2-digit" 
-    });
+  // formatTime এখন src/utils/dateUtils.js থেকে আসছে (formatClockTime)
 
   if (loadingConvos) return <Loader />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
       
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
-      </div>
+      <BackgroundDecoration />
 
       <div className="relative max-w-6xl mx-auto px-4 py-6 sm:py-8">
         
@@ -654,15 +648,20 @@ export default function Messages() {
                 )
               ) : (
                 <div className="flex flex-col items-center justify-center h-[60%] text-center px-4">
-                  <div className="empty-state">
-                    <div className="icon w-20 h-20">
-                      <MessageSquare className="w-10 h-10 text-gray-400" />
-                    </div>
-                    <p className="text-gray-500 dark:text-gray-400 font-medium">No conversations yet</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                      Click the <UserPlus className="w-3 h-3 inline" /> icon to start a new chat
-                    </p>
-                  </div>
+                  <EmptyState
+                    bare
+                    icon={MessageSquare}
+                    iconClassName="w-10 h-10 text-gray-400"
+                    iconWrapperClassName="w-20 h-20"
+                    title="No conversations yet"
+                    titleClassName="text-gray-500 dark:text-gray-400 font-medium"
+                    message={
+                      <>
+                        Click the <UserPlus className="w-3 h-3 inline" /> icon to start a new chat
+                      </>
+                    }
+                    messageClassName="text-xs text-gray-400 dark:text-gray-500 mt-1"
+                  />
                 </div>
               )
             ) : (
@@ -731,24 +730,24 @@ export default function Messages() {
           <div className={`md:col-span-2 flex flex-col ${!activeUser ? "hidden md:flex" : ""}`}>
             {!activeUser ? (
               <div className="flex-1 flex items-center justify-center text-gray-400">
-                <div className="text-center">
-                  <div className="empty-state">
-                    <div className="icon w-20 h-20">
-                      <MessageSquare className="w-10 h-10 text-gray-400" />
-                    </div>
-                    <p className="font-medium text-gray-500 dark:text-gray-400">Select a conversation</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                      Choose a chat to start messaging or start a new one
-                    </p>
-                    <button
-                      onClick={() => setShowUserSearch(true)}
-                      className="btn-primary mt-4 px-6 py-2.5 text-sm"
-                    >
-                      <UserPlus className="w-4 h-4" />
-                      New Message
-                    </button>
-                  </div>
-                </div>
+                <EmptyState
+                  bare
+                  icon={MessageSquare}
+                  iconClassName="w-10 h-10 text-gray-400"
+                  iconWrapperClassName="w-20 h-20"
+                  title="Select a conversation"
+                  titleClassName="font-medium text-gray-500 dark:text-gray-400"
+                  message="Choose a chat to start messaging or start a new one"
+                  messageClassName="text-xs text-gray-400 dark:text-gray-500 mt-1"
+                >
+                  <button
+                    onClick={() => setShowUserSearch(true)}
+                    className="btn-primary mt-4 px-6 py-2.5 text-sm"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    New Message
+                  </button>
+                </EmptyState>
               </div>
             ) : (
               <>

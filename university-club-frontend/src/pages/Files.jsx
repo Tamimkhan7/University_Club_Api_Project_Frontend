@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import api, { getErrorMessage } from "../api/axios";
 import Loader from "../components/Loader";
+import BackgroundDecoration from "../components/BackgroundDecoration";
+import Pagination from "../components/Pagination";
+import EmptyState from "../components/EmptyState";
+import { formatBytes as formatSize } from "../utils/formatBytes";
 import toast from "react-hot-toast";
 import {
   Upload, Download, Trash2, Search, File as FileIcon, X,
@@ -8,7 +12,7 @@ import {
   Cloud, HardDrive, Server, Share2, Link2, Copy, CheckCircle,
   AlertCircle, FileText, FileImage, FileVideo, FileAudio,
   Archive, Zap, Sparkles, Rocket, Star, Award, User,
-  ChevronDown, ChevronUp, Grid3x3, List, Filter
+  ChevronUp, Grid3x3, List, Filter
 } from "lucide-react";
 
 const TABS = [
@@ -205,17 +209,7 @@ export default function Files() {
     }
   };
 
-  const formatSize = (bytes) => {
-    if (!bytes) return "0 B";
-    const units = ["B", "KB", "MB", "GB"];
-    let i = 0;
-    let size = bytes;
-    while (size >= 1024 && i < units.length - 1) {
-      size /= 1024;
-      i++;
-    }
-    return `${size.toFixed(1)} ${units[i]}`;
-  };
+  // formatSize এখন src/utils/formatBytes.js থেকে আসছে
 
   const getFileIcon = (type) => {
     if (!type) return <FileIcon className="w-5 h-5" />;
@@ -233,11 +227,7 @@ export default function Files() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
       
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
-      </div>
+      <BackgroundDecoration />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         
@@ -431,17 +421,12 @@ export default function Files() {
         </form>
 
         {files.length === 0 ? (
-          <div className="glass-card rounded-3xl shadow-2xl shadow-red-500/10 p-12 sm:p-16 text-center">
-            <div className="empty-state">
-              <div className="icon">
-                <FileIcon className="w-12 h-12 text-red-500" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">No files found</h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                {searchTerm ? "Try a different search term" : "Upload your first file to get started!"}
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            icon={FileIcon}
+            title="No files found"
+            message={searchTerm ? "Try a different search term" : "Upload your first file to get started!"}
+            cardClassName="glass-card rounded-3xl shadow-2xl shadow-red-500/10 p-12 sm:p-16 text-center"
+          />
         ) : (
           <div className={`grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 transition-opacity duration-300 ${searching ? "opacity-60" : "opacity-100"}`}>
             {files.map((f, index) => (
@@ -525,50 +510,7 @@ export default function Files() {
           </div>
         )}
 
-        {totalPages > 1 && (
-          <div className="flex flex-wrap justify-center items-center gap-3 mt-8">
-            <button
-              disabled={page <= 1}
-              onClick={() => loadFiles(page - 1, searchTerm, typeFilter)}
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-red-300 dark:hover:border-red-500/30 transition-all duration-200 text-sm font-medium"
-            >
-              <ChevronDown className="w-4 h-4 rotate-90" />
-              Previous
-            </button>
-            
-            <div className="flex items-center gap-2">
-              {[...Array(Math.min(totalPages, 5))].map((_, i) => {
-                let pageNum = i + 1;
-                if (totalPages > 5 && page > 3) {
-                  pageNum = page - 2 + i;
-                  if (pageNum > totalPages) return null;
-                }
-                return (
-                  <button
-                    key={i}
-                    onClick={() => loadFiles(pageNum, searchTerm, typeFilter)}
-                    className={`w-10 h-10 rounded-xl text-sm font-medium transition-all duration-200 ${
-                      page === pageNum
-                        ? "btn-primary w-10 h-10 flex items-center justify-center"
-                        : "bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-500/30"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              disabled={page >= totalPages}
-              onClick={() => loadFiles(page + 1, searchTerm, typeFilter)}
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-red-300 dark:hover:border-red-500/30 transition-all duration-200 text-sm font-medium"
-            >
-              Next
-              <ChevronDown className="w-4 h-4 -rotate-90" />
-            </button>
-          </div>
-        )}
+        <Pagination page={page} totalPages={totalPages} onPageChange={(p) => loadFiles(p, searchTerm, typeFilter)} />
       </div>
 
       {detailFile && (

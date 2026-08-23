@@ -5,6 +5,8 @@ import { getErrorMessage } from "../api/axios";
 import clubPrivacyApi from "../api/clubPrivacy";
 import { AuthContext } from "../context/AuthContext";
 import Loader from "../components/Loader";
+import BackgroundDecoration from "../components/BackgroundDecoration";
+import EmptyState from "../components/EmptyState";
 import InviteCard from "../components/ClubPrivacy/InviteCard";
 import { ArrowLeft, Mail, Sparkles, ShieldAlert } from "lucide-react";
 
@@ -50,10 +52,7 @@ export default function InviteDetails() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-      </div>
+      <BackgroundDecoration blobs={2} />
 
       <div className="relative max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <button
@@ -84,18 +83,17 @@ export default function InviteDetails() {
         </div>
 
         {error ? (
-          <div className="glass-card rounded-3xl shadow-xl p-16 text-center">
-            <div className="empty-state">
-              <div className="icon">
-                <ShieldAlert className="w-12 h-12 text-gray-400" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">Can't show this invite</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-5">{error}</p>
-              <Link to="/invites" className="btn-primary px-6 py-2.5 inline-flex">
-                Go to My Invites
-              </Link>
-            </div>
-          </div>
+          <EmptyState
+            icon={ShieldAlert}
+            iconClassName="w-12 h-12 text-gray-400"
+            title="Can't show this invite"
+            message={error}
+            cardClassName="glass-card rounded-3xl shadow-xl p-16 text-center"
+          >
+            <Link to="/invites" className="btn-primary px-6 py-2.5 inline-flex mt-4">
+              Go to My Invites
+            </Link>
+          </EmptyState>
         ) : invite ? (
           <InviteCard
             invite={invite}

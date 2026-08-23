@@ -4,6 +4,8 @@ import { getErrorMessage } from "../../api/axios";
 import clubPrivacyApi, { ClubVisibility, ClubVisibilityLabels, InviteStatus } from "../../api/clubPrivacy";
 import InviteCard from "./InviteCard";
 import InviteUserModal from "./InviteUserModal";
+import EmptyState from "../EmptyState";
+import { isClubManager, isClubAdmin } from "../../utils/textUtils";
 import {
   Globe, Lock, Mail, ChevronDown, UserPlus, Loader2, ShieldCheck, Inbox,
 } from "lucide-react";
@@ -23,8 +25,8 @@ const STATUS_FILTERS = [
 ];
 
 export default function PrivacySection({ clubId, club, membership, onClubUpdated }) {
-  const isAdmin = membership?.role === "Admin";
-  const canManage = isAdmin || membership?.role === "Moderator";
+  const isAdmin = isClubAdmin(membership);
+  const canManage = isClubManager(membership);
 
   const currentVisibility = club?.visibility ?? ClubVisibility.Public;
 
@@ -89,17 +91,13 @@ export default function PrivacySection({ clubId, club, membership, onClubUpdated
 
   if (!canManage) {
     return (
-      <div className="glass-card rounded-3xl shadow-xl p-16 text-center">
-        <div className="empty-state">
-          <div className="icon">
-            <ShieldCheck className="w-12 h-12 text-gray-400" />
-          </div>
-          <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">Admins &amp; Moderators only</h3>
-          <p className="text-gray-500 dark:text-gray-400">
-            Privacy settings and invites are managed by the club's admins and moderators.
-          </p>
-        </div>
-      </div>
+      <EmptyState
+        icon={ShieldCheck}
+        iconClassName="w-12 h-12 text-gray-400"
+        title="Admins & Moderators only"
+        message="Privacy settings and invites are managed by the club's admins and moderators."
+        cardClassName="glass-card rounded-3xl shadow-xl p-16 text-center"
+      />
     );
   }
 
@@ -177,17 +175,13 @@ export default function PrivacySection({ clubId, club, membership, onClubUpdated
           Loading invites...
         </div>
       ) : invites.length === 0 ? (
-        <div className="glass-card rounded-3xl shadow-xl p-16 text-center">
-          <div className="empty-state">
-            <div className="icon">
-              <Inbox className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">No invites found</h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              {statusFilter === "" ? "No invites have been sent for this club yet." : "Nothing to show for this filter."}
-            </p>
-          </div>
-        </div>
+        <EmptyState
+          icon={Inbox}
+          iconClassName="w-12 h-12 text-gray-400"
+          title="No invites found"
+          message={statusFilter === "" ? "No invites have been sent for this club yet." : "Nothing to show for this filter."}
+          cardClassName="glass-card rounded-3xl shadow-xl p-16 text-center"
+        />
       ) : (
         <div className="space-y-4">
           {invites.map((inv) => (

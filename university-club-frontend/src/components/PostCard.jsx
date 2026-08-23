@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
 import { usePresence } from "../context/PresenceContext";
+import { formatRelativeTime as formatDate } from "../utils/dateUtils";
+import { getInitials } from "../utils/textUtils";
+import { copyPostLink } from "../utils/clipboard";
 import {
   Heart, MessageCircle, ThumbsUp, Smile, Frown, Angry, Eye, X,
   Share2, Bookmark, MoreHorizontal, Clock, Sparkles, Award,
@@ -10,22 +13,6 @@ import {
 import toast from "react-hot-toast";
 
 
-const formatDate = (date) => {
-  if (!date) return "Recently";
-  const now = new Date();
-  const postDate = new Date(date);
-  const diffMs = now - postDate;
-  const diffMins = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-  return postDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-};
 
 const getReactionEmoji = (type) => {
   const emojis = {
@@ -39,10 +26,7 @@ const getReactionEmoji = (type) => {
   return emojis[type] || "👍";
 };
 
-const getUserInitials = (name) => {
-  if (!name) return "U";
-  return name.charAt(0).toUpperCase();
-};
+const getUserInitials = getInitials;
 
 
 const REACTIONS = [
@@ -186,15 +170,7 @@ export default function PostCard({ post, onReact }) {
     }
   };
 
-  const handleShare = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.origin + `/post/${post.id}`);
-      toast.success("📋 Post link copied!");
-    } catch (err) {
-      console.error("Failed to copy:", err);
-      toast.error("Failed to copy link");
-    }
-  };
+  const handleShare = () => copyPostLink(post.id);
 
   const truncateText = (text, maxLength = 300) => {
     if (!text) return "";

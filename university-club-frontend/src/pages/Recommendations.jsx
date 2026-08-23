@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import recommendationApi from "../api/recommendation";
 import Loader from "../components/Loader";
+import BackgroundDecoration from "../components/BackgroundDecoration";
+import EmptyState from "../components/EmptyState";
 import toast from "react-hot-toast";
 import {
   Sparkles, Users, Calendar, UserPlus, X, Heart, Clock,
@@ -94,11 +96,7 @@ export default function Recommendations() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
-      </div>
+      <BackgroundDecoration />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 space-y-6 sm:space-y-8">
         <div className="page-hero p-6 sm:p-8 md:p-10">
@@ -173,21 +171,23 @@ export default function Recommendations() {
         </div>
 
         {activeCount === 0 && (
-          <div className="glass-card rounded-3xl shadow-xl shadow-red-500/10 p-12 sm:p-16 text-center">
-            <div className="empty-state">
-              <div className="icon">
+          <EmptyState
+            iconNode={
+              <>
                 {tab === "clubs" && <Building2 className="w-12 h-12 text-red-500" />}
                 {tab === "events" && <Calendar className="w-12 h-12 text-red-500" />}
                 {tab === "people" && <Users className="w-12 h-12 text-red-500" />}
-              </div>
-              <h3>Nothing to show right now</h3>
-              <p>
+              </>
+            }
+            title="Nothing to show right now"
+            message={
+              <>
                 {tab === "clubs" && "You've joined or dismissed all the clubs we could suggest. Check back later!"}
                 {tab === "events" && "No upcoming events from your clubs or people you follow just yet."}
                 {tab === "people" && "No new people to suggest — try following more clubs or classmates."}
-              </p>
-            </div>
-          </div>
+              </>
+            }
+          />
         )}
 
         {tab === "clubs" && clubs.length > 0 && (

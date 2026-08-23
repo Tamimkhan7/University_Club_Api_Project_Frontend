@@ -8,6 +8,9 @@ import VoiceMessageBubble from "../components/VoiceMessageBubble";
 import { AuthContext } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import Loader from "../components/Loader";
+import BackgroundDecoration from "../components/BackgroundDecoration";
+import EmptyState from "../components/EmptyState";
+import { formatClockTime as formatTime } from "../utils/dateUtils";
 import {
   Users, Plus, X, Send, Trash2, Edit2, Check, ArrowLeft, LogOut,
   UserPlus, UserMinus, Crown, Loader2, Search, Mic,
@@ -338,8 +341,7 @@ export default function Groups() {
     }
   };
 
-  const formatTime = (date) =>
-    new Date(date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  // formatTime এখন src/utils/dateUtils.js থেকে আসছে (formatClockTime)
 
   const myMembership = details?.members?.find((m) => m.userId === me?.id);
   const myIsAdmin = !!myMembership?.isAdmin;
@@ -353,11 +355,7 @@ export default function Groups() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50/30 via-rose-50/20 to-orange-50/20 dark:from-gray-950 dark:via-gray-900/80 dark:to-gray-950 pb-12">
 
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-orange-500/5 to-amber-500/5 rounded-full blur-3xl animate-float-slow animation-delay-1000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-red-500/3 to-rose-500/3 rounded-full blur-2xl animate-spin-slow" />
-      </div>
+      <BackgroundDecoration />
 
       <div className="relative max-w-6xl mx-auto px-4 py-6 sm:py-8">
 
@@ -486,19 +484,21 @@ export default function Groups() {
           <div className={`md:col-span-2 flex flex-col relative ${!activeGroup ? "hidden md:flex" : ""}`}>
             {!activeGroup ? (
               <div className="flex-1 flex items-center justify-center text-gray-400">
-                <div className="text-center">
-                  <div className="empty-state">
-                    <div className="icon w-20 h-20">
-                      <Users className="w-10 h-10 text-gray-400" />
-                    </div>
-                    <p className="font-medium text-gray-500 dark:text-gray-400">Select a group</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Choose a group to start chatting</p>
-                    <button onClick={() => setShowCreateForm(true)} className="btn-primary mt-4 px-6 py-2.5 text-sm">
-                      <Plus className="w-4 h-4" />
-                      Create Group
-                    </button>
-                  </div>
-                </div>
+                <EmptyState
+                  bare
+                  icon={Users}
+                  iconClassName="w-10 h-10 text-gray-400"
+                  iconWrapperClassName="w-20 h-20"
+                  title="Select a group"
+                  titleClassName="font-medium text-gray-500 dark:text-gray-400"
+                  message="Choose a group to start chatting"
+                  messageClassName="text-xs text-gray-400 dark:text-gray-500 mt-1"
+                >
+                  <button onClick={() => setShowCreateForm(true)} className="btn-primary mt-4 px-6 py-2.5 text-sm">
+                    <Plus className="w-4 h-4" />
+                    Create Group
+                  </button>
+                </EmptyState>
               </div>
             ) : (
               <>
