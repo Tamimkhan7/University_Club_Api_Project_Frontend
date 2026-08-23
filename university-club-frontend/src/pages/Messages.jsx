@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useContext, useCallback, useMemo } from "r
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import storyApi from "../api/story";
+import EmptyState from "../components/EmptyState";
 import voiceMessageApi, { resolveMediaUrl, MessageMediaType } from "../api/voiceMessage";
 import BackgroundDecoration from "../components/BackgroundDecoration";
 import useVoiceRecorder from "../hooks/useVoiceRecorder";
